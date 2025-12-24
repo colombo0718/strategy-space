@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>StrategySpace</title>
+  <style>
+    :root{
+      --bg:#f0f0f0;
+      --card:#ffffff;
+      --border:#d9d9d9;
+      --text:#111;
+      --muted:#666;
+    }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Arial, "Noto Sans TC", sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .wrap{
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+    h1{
+      margin: 0 0 6px;
+      font-size: 26px;
+      letter-spacing: .2px;
+    }
+    .sub{
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .section-title{
+      margin: 18px 0 10px;
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing: .3px;
+    }
+    .list{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      padding: 14px 14px;
+      border-top: 1px solid var(--border);
+    }
+    .row:first-child{ border-top:0; }
+    .name{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      min-width: 0;
+    }
+    .title{
+      font-size: 16px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .hint{
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .btn{
+      height: 34px;
+      padding: 0 14px;
+      border-radius: 8px;
+      border: 1px solid #bdbdbd;
+      background: #fff;
+      cursor: pointer;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .btn:active{ transform: translateY(1px); }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>StrategySpace (SS)</h1>
+    <p class="sub">Small games & dev tools.（目前先最小版列表）</p>
+
+    <div class="section-title">Games</div>
+    <div class="list" id="games-list">
+      <div class="row">
+        <div class="name">
+          <div class="title">santa-gifts</div>
+          <div class="hint">/voxel/santa-gifts/index.html</div>
+        </div>
+        <button class="btn" data-play="santa">Play</button>
+      </div>
+    </div>
+
+    <div class="section-title">Develop</div>
+    <div class="list" id="dev-list">
+      <div class="row">
+        <div class="name">
+          <div class="title">getPM (PostMessage Monitor)</div>
+          <div class="hint">/develop/getPM.html</div>
+        </div>
+        <button class="btn" data-play="getpm">Play</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const URLS = {
+      santa: "https://strategy-space.vercel.app/voxel/santa-gifts/index.html",
+      getpm: "https://strategy-space.vercel.app/develop/getPM.html"
+    };
+
+    function isInIframe(){
+      return window.parent !== window; // 你指定的最簡方案
+    }
+
+    function play(url){
+      if (isInIframe()) {
+        // 在 GG 的 iframe 裡：通知外層載入（由 GG 負責）
+        window.parent.postMessage({ type: "ss_open", url }, "*");
+      } else {
+        // 獨立開：先直接開目標頁
+        location.href = url;
+      }
+    }
+
+    document.querySelectorAll("button[data-play]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const key = btn.dataset.play;
+        const url = URLS[key];
+        if (url) play(url);
+      });
+    });
+  </script>
+</body>
+</html>
