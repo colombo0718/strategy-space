@@ -231,7 +231,7 @@ function ggAllUp() {
 window.addEventListener("message", (ev) => {
   const d = ev.data;
   if (!d || d.type !== "gg_event") return;
-
+    console.log(d)
   // 如果你想更嚴格：可在此檢查 ev.origin（但你目前 GG 端 targetOrigin="*"）
   const { btnID, state } = d;
 
