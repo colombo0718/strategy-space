@@ -6,8 +6,8 @@
     body { margin: 0; }
     #hud {
         position: absolute;
-        top: 20;
-        left: 20;
+        top: 0;
+        left: 0;
         width: 100%;
         height: 100%;
         color: yellow;
@@ -195,6 +195,71 @@
         const key = event.key.toLowerCase();
         keys[key] = false; // 設置按鍵為 false 表示釋放該按鍵
     });
+
+
+// ===== GG -> keys{} bridge =====
+
+// 依 GG 協定：btnID 5~8 是方向，上左下右；1~4 是功能鍵
+// 你可以依「遊戲實際用到哪些鍵」去改 mapping。
+// 例如：聖誕老人只會向上，就只留 5 -> ["w"] 或 ["arrowup"] 就好。
+const GG_TO_KEYS = {
+  5: ["w", "arrowup"],     // 上
+  6: ["a", "arrowleft"],   // 左（備用）
+  7: ["s", "arrowdown"],   // 下（備用）
+  8: ["d", "arrowright"],  // 右（備用）
+  1: ["1", "e"],           // btn1（備用，看你遊戲用哪個）
+  2: ["2"],
+  3: ["3"],
+  4: ["4"],
+};
+
+const ggPressed = new Set();
+
+function setKeysByBtn(btnID, isDown) {
+  const list = GG_TO_KEYS[btnID];
+  if (!list) return;
+  for (const k of list) keys[k] = isDown;
+}
+
+function ggAllUp() {
+  for (const btnID of Array.from(ggPressed)) {
+    ggPressed.delete(btnID);
+    setKeysByBtn(btnID, false);
+  }
+}
+
+window.addEventListener("message", (ev) => {
+  const d = ev.data;
+  if (!d || d.type !== "gg_event") return;
+
+  // 如果你想更嚴格：可在此檢查 ev.origin（但你目前 GG 端 targetOrigin="*"）
+  const { btnID, state } = d;
+
+  // 你協定裡 0 表示 none（可當作「全放開」）
+  if (btnID === 0) {
+    ggAllUp();
+    return;
+  }
+
+  if (state === "down") {
+    if (ggPressed.has(btnID)) return;
+    ggPressed.add(btnID);
+    setKeysByBtn(btnID, true);
+  } else if (state === "up") {
+    if (!ggPressed.has(btnID)) return;
+    ggPressed.delete(btnID);
+    setKeysByBtn(btnID, false);
+  }
+});
+
+// 避免切分頁/切視窗卡鍵
+window.addEventListener("blur", ggAllUp);
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) ggAllUp();
+});
+
+
+
 
     // 遊戲主流程
     var intervalID
