@@ -493,6 +493,25 @@ document.addEventListener("visibilitychange", () => {
                 startLoop()
             }
         });
+
+
+
+        window.addEventListener("message", (ev) => {
+            const d = ev.data;
+            if (!d || d.type !== "gg_event") return;
+
+            const { btnID, state } = d;
+            BGM.play();
+            // 這裡設定：btn1 按下就開始
+            if (btnID === 4 && state === "down") {
+                console.log('~~ Start Game ~~')
+                setup()
+                clearInterval(intervalID);
+                startLoop()
+            }
+
+            // 其他 btnID 的 down/up 仍照你原本的 keys bridge 去寫 keys[...]（照你現有B段即可）
+        });
     }
 
     setTimeout(function(){gameProcess()},1000)
