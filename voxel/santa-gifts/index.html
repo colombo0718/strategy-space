@@ -1,4 +1,7 @@
 <style>
+    :root{
+        --ui-scale: 1;
+    }
     @font-face {
         font-family: 'Minecraft';
         src: url(../../Cubic_11_1.100_R.ttf);
@@ -13,6 +16,9 @@
         color: yellow;
         font-size: 18px;
         font-family: 'Minecraft';
+        font-size: calc(18px * var(--ui-scale));
+        line-height: 1.15; /* 建議加，避免縮放後行距太擠 */
+        pointer-events: none; /* HUD 不要擋住按鈕/點擊 */
     }    
 </style>
 <!-- <div id="canvas" style="width: 1600px;height: 900px;"></div> -->
@@ -34,6 +40,29 @@
     }
 </script>
 <script type="module">
+
+    
+const REF_W = 960;
+const REF_H = 540;
+
+function updateHudScale(){
+  // 你如果有包 canvas 的容器就換成那個 id，例如 #container / #game
+  const container = document.getElementById("container") || document.body;
+
+  const w = container.clientWidth;
+  const h = container.clientHeight;
+
+  const scale = Math.min(w / REF_W, h / REF_H);
+  const clamped = Math.max(0.6, Math.min(scale, 1.8)); // 上下限自己調
+
+  document.documentElement.style.setProperty("--ui-scale", clamped);
+}
+
+window.addEventListener("resize", updateHudScale);
+updateHudScale();
+
+
+
     import * as THREE from 'three';
     import { VOXLoader, VOXMesh } from 'three/addons/loaders/VOXLoader.js';
 
