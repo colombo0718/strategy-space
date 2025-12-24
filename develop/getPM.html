@@ -3,152 +3,57 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SS PostMessage Monitor</title>
+  <title>SS getPM</title>
   <style>
-    body{
-      margin:0;
-      font-family: system-ui, -apple-system, "Segoe UI", Arial, "Noto Sans TC", sans-serif;
-      background:#f0f0f0;
-    }
-    header{
-      padding:12px 14px;
-      background:#fff;
-      border-bottom:1px solid #ddd;
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-    header button{
-      height:34px;
-      padding:0 12px;
-      border:1px solid #bbb;
-      border-radius:6px;
-      background:#fff;
-      cursor:pointer;
-    }
-    header label{
-      display:flex;
-      align-items:center;
-      gap:6px;
-      font-size:14px;
-      color:#333;
-    }
-    header .url{
-      font-size:12px;
-      color:#666;
-      overflow-wrap:anywhere;
-    }
-    #log{
-      padding:12px 14px;
-      height: calc(100vh - 64px);
-      overflow:auto;
-      box-sizing:border-box;
-    }
-    .card{
-      background:#fff;
-      border:1px solid #ddd;
-      border-radius:10px;
+    body{ margin:0; background:#000; }
+    /* 右側輸出區：黃字、靠右、不要跟 GG 的綠字混在一起 */
+    #pm{
+      position:fixed;
+      top:0; right:0;
+      width:45vw;         /* 你可調：越小越靠右 */
+      height:100vh;
       padding:10px 12px;
-      margin-bottom:10px;
-    }
-    .meta{
-      font-size:12px;
-      color:#666;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-bottom:8px;
-    }
-    pre{
-      margin:0;
-      padding:10px;
-      border-radius:8px;
-      background:#111;
-      color:#0f0;
-      overflow:auto;
+      box-sizing:border-box;
+      color:#ffd400;
       font-family: ui-monospace, Menlo, Consolas, "JetBrains Mono", monospace;
       font-size:12px;
-      line-height:1.35;
+      line-height:1.4;
+      overflow:hidden;
+      text-align:right;
+      pointer-events:none;
+      background:transparent;
     }
+    .line{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   </style>
 </head>
 
 <body>
-  <header>
-    <strong>SS PostMessage Monitor</strong>
-
-    <label>
-      <input id="only-gg" type="checkbox" />
-      只顯示 gg_event
-    </label>
-
-    <button id="clear">Clear</button>
-
-    <span class="url" id="self-url"></span>
-  </header>
-
-  <div id="log"></div>
+  <div id="pm" aria-hidden="true"></div>
 
   <script>
-    const logEl = document.getElementById("log");
-    const onlyGG = document.getElementById("only-gg");
-    const clearBtn = document.getElementById("clear");
-    document.getElementById("self-url").textContent = location.href;
+    const pm = document.getElementById("pm");
 
-    function stamp(){
-      const d = new Date();
-      const hh = String(d.getHours()).padStart(2,'0');
-      const mm = String(d.getMinutes()).padStart(2,'0');
-      const ss = String(d.getSeconds()).padStart(2,'0');
-      const ms = String(d.getMilliseconds()).padStart(3,'0');
-      return `${hh}:${mm}:${ss}.${ms}`;
+    function addLine(text){
+      const div = document.createElement("div");
+      div.className = "line";
+      div.textContent = text;
+      pm.appendChild(div);
+
+      // 保持最多 80 行，避免越來越長
+      const maxLines = 80;
+      while (pm.children.length > maxLines) pm.removeChild(pm.firstChild);
+      pm.scrollTop = pm.scrollHeight;
     }
 
-    function pretty(data){
-      if (typeof data === "string") return data;
-      try { return JSON.stringify(data, null, 2); }
-      catch(e){ return String(data); }
-    }
-
-    function addCard({time, origin, type, data}){
-      const card = document.createElement("div");
-      card.className = "card";
-
-      const meta = document.createElement("div");
-      meta.className = "meta";
-      meta.innerHTML = `
-        <span>time: <b>${time}</b></span>
-        <span>origin: <b>${origin || "(null)"}</b></span>
-        <span>dataType: <b>${type}</b></span>
-      `;
-
-      const pre = document.createElement("pre");
-      pre.textContent = pretty(data);
-
-      card.appendChild(meta);
-      card.appendChild(pre);
-      logEl.appendChild(card);
-      logEl.scrollTop = logEl.scrollHeight;
-    }
-
-    clearBtn.addEventListener("click", () => {
-      logEl.innerHTML = "";
-    });
-
+    // 只收 gg_event，其它一律忽略（包含 metamask 那些）
     window.addEventListener("message", (ev) => {
-      const data = ev.data;
+      const d = ev.data;
+      if (!d || typeof d !== "object") return;
+      if (d.type !== "gg_event") return;
 
-      if (onlyGG.checked) {
-        if (!data || typeof data !== "object" || data.type !== "gg_event") return;
-      }
-
-      addCard({
-        time: stamp(),
-        origin: ev.origin,
-        type: typeof data,
-        data
-      });
+      // 你 GG 送的是 {type, player, btnID, state}
+      // 這裡簡化顯示成：p0 id6 down
+      addLine(`p${d.player} id${d.btnID} ${d.state}`);
     });
   </script>
 </body>
