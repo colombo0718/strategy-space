@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Emoji Flashcards</title>
+  <title>XuanXuexi Flash Card</title>
   <style>
     :root{
       --bg:#0b0f14;
@@ -13,6 +13,7 @@
       --blue:#4da3ff;
       --red:#ff5a7a;
       --border:rgba(255,255,255,.10);
+      --chip:rgba(255,255,255,.08);
     }
     *{ box-sizing:border-box; }
     body{
@@ -29,6 +30,67 @@
       width:min(560px, 92vw);
       padding:16px;
     }
+
+    /* ===== Brand Header ===== */
+    .brand{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .brand-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+    .logo{
+      width:44px;
+      height:44px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.03);
+      padding:6px;
+      flex:0 0 auto;
+      user-select:none;
+      -webkit-user-drag:none;
+    }
+    .brand-text{
+      display:flex;
+      flex-direction:column;
+      line-height:1.05;
+      min-width:0;
+    }
+    .brand-zh{
+      font-weight:800;
+      font-size:18px;
+      letter-spacing:.5px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .brand-en{
+      font-size:12px;
+      color:var(--muted);
+      letter-spacing:.6px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .brand-tag{
+      flex:0 0 auto;
+      border:1px solid var(--border);
+      background:var(--chip);
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:12px;
+      letter-spacing:.6px;
+      color:var(--text);
+      user-select:none;
+    }
+
+    /* ===== Controls Row ===== */
     .topbar{
       display:flex;
       gap:10px;
@@ -56,8 +118,10 @@
       color:var(--muted);
       font-size:12px;
       white-space:nowrap;
+      user-select:none;
     }
 
+    /* ===== Card ===== */
     .card{
       position:relative;
       background:var(--card);
@@ -126,12 +190,26 @@
     .counter{
       color:var(--muted);
       font-size:13px;
+      user-select:none;
     }
   </style>
 </head>
 
 <body>
   <div class="wrap">
+
+    <!-- ✅ Brand Header -->
+    <div class="brand">
+      <div class="brand-left">
+        <img class="logo" src="./XuanXuexi_emoji.png" alt="XuanXuexi" />
+        <div class="brand-text">
+          <div class="brand-zh">宣學習</div>
+          <div class="brand-en">XuanXuexi</div>
+        </div>
+      </div>
+      <div class="brand-tag">Flash Card</div>
+    </div>
+
     <div class="topbar">
       <div class="select">
         <select id="category"></select>
@@ -188,8 +266,7 @@
       counter: $("counter"),
     };
 
-    // 類別列表（依你 DATA.order 順序）
-    const categories = EMOJI_DB.keys(); // e.g. ["fruits", ...]
+    const categories = EMOJI_DB.keys();
     let catIndex = 0;
     let cardIndex = 0;
 
@@ -202,7 +279,6 @@
       const { key, entries } = getPackByCatIndex(catIndex);
       if (!entries.length) return;
 
-      // 防呆：索引回圈
       cardIndex = ((cardIndex % entries.length) + entries.length) % entries.length;
 
       const e = entries[cardIndex];
@@ -219,7 +295,6 @@
     function nextCard(){ cardIndex++; render(); }
     function prevCard(){ cardIndex--; render(); }
 
-    // 初始化下拉（你也可以刪掉這段，只用固定 fruits）
     function initCategorySelect(){
       els.category.innerHTML = categories
         .map(k => `<option value="${k}">${k}</option>`)
@@ -233,12 +308,9 @@
       });
     }
 
-    // 鍵盤控制
     document.addEventListener("keydown", (ev) => {
       if (ev.key === "ArrowRight") { ev.preventDefault(); nextCard(); }
       if (ev.key === "ArrowLeft")  { ev.preventDefault(); prevCard(); }
-      if (ev.key === "ArrowUp")    { ev.preventDefault(); /* 你要的話可切上一類 */ }
-      if (ev.key === "ArrowDown")  { ev.preventDefault(); /* 你要的話可切下一類 */ }
     }, { passive:false });
 
     els.next.addEventListener("click", nextCard);
