@@ -1,19 +1,14 @@
-/* style.css — GG Fruit Slot (square-first, 5 visible rows, big UI) */
+/* style.css — Emoji Slot (Ultra Minimal) */
 
 :root{
-  /* Colors */
   --bg1:#0b1020;
   --bg2:#1b2a60;
   --text:#e9eeff;
   --muted:#9aa6c8;
-  --accent:#7cf7ff;
-  --ok:#86ff9b;
-  --danger:#ff7c93;
 
-  /* Layout */
   --cols: 5;
-  --rows: 5;                 /* ✅ 每輪固定顯示 5 格 */
-  --symbol: 64px;            /* ✅ 由 app.js 動態設定 */
+  --rows: 5;            /* 轉輪可視窗固定 5 格 */
+  --symbol: 64px;       /* app.js 會動態設定 */
   --gap: 10px;
 
   --radius: 18px;
@@ -21,10 +16,7 @@
 }
 
 *{ box-sizing:border-box; }
-
-html, body{
-  height:100%;
-}
+html, body{ height:100%; }
 
 body{
   margin:0;
@@ -41,7 +33,6 @@ body{
 .wrap{
   width: min(96vmin, 980px);
   height: min(96vmin, 980px);
-
   display:flex;
   flex-direction:column;
   gap:10px;
@@ -54,42 +45,20 @@ body{
 }
 
 .topbar{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:12px;
   user-select:none;
 }
 
 .title{
-  font-weight:800;
-  letter-spacing:.2px;
-  font-size: clamp(18px, 2.4vmin, 24px);
+  font-weight:900;
+  letter-spacing:.4px;
+  font-size: clamp(18px, 2.6vmin, 26px);
   line-height:1.2;
-}
-
-.hint{
-  text-align:right;
-  font-size: clamp(12px, 1.7vmin, 14px);
-  color:var(--muted);
-  line-height:1.35;
-}
-
-.kbd{
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  background: rgba(0,0,0,.35);
-  border:1px solid rgba(255,255,255,.12);
-  padding:2px 6px;
-  border-radius:6px;
-  color:var(--text);
-  margin:0 2px;
 }
 
 /* Main panel */
 .panel{
   flex:1;
   min-height:0;
-
   display:flex;
   flex-direction:column;
   gap:10px;
@@ -101,14 +70,14 @@ body{
   overflow:hidden;
 }
 
-/* Stage takes remaining space */
+/* Stage takes almost all space now */
 .stage{
   flex:1;
   min-height:0;
 
   border-radius:16px;
   background:
-    radial-gradient(650px 240px at 50% 0%, rgba(255,210,74,.18), rgba(0,0,0,0) 60%),
+    radial-gradient(650px 240px at 50% 0%, rgba(255,210,74,.14), rgba(0,0,0,0) 60%),
     linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
   border:1px solid rgba(255,255,255,.12);
   overflow:hidden;
@@ -117,20 +86,18 @@ body{
   padding:10px;
 }
 
-/* Wrapper that fills stage area */
 .reelsWrap{
   position:absolute;
   inset:10px;
   border-radius:14px;
   overflow:hidden;
 
-  /* ✅ 讓固定高度的 reels 垂直/水平置中，空間留給上下一些 UI */
   display:flex;
   align-items:center;
   justify-content:center;
 }
 
-/* ✅ 固定可視窗高度 = rows * symbol (只顯示 5 格) */
+/* ✅ 固定可視窗高度 = rows * symbol */
 .reels{
   width:100%;
   height: calc(var(--symbol) * var(--rows));
@@ -138,12 +105,10 @@ body{
   display:grid;
   grid-template-columns: repeat(var(--cols), 1fr);
   gap: var(--gap);
-
   align-items:stretch;
   justify-items:stretch;
 }
 
-/* Each reel fits its grid cell */
 .reel{
   position:relative;
   width:100%;
@@ -157,7 +122,6 @@ body{
   user-select:none;
 }
 
-/* Strip is moved by JS translateY */
 .strip{
   position:absolute;
   left:0; top:0;
@@ -165,7 +129,6 @@ body{
   will-change: transform;
 }
 
-/* One symbol cell */
 .sym{
   height: var(--symbol);
   display:flex;
@@ -175,7 +138,7 @@ body{
   filter: drop-shadow(0 6px 10px rgba(0,0,0,.30));
 }
 
-/* ✅ Payline: always center 1 row (for 5 rows -> row index 2) */
+/* ✅ 中線框一格（中間格） */
 .payline{
   position:absolute;
   left:0;
@@ -183,28 +146,13 @@ body{
   top: 50%;
   height: var(--symbol);
   transform: translateY(-50%);
-
   pointer-events:none;
+
   border-top: 2px solid rgba(255,210,74,.55);
   border-bottom: 2px solid rgba(255,210,74,.55);
-  box-shadow: 0 0 18px rgba(255,210,74,.22);
+  box-shadow: 0 0 18px rgba(255,210,74,.20);
 }
 
-.payline::before{
-  content:"";
-  position:absolute;
-  left:0; right:0; top:0; bottom:0;
-  background: linear-gradient(90deg, rgba(255,210,74,.0), rgba(255,210,74,.12), rgba(255,210,74,.0));
-  animation: shimmer 1.4s linear infinite;
-  opacity:.75;
-}
-
-@keyframes shimmer{
-  0%{ transform: translateX(-35%); }
-  100%{ transform: translateX(35%); }
-}
-
-/* Dark top/bottom vignette for machine feel */
 .vignette{
   position:absolute;
   left:0; right:0; top:0; bottom:0;
@@ -213,67 +161,9 @@ body{
   mix-blend-mode:multiply;
 }
 
-/* HUD */
-.hud{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  align-items:center;
-  justify-content:space-between;
-}
-
-.chip{
-  background: rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.10);
-  border-radius:999px;
-  padding:10px 14px;
-  font-size: clamp(13px, 1.8vmin, 16px);
-}
-
-.chip b{ color:var(--accent); }
-
+/* ✅ 最底下一行提示文字（保留一行即可） */
 .msg{
-  font-size: clamp(13px, 1.8vmin, 16px);
-  color:var(--muted);
-  min-height:20px;
-}
-
-.msg.good{ color:var(--ok); }
-.msg.bad{ color:var(--danger); }
-
-/* Controls */
-.controls{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  justify-content:space-between;
-}
-
-button{
-  appearance:none;
-  border:1px solid rgba(255,255,255,.18);
-  background: linear-gradient(180deg, rgba(124,247,255,.20), rgba(124,247,255,.08));
-  color:var(--text);
-  padding:12px 18px;
-  border-radius:12px;
-  font-weight:800;
-  cursor:pointer;
+  font-size: clamp(14px, 2.0vmin, 18px);
+  color: var(--muted);
   user-select:none;
-  font-size: clamp(13px, 1.8vmin, 16px);
-}
-
-button:disabled{
-  opacity:.55;
-  cursor:not-allowed;
-}
-
-.danger{
-  background: linear-gradient(180deg, rgba(255,124,147,.22), rgba(255,124,147,.08));
-}
-
-.small{
-  font-size: clamp(12px, 1.6vmin, 14px);
-  color:var(--muted);
-  line-height:1.35;
-  opacity:.9;
 }
