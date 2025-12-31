@@ -3,7 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>StrategySpace</title>
+  <title>StrategySpace 戰略空間</title>
+
+  <!-- icon / favicon -->
+  <link rel="icon" href="StrategySpace_emoji.png" />
+
   <style>
     :root{
       --bg:#f0f0f0;
@@ -23,23 +27,40 @@
       margin: 0 auto;
       padding: 24px 16px 40px;
     }
+
+    /* brand row */
+    .brand{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    /* icon: no frame */
+    .logo{
+      width: 44px;
+      height: 44px;
+      display:block;
+      border: 0;
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+    }
+
     h1{
-      margin: 0 0 6px;
+      margin: 0;
       font-size: 26px;
       letter-spacing: .2px;
     }
-    .sub{
-      margin: 0 0 18px;
-      color: var(--muted);
-      font-size: 14px;
-    }
+
     .section-title{
       margin: 18px 0 10px;
       font-size: 14px;
       color: var(--muted);
       font-weight: 700;
       letter-spacing: .3px;
+      text-transform: lowercase;
     }
+
     .list{
       background: var(--card);
       border: 1px solid var(--border);
@@ -55,10 +76,8 @@
       border-top: 1px solid var(--border);
     }
     .row:first-child{ border-top:0; }
+
     .name{
-      display:flex;
-      flex-direction:column;
-      gap:4px;
       min-width: 0;
     }
     .title{
@@ -68,13 +87,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .hint{
-      font-size: 12px;
-      color: var(--muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+
     .btn{
       height: 34px;
       padding: 0 14px;
@@ -91,26 +104,46 @@
 
 <body>
   <div class="wrap">
-    <h1>StrategySpace (SS)</h1>
-    <p class="sub">Small games & dev tools.（目前先最小版列表）</p>
+    <div class="brand">
+      <img class="logo" src="StrategySpace_emoji.png" alt="StrategySpace icon">
+      <h1>戰略空間 StrategySpace</h1>
+    </div>
 
-    <div class="section-title">Games</div>
-    <div class="list" id="games-list">
+    <div class="section-title">emoji</div>
+    <div class="list" id="emoji-list">
+      <div class="row">
+        <div class="name">
+          <div class="title">dino</div>
+        </div>
+        <button class="btn" data-play="dino">Play</button>
+      </div>
+    </div>
+
+    <div class="section-title">voxel</div>
+    <div class="list" id="voxel-list">
       <div class="row">
         <div class="name">
           <div class="title">santa-gifts</div>
-          <div class="hint">/voxel/santa-gifts/index.html</div>
         </div>
         <button class="btn" data-play="santa">Play</button>
       </div>
     </div>
 
-    <div class="section-title">Develop</div>
-    <div class="list" id="dev-list">
+    <div class="section-title">solid</div>
+    <div class="list" id="solid-list">
+      <div class="row">
+        <div class="name">
+          <div class="title">puck</div>
+        </div>
+        <button class="btn" data-play="puck">Play</button>
+      </div>
+    </div>
+
+    <div class="section-title">debug</div>
+    <div class="list" id="debug-list">
       <div class="row">
         <div class="name">
           <div class="title">getPM (PostMessage Monitor)</div>
-          <div class="hint">/develop/getPM.html</div>
         </div>
         <button class="btn" data-play="getpm">Play</button>
       </div>
@@ -120,6 +153,8 @@
   <script>
     const URLS = {
       santa: "https://strategy-space.vercel.app/voxel/santa-gifts/index.html",
+      puck:  "https://strategy-space.vercel.app/solid/puck.html",
+      dino:  "https://strategy-space.vercel.app/emoji/dino.html",
       getpm: "https://strategy-space.vercel.app/develop/getPM.html"
     };
 
@@ -129,10 +164,8 @@
 
     function play(url){
       if (isInIframe()) {
-        // 在 GG 的 iframe 裡：通知外層載入（由 GG 負責）
         window.parent.postMessage({ type: "ss_open", url }, "*");
       } else {
-        // 獨立開：先直接開目標頁
         location.href = url;
       }
     }
