@@ -181,16 +181,38 @@
     }
   });
 
-  // 如果 GG 用 postMessage 丟 action，也支援 "1"/"START"/"A"
-  window.addEventListener("message", (event) => {
-    const data = event.data;
-    if (!data || typeof data !== "object") return;
-    if (data.type === "action") {
-      const act = String(data.action || "").toUpperCase();
-      if (act === "1" || act === "START" || act === "A" || act === "SPIN") spin();
-    }
-  });
+// ✅ 支援 GG 通訊協定：{ type:"gg_event", player:0, btnID:1~8, state:"down"/"up" }
+const GG_ALLOWED_ORIGINS = new Set([
+  "https://game-geek-kappa.vercel.app",
+  // 你若有其他正式網域再加，開發時要測 localhost 也可先加
+  // "http://localhost:5500",
+]);
 
+window.addEventListener("message", (event) => {
+  // （建議）來源檢查：避免別的網站亂丟 message
+  if (!GG_ALLOWED_ORIGINS.has(event.origin)) return;
+
+  const data = event.data;
+  if (!data || typeof data !== "object") return;
+
+  // 1) ✅ 新協定：gg_event
+  if (data.type === "gg_event") {
+    const btnID = Number(data.btnID);
+    const state = String(data.state || "");
+
+    // 你現在只要做到「按 1 開始轉」
+    if (btnID === 1 && state === "down") {
+      spin();
+    }
+    return;
+  }
+
+  // 2) （保留）舊測試協定：action
+  if (data.type === "action") {
+    const act = String(data.action || "").toUpperCase();
+    if (act === "1" || act === "START" || act === "A" || act === "SPIN") spin();
+  }
+});
   // Relayout
   let lastSymbol = 0;
   function relayout(){
