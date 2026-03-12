@@ -107,20 +107,132 @@
 .battle-table td {
     text-align: center;
     vertical-align: middle;
-    font-size: 30px;
+    font-size: 24px;
     padding: 4px 4px;
 }
 
 .battle-table td.dragon,
 .battle-table td.dragon-skill,
 .battle-table td.dragon-hp {
-    font-size: 60px;
+    font-size: 48px;
+}
+
+
+        .battle-message-box {
+            margin-top: 12px;
+            padding: 8px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .msg {
+            margin-bottom: 8px;
+        }
+
+        .msg-avatar {
+            margin-right: 6px;
+        }
+
+        .system-msg .msg-avatar,
+        .dragon-msg .msg-avatar,
+        .ally-msg .msg-avatar {
+            display: inline-block;
+            width: 24px;
+            text-align: center;
+        }
+
+.game-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.battle-card,
+.message-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 16px;
+    line-height: 1.8;
+}
+
+.message-card > div {
+    margin-bottom: 8px;
+}
+
+.message-card > div:last-child {
+    margin-bottom: 0;
+}
+
+
+.desktop-panel-tab {
+    position: absolute;
+    left: 12px;
+    bottom: 8px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.75);
+}
+
+.mobile-tabbar {
+    display: none;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #1a1a1a;
+    border-top: 1px solid rgba(255,255,255,0.15);
+}
+
+.mobile-tabbar-inner {
+    display: flex;
+}
+
+.mobile-tabbar button {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: #ddd;
+    padding: 12px 8px;
+    font-size: 15px;
+}
+
+.mobile-tabbar button.active {
+    color: #fff;
+    font-weight: bold;
+    background: rgba(255,255,255,0.08);
+}
+
+@media (max-width: 768px) {
+    .panel {
+        display: none;
+    }
+
+    .panel.active {
+        display: block;
+    }
+
+    .desktop-panel-tab {
+        display: none;
+    }
+
+    .mobile-tabbar {
+        display: block;
+    }
+}
+
+.panel {
+    flex: 1;
+    min-width: 0;
+    border-right: 1px solid rgba(255,255,255,0.15);
+    padding: 16px;
+    position: relative;
 }
     </style>
 </head>
 <body>
     <!-- 左：規則 -->
-    <div class="panel rules-panel">
+    <div class="panel rules-panel" data-panel="rules">
     <img class="promo-image" src="cover.jpg" alt="法師鬥惡龍宣傳圖">
 
     <div class="rule-block">
@@ -158,33 +270,100 @@
             <li>惡龍：20 HP</li>
         </ul>
     </div>
+    <div class="desktop-panel-tab">📜 規則</div>
 </div>
 
     <!-- 中：遊戲 -->
-<div class="panel game-panel">
-<table class="battle-table">
-    <tr>
-        <td class="hp mageA" id="mageA-hp">❤️5</td>
-        <td class="mage mageA" id="mageA">🧙</td>
-        <td class="skill mageA" id="mageA-skill">👉⚡</td>
-        <td class="empty"></td>
-        <td class="skill dragon" id="dragon-skill" rowspan="2">🔥</td>
-        <td class="dragon" id="dragon" rowspan="2">🐉</td>
-        <td class="hp dragon" id="dragon-hp" rowspan="2">❤️20</td>
-    </tr>
-    <tr>
-        <td class="hp mageB" id="mageB-hp">❤️5</td>
-        <td class="mage mageB" id="mageB">🧙</td>
-        <td class="skill mageB" id="mageB-skill">👄❓</td>
-        <td class="empty"></td>
-        <td class="dragon empty-dragon-space"></td>
-    </tr>
-</table>
+<div class="panel game-panel" data-panel="battle">
+    <div class="battle-card">
+        <table class="battle-table">
+            <tr>
+                <td class="hp mageA" id="mageA-hp">❤️5</td>
+                <td class="mage mageA" id="mageA">🧙</td>
+                <td class="skill mageA" id="mageA-skill">👉⚡</td>
+                <td class="empty"></td>
+                <td class="skill dragon" id="dragon-skill" rowspan="2">🔥</td>
+                <td class="dragon" id="dragon" rowspan="2">🐉</td>
+                <td class="hp dragon" id="dragon-hp" rowspan="2">❤️20</td>
+            </tr>
+            <tr>
+                <td class="hp mageB" id="mageB-hp">❤️5</td>
+                <td class="mage mageB" id="mageB">🧙</td>
+                <td class="skill mageB" id="mageB-skill">👄❓</td>
+                <td class="empty"></td>
+                <td class="dragon empty-dragon-space"></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="message-card">
+        <div class="msg system-msg">
+            <span class="msg-avatar">📜:</span>
+            <span class="msg-text">
+                火光在戰場中央翻湧，惡龍張開雙翼逼近。你剛施放出一道閃電，隊友則仍在低聲詠唱，似乎還不打算立刻亮出底牌。
+            </span>
+        </div>
+
+        <div class="msg dragon-msg">
+            <span class="msg-avatar">🐲:</span>
+            <span class="msg-text">
+                愚蠢的法師……你們真以為靠這點小把戲，就能撼動我的火焰嗎？
+            </span>
+        </div>
+
+        <div class="msg ally-msg">
+            <span class="msg-avatar">🤖:</span>
+            <span class="msg-text">
+                我先保留法術種類，不讓牠看穿節奏。你這回合已經出手了，若下一拍牠改成噴火，我可以考慮轉成護盾。
+            </span>
+        </div>
+        <div class="msg player-msg">
+            <span class="msg-avatar">🙂:</span>
+            <span class="msg-text">
+                先穩一點，我不想被牠騙出雙盾。如果下一拍還是高壓節奏，我們就先保命，等安全回合再考慮雙閃電。
+            </span>
+        </div>
+    </div>
+    <div class="desktop-panel-tab">⚔️ 對戰</div>
 </div>
 
+
+
     <!-- 右：紀錄 / AI -->
-    <div class="panel">
+    <div class="panel" data-panel="dashboard">
         <div class="placeholder">🤖</div>
+        <div class="desktop-panel-tab">📊 儀表</div>
     </div>
+
+    <!-- 手機底部 tab -->
+    <nav class="mobile-tabbar">
+        <div class="mobile-tabbar-inner">
+            <button class="tab-btn active" data-target="rules">📜規則</button>
+            <button class="tab-btn" data-target="battle">⚔️對戰</button>
+            <button class="tab-btn" data-target="dashboard">📊儀表</button>
+        </div>
+    </nav>
+
+    <script>
+    const tabButtons = document.querySelectorAll(".tab-btn");
+    const panels = document.querySelectorAll(".panel");
+
+    function switchPanel(target) {
+        panels.forEach(panel => {
+            panel.classList.toggle("active", panel.dataset.panel === target);
+        });
+        tabButtons.forEach(btn => {
+            btn.classList.toggle("active", btn.dataset.target === target);
+        });
+    }
+
+    tabButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            switchPanel(btn.dataset.target);
+        });
+    });
+
+    switchPanel("rules");
+    </script>
 </body>
 </html>
