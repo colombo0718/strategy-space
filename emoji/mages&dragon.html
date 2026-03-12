@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>法師鬥惡龍 Mage vs Dragon</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            font-family: "Microsoft JhengHei", sans-serif;
+            background: #111;
+            color: #f5f5f5;
+        }
+
+        .panel {
+            flex: 1;
+            min-width: 0;
+            border-right: 1px solid rgba(255,255,255,0.15);
+            padding: 16px;
+        }
+
+        .panel:last-child {
+            border-right: none;
+        }
+
+        .placeholder {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 96px;
+        }
+
+        .rules-panel {
+            overflow-y: auto;
+        }
+
+        .promo-image {
+            width: 100%;
+            display: block;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .game-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .game-subtitle {
+            font-size: 14px;
+            color: #d0d0d0;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .rule-block {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+
+        .rule-block h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #ffd36b;
+        }
+
+        .rule-block p,
+        .rule-block li {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #f0f0f0;
+        }
+
+        .rule-block ul {
+            padding-left: 20px;
+        }
+
+        .status-demo {
+            font-family: monospace;
+            white-space: pre-line;
+            background: rgba(0,0,0,0.25);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 8px;
+            line-height: 1.7;
+        }
+    </style>
+</head>
+<body>
+    <!-- 左：規則 -->
+    <div class="panel rules-panel">
+    <img class="promo-image" src="cover.jpg" alt="法師鬥惡龍宣傳圖">
+
+    <div class="rule-block">
+        <h3>🎯 遊戲目標</h3>
+        <p>
+            兩名法師合作打倒惡龍，惡龍死亡則法師方勝利，並依個人造成的傷害來計分。<br>
+            若兩名法師都死亡，則判定失敗，兩人都記 -10 分。
+        </p>
+
+        <h3>🔁 回合流程</h3>
+        <p>
+            法師與惡龍三方選擇動作，三者皆選定後同時施放技能，並結算傷害與效果
+        </p>
+
+        <h3>🧙 法師行動</h3>
+        <ul>
+            <li>⭕ 無：不做任何事</li>
+            <li>⚡ 閃電：對惡龍造成 1 點傷害</li>
+            <li>🛡️ 護盾：抵擋惡龍攻擊。單人護盾時，總傷害減半後由兩人平分；雙人護盾時，完全擋下攻擊</li>
+            <li>💚 補血：幫隊友回 2 HP</li>
+        </ul>
+        <p>所有法術都要先詠唱👄 1 回合，一旦開始詠唱，下一回合就一定會施放，不能取消。</p>
+
+        <h3>🐉 惡龍行動</h3>
+        <ul>
+            <li>⭕ 無：不做任何事</li>
+            <li>🔥 噴火：先連續吸氣👃 2 回合，之後可噴火造成 8 傷害</li>
+            <li>💥 爪擊：先抬手✋ 1 回合，之後可爪擊造成 4 傷害</li>
+        </ul>
+        <p>惡龍可以中途選擇無動作，自行打斷不放招，或選擇另一種準備動作。</p>
+
+        <h3>❤️ 初始血量</h3>
+        <ul>
+            <li>法師：5 HP</li>
+            <li>惡龍：20 HP</li>
+        </ul>
+    </div>
+</div>
+
+    <!-- 中：遊戲 -->
+    <div class="panel">
+        <div class="placeholder">⚔️</div>
+    </div>
+
+    <!-- 右：紀錄 / AI -->
+    <div class="panel">
+        <div class="placeholder">🤖</div>
+    </div>
+</body>
+</html>
