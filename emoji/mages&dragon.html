@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐉</text></svg>">
     <title>法師鬥惡龍 Mage vs Dragon</title>
     <style>
         * {
@@ -97,6 +98,24 @@
             margin-top: 8px;
             line-height: 1.7;
         }
+
+.battle-table {
+    margin: 0 auto;
+    border-collapse: collapse;
+}
+
+.battle-table td {
+    text-align: center;
+    vertical-align: middle;
+    font-size: 30px;
+    padding: 4px 4px;
+}
+
+.battle-table td.dragon,
+.battle-table td.dragon-skill,
+.battle-table td.dragon-hp {
+    font-size: 60px;
+}
     </style>
 </head>
 <body>
@@ -119,11 +138,11 @@
         <h3>🧙 法師行動</h3>
         <ul>
             <li>⭕ 無：不做任何事</li>
-            <li>⚡ 閃電：對惡龍造成 1 點傷害</li>
-            <li>🛡️ 護盾：抵擋惡龍攻擊。單人護盾時，總傷害減半後由兩人平分；雙人護盾時，完全擋下攻擊</li>
-            <li>💚 補血：幫隊友回 2 HP</li>
+            <li>⚡ 閃電：單人施放造成 1 點傷害；若兩名法師同回合同時施放總傷害提升為 4 點</li>
+            <li>🛡️ 護盾：單人護盾時，總傷害減半後由兩人平分；雙人護盾時，反彈全部傷害</li>
+            <li>💚 補血：幫隊友回 2 HP；若兩名法師同回合同時施放補血，兩名法師各回 3 HP</li>
         </ul>
-        <p>所有法術都要先詠唱👄 1 回合，一旦開始詠唱，下一回合就一定會施放，不能取消。</p>
+        <p>所有法術都要先詠唱👄 1 回合，接著下一回合就一定會施放👉，不能取消。</p>
 
         <h3>🐉 惡龍行動</h3>
         <ul>
@@ -142,9 +161,26 @@
 </div>
 
     <!-- 中：遊戲 -->
-    <div class="panel">
-        <div class="placeholder">⚔️</div>
-    </div>
+<div class="panel game-panel">
+<table class="battle-table">
+    <tr>
+        <td class="hp mageA" id="mageA-hp">❤️5</td>
+        <td class="mage mageA" id="mageA">🧙</td>
+        <td class="skill mageA" id="mageA-skill">👉⚡</td>
+        <td class="empty"></td>
+        <td class="skill dragon" id="dragon-skill" rowspan="2">🔥</td>
+        <td class="dragon" id="dragon" rowspan="2">🐉</td>
+        <td class="hp dragon" id="dragon-hp" rowspan="2">❤️20</td>
+    </tr>
+    <tr>
+        <td class="hp mageB" id="mageB-hp">❤️5</td>
+        <td class="mage mageB" id="mageB">🧙</td>
+        <td class="skill mageB" id="mageB-skill">👄❓</td>
+        <td class="empty"></td>
+        <td class="dragon empty-dragon-space"></td>
+    </tr>
+</table>
+</div>
 
     <!-- 右：紀錄 / AI -->
     <div class="panel">
