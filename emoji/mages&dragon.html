@@ -12,13 +12,20 @@
             padding: 0;
         }
 
-        body {
-            min-height: 100vh;
-            display: flex;
-            font-family: "Microsoft JhengHei", sans-serif;
-            background: #111;
-            color: #f5f5f5;
-        }
+body {
+    min-height: 100dvh;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    font-family: "Microsoft JhengHei", sans-serif;
+    background: #111;
+    color: #f5f5f5;
+}
+
+.app {
+    display: flex;
+    min-height: 0;
+    overflow: hidden;
+}
 
         .panel {
             flex: 1;
@@ -69,7 +76,6 @@
             border: 1px solid rgba(255,255,255,0.08);
             border-radius: 12px;
             padding: 14px;
-            margin-bottom: 12px;
         }
 
         .rule-block h3 {
@@ -175,11 +181,6 @@
 }
 
 .mobile-tabbar {
-    display: none;
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
     background: #1a1a1a;
     border-top: 1px solid rgba(255,255,255,0.15);
 }
@@ -216,8 +217,13 @@
         display: none;
     }
 
-    .mobile-tabbar {
+    /* .mobile-tabbar {
         display: block;
+    } */
+    .app {
+        display: block;
+        min-height: 0;
+        overflow: auto;
     }
 }
 
@@ -231,20 +237,17 @@
     </style>
 </head>
 <body>
+    <div class="app">
     <!-- 左：規則 -->
     <div class="panel rules-panel" data-panel="rules">
     <img class="promo-image" src="cover.jpg" alt="法師鬥惡龍宣傳圖">
 
     <div class="rule-block">
-        <h3>🎯 遊戲目標</h3>
+        <h3>🎯 遊戲介紹</h3>
         <p>
-            兩名法師合作打倒惡龍，惡龍死亡則法師方勝利，並依個人造成的傷害來計分。<br>
-            若兩名法師都死亡，則判定失敗，兩人都記 -10 分。
-        </p>
-
-        <h3>🔁 回合流程</h3>
-        <p>
-            法師與惡龍三方選擇動作，三者皆選定後同時施放技能，並結算傷害與效果
+            [法師鬥惡龍]是一款兩名法師合作對抗惡龍的回合制策略遊戲。<br>
+            每回合法師與惡龍三方先各自選擇動作，再同時施放技能並結算傷害與效果。<br>
+            擊敗惡龍即獲勝；若兩名法師都死亡則失敗。
         </p>
 
         <h3>🧙 法師行動</h3>
@@ -264,13 +267,8 @@
         </ul>
         <p>惡龍可以中途選擇無動作，自行打斷不放招，或選擇另一種準備動作。</p>
 
-        <h3>❤️ 初始血量</h3>
-        <ul>
-            <li>法師：5 HP</li>
-            <li>惡龍：20 HP</li>
-        </ul>
+
     </div>
-    <div class="desktop-panel-tab">📜 規則</div>
 </div>
 
     <!-- 中：遊戲 -->
@@ -324,7 +322,6 @@
             </span>
         </div>
     </div>
-    <div class="desktop-panel-tab">⚔️ 對戰</div>
 </div>
 
 
@@ -332,9 +329,8 @@
     <!-- 右：紀錄 / AI -->
     <div class="panel" data-panel="dashboard">
         <div class="placeholder">🤖</div>
-        <div class="desktop-panel-tab">📊 儀表</div>
     </div>
-
+    </div>
     <!-- 手機底部 tab -->
     <nav class="mobile-tabbar">
         <div class="mobile-tabbar-inner">
@@ -345,25 +341,45 @@
     </nav>
 
     <script>
-    const tabButtons = document.querySelectorAll(".tab-btn");
-    const panels = document.querySelectorAll(".panel");
+const tabButtons = document.querySelectorAll(".tab-btn");
+const panels = document.querySelectorAll(".panel");
 
-    function switchPanel(target) {
+function isMobileView() {
+    return window.innerWidth <= 768;
+}
+
+function switchPanel(target) {
+    if (isMobileView()) {
         panels.forEach(panel => {
             panel.classList.toggle("active", panel.dataset.panel === target);
         });
-        tabButtons.forEach(btn => {
-            btn.classList.toggle("active", btn.dataset.target === target);
-        });
+    } else {
+        panels.forEach(panel => panel.classList.add("active"));
     }
 
     tabButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
-            switchPanel(btn.dataset.target);
-        });
+        btn.classList.toggle("active", btn.dataset.target === target);
     });
+}
 
-    switchPanel("rules");
-    </script>
+tabButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+        if (isMobileView()) {
+            switchPanel(btn.dataset.target);
+        }
+    });
+});
+
+window.addEventListener("resize", () => {
+    if (isMobileView()) {
+        const activeBtn = document.querySelector(".tab-btn.active");
+        switchPanel(activeBtn ? activeBtn.dataset.target : "rules");
+    } else {
+        switchPanel("rules");
+    }
+});
+
+switchPanel("rules");
+</script>
 </body>
 </html>
