@@ -12,10 +12,15 @@
             padding: 0;
         }
 
+html, body {
+    height: 100%;
+}
+
 body {
-    min-height: 100dvh;
+    height: 100dvh;
+    overflow: hidden;
     display: grid;
-    grid-template-rows: 1fr auto;
+    grid-template-rows: minmax(0, 1fr) auto;
     font-family: "Microsoft JhengHei", sans-serif;
     background: #111;
     color: #f5f5f5;
@@ -24,14 +29,18 @@ body {
 .app {
     display: flex;
     min-height: 0;
+    min-width: 0;
     overflow: hidden;
 }
 
         .panel {
             flex: 1;
             min-width: 0;
+            min-height: 0;
             border-right: 1px solid rgba(255,255,255,0.15);
             padding: 16px;
+            position: relative;
+            overflow: auto;
         }
 
         .panel:last-child {
@@ -53,8 +62,9 @@ body {
         .promo-image {
             width: 100%;
             display: block;
-            border-radius: 12px;
+            border-radius: 10px;
             margin-bottom: 16px;
+            height: 40%;
         }
 
         .game-title {
@@ -71,27 +81,29 @@ body {
             margin-bottom: 20px;
         }
 
-        .rule-block {
+        .intro-card {
             background: rgba(255,255,255,0.06);
             border: 1px solid rgba(255,255,255,0.08);
             border-radius: 12px;
             padding: 14px;
+                height: 55%;
+    overflow: auto;
         }
 
-        .rule-block h3 {
+        .intro-card h3 {
             font-size: 18px;
             margin-bottom: 8px;
             color: #ffd36b;
         }
 
-        .rule-block p,
-        .rule-block li {
+        .intro-card p,
+        .intro-card li {
             font-size: 15px;
             line-height: 1.7;
             color: #f0f0f0;
         }
 
-        .rule-block ul {
+        .intro-card ul {
             padding-left: 20px;
         }
 
@@ -205,8 +217,18 @@ body {
 }
 
 @media (max-width: 768px) {
+    .app {
+        display: block;
+        min-height: 0;
+        overflow: hidden;
+    }
+
     .panel {
         display: none;
+        height: 100%;
+        min-height: 0;
+        overflow: auto;
+        border-right: none;
     }
 
     .panel.active {
@@ -215,15 +237,6 @@ body {
 
     .desktop-panel-tab {
         display: none;
-    }
-
-    /* .mobile-tabbar {
-        display: block;
-    } */
-    .app {
-        display: block;
-        min-height: 0;
-        overflow: auto;
     }
 }
 
@@ -240,35 +253,35 @@ body {
     <div class="app">
     <!-- 左：規則 -->
     <div class="panel rules-panel" data-panel="rules">
-    <img class="promo-image" src="cover.jpg" alt="法師鬥惡龍宣傳圖">
+        <img class="promo-image" src="cover.jpg" alt="法師鬥惡龍宣傳圖">
 
-    <div class="rule-block">
-        <h3>🎯 遊戲介紹</h3>
-        <p>
-            [法師鬥惡龍]是一款兩名法師合作對抗惡龍的回合制策略遊戲。<br>
-            每回合法師與惡龍三方先各自選擇動作，再同時施放技能並結算傷害與效果。<br>
-            擊敗惡龍即獲勝；若兩名法師都死亡則失敗。
-        </p>
+        <div class="intro-card">
+            <h3>🎯 遊戲介紹</h3>
+            <p>
+                [法師鬥惡龍] 是一款兩名法師合作對抗惡龍的回合制策略遊戲。<br>
+                每回合法師與惡龍三方先各自選擇動作，再同時施放技能並結算傷害與效果。<br>
+                擊敗惡龍即獲勝；若兩名法師都死亡則失敗。
+            </p>
 
-        <h3>🧙 法師行動</h3>
-        <ul>
-            <li>⭕ 無：不做任何事</li>
-            <li>⚡ 閃電：單人施放造成 1 點傷害；若兩名法師同回合同時施放總傷害提升為 4 點</li>
-            <li>🛡️ 護盾：單人護盾時，總傷害減半後由兩人平分；雙人護盾時，反彈全部傷害</li>
-            <li>💚 補血：幫隊友回 2 HP；若兩名法師同回合同時施放補血，兩名法師各回 3 HP</li>
-        </ul>
-        <p>所有法術都要先詠唱👄 1 回合，接著下一回合就一定會施放👉，不能取消。</p>
+            <h3>🧙 法師行動</h3>
+            <ul>
+                <li>⭕ 無：不做任何事</li>
+                <li>⚡ 閃電：單人施放造成 1 點傷害；若兩名法師同回合同時施放總傷害提升為 4 點</li>
+                <li>🛡️ 護盾：單人護盾時，總傷害減半後由兩人平分；雙人護盾時，反彈全部傷害</li>
+                <li>💚 補血：幫隊友回 2 HP；若兩名法師同回合同時施放補血，兩名法師各回 3 HP</li>
+            </ul>
+            <p>所有法術都要先詠唱👄 1 回合，接著下一回合就一定會施放👉，不能取消。</p>
 
-        <h3>🐉 惡龍行動</h3>
-        <ul>
-            <li>⭕ 無：不做任何事</li>
-            <li>🔥 噴火：先連續吸氣👃 2 回合，之後可噴火造成 8 傷害</li>
-            <li>💥 爪擊：先抬手✋ 1 回合，之後可爪擊造成 4 傷害</li>
-        </ul>
-        <p>惡龍可以中途選擇無動作，自行打斷不放招，或選擇另一種準備動作。</p>
+            <h3>🐉 惡龍行動</h3>
+            <ul>
+                <li>⭕ 無：不做任何事</li>
+                <li>🔥 噴火：先連續吸氣👃 2 回合，之後可噴火造成 8 傷害</li>
+                <li>💥 爪擊：先抬手✋ 1 回合，之後可爪擊造成 4 傷害</li>
+            </ul>
+            <p>惡龍可以中途選擇無動作，自行打斷不放招，或選擇另一種準備動作。</p>
 
 
-    </div>
+        </div>
 </div>
 
     <!-- 中：遊戲 -->
@@ -319,6 +332,12 @@ body {
             <span class="msg-avatar">🙂:</span>
             <span class="msg-text">
                 先穩一點，我不想被牠騙出雙盾。如果下一拍還是高壓節奏，我們就先保命，等安全回合再考慮雙閃電。
+            </span>
+        </div>
+        <div class="msg hint-msg">
+            <span class="msg-avatar">💡:</span>
+            <span class="msg-text">
+                請選擇你本回合要詠唱的法術。你可以施放閃電搶先壓血，也可以保留護盾或補血來應對惡龍下一步的攻勢。
             </span>
         </div>
     </div>
