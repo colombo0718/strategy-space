@@ -247,13 +247,22 @@ function submit(){
   }
 
   // 攻擊：怪獸自帶「基礎攻擊」永遠可用（一般攻擊字 attack/hit…免卡）；攻擊動詞卡＝加成、防禦動詞卡＝強化自己
-  const genAtk=/\b(attack|attacks|attacking|hit|hits|hitting|fight|fights|strike|strikes|punch|punches|smash|smashes|charge|charges)\b/.test(text.toLowerCase());
+  const GEN_ATK=new Set("attack attacks attacking hit hits hitting fight fights strike strikes punch punches smash smashes charge charges".split(" "));
+  const genAtk=words.some(w=>GEN_ATK.has(w));
   const atkCard=(verbCard&&verbCard.eff.some(e=>e[0]==="🗡️"&&e[1]>0))?verbCard:null;
   if(verbCard||genAtk){
-    const subject=S.me.board.find(m=>!m.used&&has(m.w));
+    // 用動詞位置分前後：主詞在動詞前、受詞在動詞後（英文 SVO）——解決雙方同名怪獸的誤打
+    const vpos=words.findIndex(w=> (verbCard && w.slice(0,Math.min(3,verbCard.w.length))===verbCard.w.toLowerCase().slice(0,Math.min(3,verbCard.w.length))) || GEN_ATK.has(w));
+    const before=vpos<0?words:words.slice(0,vpos), after=vpos<0?words:words.slice(vpos+1);
+    const inArr=(arr,w)=>arr.includes(w.toLowerCase());
+    const subject=S.me.board.find(m=>!m.used&&inArr(before,m.w)) || S.me.board.find(m=>!m.used&&has(m.w));
     if(!subject){ sys("句子裡要有你「場上、且本回合可行動」的怪獸（先召喚一隻）"); return; }
     if(!atkCard&&!genAtk){ defendMove(subject,verbCard); return; }   // 純防禦/輔助動詞卡 → 強化自己
-    const target=S.opp.board.find(m=>has(m.w));
+    const notSub=m=>m.w.toLowerCase()!==subject.w.toLowerCase();
+    const target = S.opp.board.find(m=>inArr(after,m.w)&&notSub(m))   // 動詞後、且非主詞同名 → 最準
+                || S.opp.board.find(m=>inArr(after,m.w))              // 動詞後任一（如「tiger dash tiger」蓄意打同名）
+                || S.opp.board.find(m=>has(m.w)&&notSub(m))           // 退：句中提到、非同名
+                || S.opp.board.find(m=>has(m.w));                     // 最後才允許同名
     if(!target && S.opp.board.length>0){ sys("敵方場上有怪獸擋著——句子裡要指定一隻敵方怪獸（先打倒牠們才能直擊召喚師）"); return; }
     resolveAttack(subject,atkCard,target||null); return;            // atkCard=null → 基礎攻擊（免卡）
   }
