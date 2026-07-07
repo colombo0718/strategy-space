@@ -114,7 +114,7 @@
         <button class="end" id="end">結束回合 ⏭</button>
         <button class="ghost" id="reset" title="重開">🔄</button>
       </div>
-      <div class="hint" id="playhint">召喚：寫出手牌<b>名詞</b>（如 <b>Cat</b>）　·　強化自己：<b>名詞＋正向形容詞</b>（如 <b>Strong Tiger</b>）　·　弱化對方：<b>Your＋對方怪獸＋負向形容詞</b>（如 <b>Your Panda sick</b>）　·　攻擊：<b>你的怪獸＋攻擊動詞＋敵方</b>（如 <b>Cat bites Dragon</b>）　·　防禦：<b>你的怪獸＋防禦動詞</b>（如 <b>Penguin blocks</b>）<br>⚠️ 形容詞沒說「Your」預設給自己——負向形容詞會誤傷自己的怪獸　·　卡片點一下可放大</div>
+      <div class="hint" id="playhint">召喚：寫出手牌<b>名詞</b>（如 <b>Cat</b>）　·　<b>正向</b>形容詞強化自己（如 <b>Strong Tiger</b>）　·　<b>負向</b>形容詞弱化對方（如 <b>Panda sick</b>）　·　攻擊：<b>你的怪獸＋攻擊動詞＋敵方</b>（如 <b>Cat bites Dragon</b>）　·　防禦：<b>你的怪獸＋防禦動詞</b>（如 <b>Penguin blocks</b>）<br>卡片點一下可放大看清楚</div>
     </div>
   </div>
 
@@ -210,30 +210,26 @@ function submit(){
   const verbCard=S.me.hand.find(c=>isVerb(c)&&vmatch(c.w));
   const nounCard=S.me.hand.find(c=>isNoun(c)&&has(c.w));
 
-  // ── 形容詞：「(誰的)名詞＋形容詞」→ 永久生效、常駐疊在怪獸下 ──
-  //   指定對象：說 your/enemy/their… → 對方；沒指定 → 預設自己（負向形容詞會誤傷自己）──
+  // ── 形容詞：「名詞＋形容詞」→ 永久生效、常駐疊在怪獸下 ──
+  //   一刀切（用數值判正負）：正向只強化自己、負向只弱化對方 ──
   if(adjCard){
     const eff=adjCard.eff.map(([ic,v])=>`${ic}${v>=0?"+":""}${v}`).join(" ");
-    const neg=adjCard.eff.some(([ic,v])=>v<0);
-    const lc=text.toLowerCase();
-    const toOpp = /\b(your|yours|their|theirs|enemy|enemies|opponent|opponents)\b/.test(lc) && !/\b(my|mine|own)\b/.test(lc);
-    if(toOpp){                                           // 指定對方 → debuff/buff 對方怪獸
+    const neg=adjCard.eff.some(([ic,v])=>v<0);          // 有負值＝負向形容詞
+    if(neg){                                            // 負向 → 弱化對方場上點名的怪獸
       const mon=S.opp.board.find(m=>has(m.w));
-      if(!mon){ sys("你指定了對方的怪獸，但對方場上沒有這隻——句子要點名一隻對方<b>場上</b>的怪獸（如 <b>Your Panda sick</b>）"); return; }
+      if(!mon){ sys(`「${adjCard.w}」是負向形容詞、拿來<b>弱化對方</b>——句子要點名一隻對方<b>場上</b>的怪獸（如 <b>Panda ${adjCard.w.toLowerCase()}</b>）`); return; }
       attachAdj(mon,adjCard); S.me.hand=S.me.hand.filter(x=>x!==adjCard);
-      sys(`${neg?"☠️":"✨"} 對方的 ${mon.w} 被疊上「${adjCard.w}」（${neg?"弱化":"強化"}·常駐）：${eff}`); render(); return;
+      sys(`☠️ 對方的 ${mon.w} 被弱化「${adjCard.w}」：${eff}（常駐）`); render(); return;
     }
-    // 沒指定 → 對自己（說了負向又沒加 Your，就是誤傷自己）
+    // 正向 → 強化自己（在場的、或順手召喚一隻）
     let mon=S.me.board.find(m=>has(m.w));
     if(!mon && nounCard){
       if(S.me.board.length>=MAXB){ sys(`你場上滿了（最多 ${MAXB} 隻），無法再召喚`); return; }
       mon=summon(nounCard);
     }
-    if(!mon){ sys("形容詞要搭配一個名詞——同一句要出現名詞；<b>強化自己</b>直接說 <b>Strong Tiger</b>，<b>弱化對方</b>要加 <b>Your</b>（如 <b>Your Panda sick</b>）"); return; }
+    if(!mon){ sys(`「${adjCard.w}」是正向形容詞、<b>強化自己</b>——同一句要出現你的名詞（如 <b>${adjCard.w} Tiger</b>）`); return; }
     attachAdj(mon,adjCard); S.me.hand=S.me.hand.filter(x=>x!==adjCard);
-    if(neg) sys(`⚠️ 你把「${adjCard.w}」疊到<b>自己的</b> ${mon.w} 上了（弱化·常駐）：${eff} — 想弱化對方要說 <b>Your ${mon.w} ${adjCard.w.toLowerCase()}</b>`);
-    else    sys(`✨ ${mon.w} 疊上「${adjCard.w}」永久強化：${eff}（常駐）`);
-    render(); return;
+    sys(`✨ ${mon.w} 疊上「${adjCard.w}」永久強化：${eff}（常駐）`); render(); return;
   }
 
   if(verbCard){                               // 有動詞字
