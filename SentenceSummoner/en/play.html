@@ -25,11 +25,11 @@
   .board{ flex:1; display:flex; gap:7px; align-items:center; justify-content:center; min-height:0 }
   .slot{ width:90px;height:122px;border-radius:9px;border:2px dashed #ffffff22;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:#ffffff2a;font-size:22px }
   .monwrap{ position:relative;width:90px;height:122px;flex:0 0 auto }
-  /* 形容詞疊卡：只露出「上緣」四維強化條、往下層層疊 */
-  .monwrap .modtab{ position:absolute;left:0;width:90px;height:19px;display:flex;align-items:center;justify-content:center;gap:6px;
-    background:linear-gradient(180deg,#cc9c34,#ad831e);border:1px solid #6d5111;border-radius:3px;box-shadow:0 2px 4px #0007;
-    font-size:11px;font-weight:800;color:#fff;text-shadow:0 1px 1px #0007;cursor:zoom-in;z-index:3;white-space:nowrap;overflow:hidden }
-  .mon{ width:90px;height:122px;border-radius:9px;position:absolute;top:0;left:0;cursor:zoom-in;transition:.12s;box-shadow:0 3px 7px #0007;z-index:5 }
+  /* 形容詞疊卡（同 deck 堆疊 demo）：往上疊、露出上緣「四維強化欄」，四欄與怪獸對齊 */
+  .monwrap .modstrip{ position:absolute;left:0;width:90px;height:20px;display:grid;grid-template-columns:repeat(4,1fr);align-items:center;
+    background:linear-gradient(180deg,#cc9c34,#ac821d);border:1px solid #6d5111;border-radius:4px;box-shadow:0 2px 4px #0008;cursor:zoom-in }
+  .monwrap .modstrip .mcell{ display:flex;align-items:center;justify-content:center;gap:1px;color:#fff;font-size:10px;font-weight:800;text-shadow:0 1px 1px #0008 }
+  .mon{ width:90px;height:122px;border-radius:9px;position:absolute;top:0;left:0;cursor:zoom-in;transition:.12s;box-shadow:0 3px 7px #0007 }
   .mon img{ width:100%;height:100%;border-radius:9px;display:block }
   .mon:hover{ transform:translateY(-4px);box-shadow:0 0 0 2px #ffffff55,0 5px 10px #0008 }
   .mon.used{ filter:grayscale(.6) brightness(.7) }
@@ -154,15 +154,19 @@ function deal(){
 }
 
 // ── 渲染 ──
+const STRIP_ORDER=["❤️","🗡️","🛡️","🦶"];
 function monEl(m){ const wrap=document.createElement("div"); wrap.className="monwrap";
-  const d=document.createElement("div"); d.className="mon"+(m.used?" used":"");
+  const mods=m.mods||[], STEP=20;
+  // 形容詞往上疊、露出上緣「四維強化欄」（四欄對齊怪獸）；怪獸壓最前最下、z 最高
+  mods.forEach((a,i)=>{ const map={}; a.eff.forEach(([ic,v])=>map[ic]=v);
+    const s=document.createElement("div"); s.className="modstrip"; s.title=a.w;
+    s.style.top=(-(i+1)*STEP)+"px"; s.style.zIndex=String(mods.length-i);
+    s.innerHTML=STRIP_ORDER.map(ic=> ic in map
+      ? `<span class="mcell">${ic}<b>${map[ic]>=0?"+":""}${map[ic]}</b></span>` : `<span class="mcell"></span>`).join("");
+    s.onclick=e=>{ e.stopPropagation(); inspect(a.id); }; wrap.appendChild(s); });
+  const d=document.createElement("div"); d.className="mon"+(m.used?" used":""); d.style.zIndex=String(mods.length+1);
   d.innerHTML=`<img src="${SRC(m.id)}"><span class="mhp">❤️<b>${Math.max(0,m.chp)}</b>/${m.hp}</span>`;
   d.onclick=()=>inspect(m.id); wrap.appendChild(d);
-  // 形容詞：往怪獸下方層層疊、每張只露出上緣四維強化條（直接渲染、不裁圖）
-  (m.mods||[]).forEach((a,i)=>{ const t=document.createElement("div"); t.className="modtab";
-    t.style.top=(120+i*20)+"px"; t.title=a.w;
-    t.innerHTML=a.eff.map(([ic,v])=>`${ic}${v>=0?"+":""}${v}`).join(" ");
-    t.onclick=e=>{ e.stopPropagation(); inspect(a.id); }; wrap.appendChild(t); });
   return wrap; }
 function boardRow(side){ const box=$(side==="me"?"meBoard":"oppBoard"); box.innerHTML=""; const b=S[side].board;
   for(let i=0;i<MAXB;i++){ if(b[i])box.appendChild(monEl(b[i]));
