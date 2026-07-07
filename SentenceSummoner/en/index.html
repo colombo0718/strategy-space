@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Sentence Summoner · 言出法隨</title>
+<title>造句召喚師 · Sentence Summoner</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🃏</text></svg>">
 <style>
   :root{ --gold:#e7c873; --ink:#3a2f1f; --bg:#221e1b; }
   *{box-sizing:border-box;margin:0;padding:0}
   body{ background:radial-gradient(1000px 560px at 50% -10%, #34291f 0%, var(--bg) 62%); color:#eee;
     min-height:100vh; font-family:"Segoe UI","Noto Sans TC",sans-serif; display:flex; flex-direction:column;
-    align-items:center; padding:26px 16px 40px; }
-  .hero{ position:relative; height:210px; width:340px; margin-top:6px }
-  .hero img{ position:absolute; width:118px; height:163px; border-radius:9px; box-shadow:0 8px 20px rgba(0,0,0,.5);
+    align-items:center; padding:26px 16px 44px; }
+  .hero{ position:relative; height:200px; width:340px; margin-top:4px }
+  .hero img{ position:absolute; width:114px; height:158px; border-radius:9px; box-shadow:0 8px 20px rgba(0,0,0,.5);
     left:50%; top:0; transform-origin:bottom center; transition:.25s }
   .hero img:nth-child(1){ transform:translateX(-50%) rotate(-16deg) translateY(6px) }
   .hero img:nth-child(2){ transform:translateX(-50%) rotate(0deg) }
@@ -20,31 +20,42 @@
   .hero:hover img:nth-child(1){ transform:translateX(-92%) rotate(-20deg) }
   .hero:hover img:nth-child(3){ transform:translateX(-8%) rotate(20deg) }
 
-  h1{ color:var(--gold); letter-spacing:5px; font-size:34px; text-shadow:0 0 20px rgba(231,200,115,.4); margin-top:10px }
+  h1{ color:var(--gold); letter-spacing:5px; font-size:34px; text-shadow:0 0 20px rgba(231,200,115,.4); margin-top:8px; text-align:center }
   .zh{ font-size:22px; letter-spacing:8px; color:#f0e6cf; margin-top:2px }
-  .tag{ color:#9fc3b6; font-size:15px; margin-top:14px; text-align:center; line-height:1.7; max-width:520px }
+  .tag{ color:#9fc3b6; font-size:15.5px; margin-top:14px; text-align:center; line-height:1.7; max-width:540px }
   .tag b{ color:var(--gold) }
 
-  .btns{ display:flex; gap:14px; margin-top:24px; flex-wrap:wrap; justify-content:center }
-  a.btn{ text-decoration:none; border-radius:12px; padding:14px 26px; font-size:17px; font-weight:800; letter-spacing:1px;
-    display:flex; align-items:center; gap:8px; transition:.14s }
-  a.play{ background:linear-gradient(135deg,#c9a44a,#e7c873); color:#3a2f1f; box-shadow:0 4px 14px rgba(231,200,115,.35) }
-  a.play:hover{ transform:translateY(-2px); box-shadow:0 7px 20px rgba(231,200,115,.5) }
-  a.ghost{ background:#2c2723; color:#e7c873; border:1px solid #5a4d38 }
-  a.ghost:hover{ border-color:var(--gold) }
+  /* 主入口：教學（推薦） */
+  .start{ margin-top:24px; text-decoration:none; border-radius:14px; padding:16px 40px; font-size:20px; font-weight:900; letter-spacing:1px;
+    background:linear-gradient(135deg,#c9a44a,#e7c873); color:#3a2f1f; box-shadow:0 6px 20px rgba(231,200,115,.4); display:flex; align-items:center; gap:10px; transition:.14s }
+  .start:hover{ transform:translateY(-2px); box-shadow:0 9px 26px rgba(231,200,115,.55) }
+  .start .rec{ font-size:12px; background:#3a2f1f; color:var(--gold); border-radius:20px; padding:3px 9px; letter-spacing:0 }
 
-  .how{ margin-top:34px; background:#2620; background:rgba(44,39,35,.6); border:1px solid #443c33; border-radius:14px;
-    padding:18px 22px; max-width:620px; width:100% }
-  .how h2{ color:var(--gold); font-size:15px; letter-spacing:2px; margin-bottom:12px; text-align:center }
+  .btns{ display:flex; gap:12px; margin-top:14px; flex-wrap:wrap; justify-content:center }
+  a.btn{ text-decoration:none; border-radius:12px; padding:11px 22px; font-size:15.5px; font-weight:800; letter-spacing:.5px;
+    display:flex; align-items:center; gap:7px; transition:.14s; background:#2c2723; color:#e7c873; border:1px solid #5a4d38 }
+  a.btn:hover{ border-color:var(--gold); transform:translateY(-1px) }
+  .modehint{ margin-top:12px; color:#8a938c; font-size:12.5px; text-align:center; line-height:1.7 }
+  .modehint b{ color:#b9c9bf }
+
+  .how{ margin-top:34px; background:rgba(44,39,35,.6); border:1px solid #443c33; border-radius:14px; padding:18px 22px; max-width:640px; width:100% }
+  .how h2{ color:var(--gold); font-size:15px; letter-spacing:2px; margin-bottom:14px; text-align:center }
   .steps{ display:flex; gap:12px; flex-wrap:wrap; justify-content:center }
-  .step{ flex:1; min-width:150px; background:#211d1a; border:1px solid #3a332c; border-radius:10px; padding:12px 14px; text-align:center }
+  .step{ flex:1; min-width:150px; background:#211d1a; border:1px solid #3a332c; border-radius:10px; padding:13px 14px; text-align:center }
   .step .n{ display:inline-block; width:24px; height:24px; line-height:24px; border-radius:50%; background:var(--gold); color:#3a2f1f; font-weight:900; margin-bottom:8px }
-  .step .t{ font-size:14px; color:#e9dfce; line-height:1.5 } .step .t b{ color:var(--gold) }
-  .say{ margin-top:14px; text-align:center; font-size:15px; color:#cdbff0 }
-  .say .q{ color:#fff; font-weight:700 }
+  .step .t{ font-size:13.5px; color:#e9dfce; line-height:1.55 } .step .t b{ color:var(--gold) }
+  .egg{ margin-top:14px; text-align:center; font-size:15px; color:#8ce069; font-weight:700; letter-spacing:1px }
+  .egg .g{ color:#9fc3b6; font-weight:400 } .egg .r{ color:#e58b7d }
 
-  .foot{ margin-top:30px; color:#7c7264; font-size:12px; text-align:center; line-height:1.8 }
+  /* 戰鬥特色 */
+  .feats{ margin-top:26px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center; max-width:640px }
+  .feat{ background:#211d1a; border:1px solid #3a332c; border-radius:11px; padding:12px 14px; width:150px; text-align:center }
+  .feat .e{ font-size:24px } .feat .t{ color:var(--gold); font-weight:800; font-size:13.5px; margin-top:5px }
+  .feat .d{ color:#a99; font-size:11.5px; margin-top:3px; line-height:1.5 }
+
+  .foot{ margin-top:32px; color:#7c7264; font-size:12px; text-align:center; line-height:1.9 }
   .foot .om{ color:#9f8f77 }
+  .foot a{ color:#9f8f77 }
 </style>
 </head>
 <body>
@@ -52,32 +63,38 @@
     <img src="cards/A01.png" alt=""><img src="cards/A05.png" alt=""><img src="cards/A04.png" alt="">
   </div>
   <h1>SENTENCE&nbsp;SUMMONER</h1>
-  <div class="zh">言 出 法 隨</div>
-  <div class="tag">⌨️ <b>打出咒語，召喚出戰。</b><br>拼得出卡上的字就能出招——<b>句子越通順、越有創意，招式越強。</b></div>
+  <div class="zh">造 句 召 喚 師</div>
+  <div class="tag">⌨️ <b>打出英文句子，召喚怪獸出戰。</b><br>會拼 <b>名詞</b> 就能召喚、造出 <b>SVO 句子</b> 就能攻擊——邊玩邊練發音、造句、詞性。</div>
+
+  <a class="start" href="play.html?mode=teaching">📖 開始教學 <span class="rec">新手推薦</span></a>
 
   <div class="btns">
-    <a class="btn play" href="play.html?mode=teaching">📖 教學模式</a>
-    <a class="btn play" href="play.html?mode=training">🥊 訓練模式</a>
-    <a class="btn play" href="play.html?mode=battle">⚔️ 對戰模式</a>
+    <a class="btn" href="play.html?mode=training">🥊 訓練模式</a>
+    <a class="btn" href="play.html?mode=battle">⚔️ 對戰模式</a>
+    <a class="btn" href="deck.html">🃏 卡牌一覽</a>
   </div>
-  <div class="modehint">教學＝跟著情境學規則　·　訓練＝AI 攤牌陪練　·　對戰＝蓋牌競技</div>
-  <div class="btns" style="margin-top:12px">
-    <a class="btn ghost" href="deck.html">🃏 卡牌一覽</a>
-  </div>
+  <div class="modehint"><b>教學</b>＝真實對戰帶你一步步學會規則　·　<b>訓練</b>＝AI 攤牌陪練　·　<b>對戰</b>＝蓋牌競技</div>
 
   <div class="how">
     <h2>怎 麼 玩</h2>
     <div class="steps">
-      <div class="step"><div class="n">1</div><div class="t">抽到<b>名詞</b>(角色)、<b>動詞</b>(招式)、<b>形容詞</b>(狀態)手牌</div></div>
-      <div class="step"><div class="n">2</div><div class="t">用手牌組一句英文<br><b>"Cat bites Dragon"</b></div></div>
-      <div class="step"><div class="n">3</div><div class="t"><b>打出句子</b><br>出招結算（未來 AI 天裁評句加成）</div></div>
+      <div class="step"><div class="n">1</div><div class="t"><b>召喚</b>：打出手牌的<b>名詞</b><br>「<b>Cat</b>」→ 貓上場</div></div>
+      <div class="step"><div class="n">2</div><div class="t"><b>攻擊</b>：你的怪獸＋動詞＋敵人<br>「<b>Cat bites Dragon</b>」</div></div>
+      <div class="step"><div class="n">3</div><div class="t"><b>形容詞</b>：強化自己 / 弱化敵人<br>「<b>Strong Cat</b>」「<b>Dragon sick</b>」</div></div>
     </div>
-    <div class="say">🧠 AI 天裁：<span class="q">「亂唸 ×1｜通順 ×1.3｜有創意 ×1.6 暴擊」</span></div>
+    <div class="egg">🎤 <span class="g">目標：把對方召喚師打到 HP 歸 0！</span></div>
+  </div>
+
+  <div class="feats">
+    <div class="feat"><div class="e">🛡️</div><div class="t">護盾破甲</div><div class="d">護甲每回合回滿，集火可打穿</div></div>
+    <div class="feat"><div class="e">🎲</div><div class="t">速度閃避</div><div class="d">快的怪獸擲骰躲攻擊</div></div>
+    <div class="feat"><div class="e">✨</div><div class="t">形容詞</div><div class="d">正向強化、負向詛咒砍血</div></div>
+    <div class="feat"><div class="e">🗣️</div><div class="t">語序有意義</div><div class="d">Cat bites Dog ≠ Dog bites Cat</div></div>
   </div>
 
   <div class="foot">
     英文版 · 邊玩邊練<span class="om"> 發音 × 造句 × 詞性</span><br>
-    LeafLune · kids-ai-lab　｜　美術 OpenMoji
+    LeafLune · kids-ai-lab　｜　美術 <a href="https://openmoji.org" target="_blank" rel="noopener">OpenMoji</a>
   </div>
 </body>
 </html>

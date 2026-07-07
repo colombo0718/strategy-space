@@ -129,7 +129,7 @@
 
   <!-- 右 4：LINE 式訊息框 -->
   <div class="right">
-    <div class="rtop"><span id="rtitle">📜 言出法隨</span><button class="help" id="help" title="玩法說明">❓ 玩法</button></div>
+    <div class="rtop"><span id="rtitle">📜 造句召喚師</span><button class="help" id="help" title="玩法說明">❓ 玩法</button></div>
     <div class="chat" id="chat"></div>
     <div class="compose">
       <div class="inrow">
@@ -277,14 +277,14 @@ async function teachEndTurn(){   // 玩家結束回合 → 對手真的行動一
 function deal(){
   if(MODE==="teaching"){   // 教學模式：真實回合流程 + 排好的手牌/對手腳本（見 TT）
     S={ me:{hp:SUMHP,board:[],hand:[],deck:[],discard:[]}, opp:{hp:16,board:[],hand:[],deck:[],discard:[]}, turn:"me", cp:0, gi:0 };
-    $("rtitle").textContent="📜 言出法隨 · 教學模式";
+    $("rtitle").textContent="📜 造句召喚師 · 教學模式";
     $("chat").innerHTML="";
     coach("🎓 <b>教學模式</b>：跟著提示打句子、一步步學會怎麼玩。打錯沒關係、再試就好！");
     teachStart(); return;
   }
   S={ me:{hp:SUMHP,board:[],hand:[],deck:shuffle(ALL),discard:[]}, opp:{hp:SUMHP,board:[],hand:[],deck:shuffle(ALL),discard:[]}, turn:"me" };
   for(let i=0;i<5;i++){ S.me.hand.push(S.me.deck.shift()); S.opp.hand.push(S.opp.deck.shift()); }
-  $("rtitle").textContent=`📜 言出法隨 · ${MODE_NAME}模式`;
+  $("rtitle").textContent=`📜 造句召喚師 · ${MODE_NAME}模式`;
   $("chat").innerHTML=""; render();
   sys(`⚔️ ${MODE_NAME}模式開始 — 打倒對方召喚師（HP 歸 0）獲勝`);
   if(MODE!=="battle"){ sys("🎮 你先召喚：打一句話寫出手牌裡的名詞（如 Cat）就能召喚牠上場；再說「形容詞＋名詞」（如 Strong Cat）可永久強化牠　·　規則按右上「❓ 玩法」"); if(AI_OPEN) sys("（AI 手牌攤開、可偷看牠有什麼）"); }
