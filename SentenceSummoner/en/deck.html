@@ -42,6 +42,8 @@
   .seal{ width:98px; height:98px; border-radius:50%; border:2px solid #c9a227; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.06); box-shadow:0 0 0 4px rgba(201,162,39,.22), inset 0 0 18px rgba(0,0,0,.35); text-align:center; }
   .seal .t{ font-size:15px; font-weight:900; color:#e7c873; line-height:1.15; letter-spacing:1px; text-shadow:0 1px 2px #0008; }
   .back .sub{ position:absolute; bottom:12px; width:100%; text-align:center; color:#bcd6ff; font-size:12px; letter-spacing:2px; }
+  .back .moon img{ width:28px; height:28px; display:block; }
+  .back .sub img{ width:15px; height:15px; vertical-align:-3px; }
 
   .stack{ position:relative; width:150px; height:330px; }
   .stack .card{ position:absolute; left:0; }
@@ -95,7 +97,7 @@ wrap.appendChild(stack); root.appendChild(wrap);
 const hb=document.createElement("h2"); hb.textContent="Card back"; root.appendChild(hb);
 const gb=document.createElement("div"); gb.className="grid";
 const b=document.createElement("div"); b.className="back";
-b.innerHTML=`<div class="moon">🌙</div><div class="seal"><div class="t">SENTENCE<br>SUMMONER</div></div><div class="sub">🍃 言出法隨 🍃</div>`;
+b.innerHTML=`<div class="moon"><img src="../openmoji/1F319.svg"></div><div class="seal"><div class="t">SENTENCE<br>SUMMONER</div></div><div class="sub"><img src="../openmoji/1F343.svg"> 言出法隨 <img src="../openmoji/1F343.svg"></div>`;
 gb.appendChild(b); root.appendChild(gb);
 </script>
 </body>
