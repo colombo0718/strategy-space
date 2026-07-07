@@ -4,6 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Sentence Summoner — Battle</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🃏</text></svg>">
 <script src="deck.js"></script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -22,13 +23,10 @@
   .shpnum{ font-size:11px } .turnpill{ margin-left:auto;font-size:11px;padding:3px 10px;border-radius:20px;background:#0005;color:#e7c873 }
 
   .board{ flex:1; display:flex; gap:7px; align-items:center; justify-content:center; min-height:0 }
-  .slot{ width:90px;height:122px;border-radius:9px;border:2px dashed #ffffff22;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:#ffffff33;font-size:24px }
-  .mon{ width:90px;height:122px;border-radius:9px;position:relative;flex:0 0 auto;cursor:pointer;transition:.12s;box-shadow:0 3px 7px #0007 }
+  .slot{ width:90px;height:122px;border-radius:9px;border:2px dashed #ffffff22;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:#ffffff2a;font-size:22px }
+  .mon{ width:90px;height:122px;border-radius:9px;position:relative;flex:0 0 auto;cursor:zoom-in;transition:.12s;box-shadow:0 3px 7px #0007 }
   .mon img{ width:100%;height:100%;border-radius:9px;display:block }
-  .mon:hover{ transform:translateY(-4px) }
-  .mon.atkable{ box-shadow:0 0 0 3px #8fd7a0,0 0 12px #8fd7a0aa }
-  .mon.sel{ box-shadow:0 0 0 3px #e7c873,0 0 16px #e7c873;transform:translateY(-6px) }
-  .mon.target{ box-shadow:0 0 0 3px #e58b7d,0 0 14px #e58b7d }
+  .mon:hover{ transform:translateY(-4px);box-shadow:0 0 0 2px #ffffff55,0 5px 10px #0008 }
   .mon.used{ filter:grayscale(.6) brightness(.7) }
   .mhp{ position:absolute;bottom:-3px;left:50%;transform:translateX(-50%);background:#111c;border:1px solid #000;border-radius:9px;font-size:10px;font-weight:800;padding:0 5px;color:#ff9 }
   .mhp b{ color:#7fe08a }
@@ -41,17 +39,15 @@
   .deck{ background:repeating-linear-gradient(45deg,rgba(255,255,255,.03) 0 6px,transparent 6px 12px),radial-gradient(circle at 50% 40%,#2f5d52,#1c3b34 70%);border:2px solid #c2922c;color:#e7c873;font-weight:900 }
   .discard{ border:2px dashed #ffffff2a; overflow:hidden } .discard img{ width:100%;height:100%;border-radius:7px;opacity:.55;filter:grayscale(.4) }
   .hand{ display:flex; align-items:flex-end }
-  .hand .card{ width:94px;height:128px;border-radius:8px;margin-left:-22px;cursor:pointer;transition:.14s;box-shadow:0 4px 10px #0008 }
+  .hand .card{ width:94px;height:128px;border-radius:8px;margin-left:-22px;cursor:zoom-in;transition:.14s;box-shadow:0 4px 10px #0008 }
   .hand .card:first-child{ margin-left:0 }
   .hand .card img{ width:100%;height:100%;border-radius:8px;display:block }
   .hand .card:hover{ transform:translateY(-24px) scale(1.07);z-index:30;margin-right:14px }
-  .hand .card.selc{ transform:translateY(-16px);box-shadow:0 0 0 3px #e7c873,0 6px 14px #000a;z-index:20 }
-  .hand .card.playable{ box-shadow:0 0 0 2px #8fd7a0aa,0 4px 10px #0008 }
-  /* 對手手牌區（卡背）＋左右牌堆 — 尺寸與我方一致 */
   .hand.backs{ display:flex; align-items:flex-end }
   .cb{ width:94px;height:128px;border-radius:8px;margin-left:-22px;border:2px solid #c2922c;
     background:repeating-linear-gradient(45deg,rgba(255,255,255,.03) 0 6px,transparent 6px 12px),radial-gradient(circle at 50% 40%,#2f5d52,#1c3b34 70%);box-shadow:0 4px 10px #0008 }
   .cb:first-child{ margin-left:0 }
+  .oppzone .hand .card:hover{ transform:translateY(24px) scale(1.07) } /* 對手在上、hover 往下展 */
 
   /* ═══ 右 4：LINE 式訊息框（白底）═══ */
   .right{ flex:4; min-width:300px; height:100vh; display:flex; flex-direction:column; background:#fff; border-left:1px solid #cdd6cf }
@@ -61,31 +57,26 @@
   .msg.sys{ align-self:center; background:none; color:#8a938c; font-size:11px; max-width:100%; text-align:center; padding:2px; box-shadow:none }
   .msg.me{ align-self:flex-end; background:#8ce069; color:#173a12; border-bottom-right-radius:4px }
   .msg.ai{ align-self:flex-start; background:#fff; color:#333; border:1px solid #e2e2e2; border-bottom-left-radius:4px }
-  .msg .sub{ font-size:10px; margin-top:2px; color:#3a6a2a }
-  .msg.ai .sub{ color:#999 }
+  .msg .sub{ font-size:10px; margin-top:2px; color:#3a6a2a } .msg.ai .sub{ color:#999 }
 
-  /* 造句 compose（LINE 輸入區風格，白底） */
   .compose{ border-top:1px solid #d5ddd6; padding:10px 12px; background:#fafbfa }
-  .svo{ display:flex; align-items:center; gap:6px; justify-content:center; font-size:13px; margin-bottom:8px; flex-wrap:wrap }
-  .sl{ padding:4px 9px;border-radius:8px;border:2px solid #ccc;color:#666;font-weight:700 }
-  .sl.s{ border-color:#3a7d44;color:#2a6d38 } .sl.v.on{ border-color:#b3402f;color:#b3402f;background:#fbe9e5 } .sl.o{ border-color:#d9776a;color:#c1524a } .ar{color:#bbb}
   .inrow{ display:flex; gap:6px }
-  input.say{ flex:1;min-width:0;background:#fff;border:1px solid #cbd3cc;color:#222;border-radius:20px;padding:9px 14px;font-size:14px }
+  input.say{ flex:1;min-width:0;background:#fff;border:1px solid #cbd3cc;color:#222;border-radius:20px;padding:10px 15px;font-size:15px }
   .btnrow{ display:flex; gap:6px; margin-top:8px }
-  button{ border:0;border-radius:20px;padding:8px 12px;font-size:13px;font-weight:800;cursor:pointer }
-  .mic{ background:#efeaf7;color:#6a4fa0;border-radius:50%;width:40px;height:40px;flex:0 0 auto;font-size:16px }
-  .atk{ background:#b3402f;color:#fff;flex:1 } .atk:disabled{ opacity:.4;cursor:default }
-  .end{ background:#e0b84a;color:#4a3a10;flex:1 } .ghost{ background:#eef1f4;color:#556;border:1px solid #ccd3d8 }
-  .hint{ font-size:11px;color:#9aa39c;text-align:center;margin-top:6px }
+  button{ border:0;border-radius:20px;padding:9px 12px;font-size:14px;font-weight:800;cursor:pointer }
+  .mic{ background:#efeaf7;color:#6a4fa0;border-radius:50%;width:42px;height:42px;flex:0 0 auto;font-size:16px }
+  .send{ background:#3a9d4a;color:#fff;flex:2 } .end{ background:#e0b84a;color:#4a3a10;flex:1 } .ghost{ background:#eef1f4;color:#556;border:1px solid #ccd3d8 }
+  .hint{ font-size:11px;color:#9aa39c;text-align:center;margin-top:7px;line-height:1.5 }
 
-  .banner{ position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:#000a;z-index:50;flex-direction:column;gap:14px }
-  .banner .big{ font-size:44px;font-weight:900;letter-spacing:4px }
+  .ov{ position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:60 }
+  #inspect{ background:#000b } #inspect img{ height:72vh;max-width:92vw;border-radius:16px;box-shadow:0 12px 44px #000 }
+  #banner{ background:#000c;flex-direction:column;gap:16px } #banner .big{ font-size:46px;font-weight:900;letter-spacing:4px }
 </style>
 </head>
 <body>
   <!-- 左 6：棋盤 -->
   <div class="left">
-    <div class="handzone opp">
+    <div class="handzone opp oppzone">
       <div class="pile deck" id="oppDeck" title="對手牌庫"><span class="lbl">牌庫</span>🂠<span class="cnt" id="oppDeckCnt">0</span></div>
       <div class="hand backs" id="oppHand"></div>
       <div class="pile discard" id="oppDiscard" title="對手棄牌"><span class="lbl">棄牌</span><span class="cnt" id="oppDiscCnt">0</span></div>
@@ -106,141 +97,148 @@
 
   <!-- 右 4：LINE 式訊息框 -->
   <div class="right">
-    <div class="rtop">📜 戰報 · 造句對話</div>
+    <div class="rtop" id="rtop">📜 造句對話</div>
     <div class="chat" id="chat"></div>
     <div class="compose">
-      <div class="svo">
-        <span class="sl s" id="sS">選你的怪獸</span><span class="ar">▶</span>
-        <span class="sl v" id="sV">選動詞</span><span class="ar">▶</span>
-        <span class="sl o" id="sO">選目標</span>
-      </div>
       <div class="inrow">
-        <input class="say" id="say" placeholder="唸出或打出你的句子…">
-        <button class="mic" id="mic" title="CF Whisper">🎤</button>
+        <input class="say" id="say" placeholder="打一句話來行動…" autocomplete="off">
+        <button class="mic" id="mic" title="CF Whisper 語音">🎤</button>
       </div>
       <div class="btnrow">
-        <button class="atk" id="atk" disabled>⚔️ 出招</button>
+        <button class="send" id="send">✍️ 送出句子</button>
         <button class="end" id="end">結束回合 ⏭</button>
         <button class="ghost" id="reset" title="重開">🔄</button>
       </div>
-      <div class="hint">點你的怪獸 → 選動詞 → 點敵方目標（怪獸或召喚師）</div>
+      <div class="hint">召喚：寫出手牌<b>名詞</b>（如 <b>Cat</b>）　·　攻擊：<b>你的怪獸 ＋ 動詞 ＋ 敵方</b>（如 <b>Cat bites Dragon</b>）<br>卡片點一下可放大看清楚</div>
     </div>
   </div>
-  <div class="banner" id="banner"><div class="big" id="bigTxt"></div><button class="end" onclick="location.reload()">再來一局</button></div>
+
+  <div class="ov" id="inspect"><img alt=""></div>
+  <div class="ov" id="banner"><div class="big" id="bigTxt"></div><button class="end" onclick="location.reload()">再來一局</button></div>
 
 <script>
 const D=window.SS_DECK, SRC=id=>`cards/${id}.png`;
 const ALL=[...D.nouns,...D.verbs,...D.adjs];
-ALL.forEach(c=>{ const _i=new Image(); _i.src=SRC(c.id); }); // 預載全部卡圖，避免重繪破圖/閃爍
-const isNoun=c=>D.nouns.includes(c), isVerb=c=>D.verbs.includes(c);
+ALL.forEach(c=>{ const _i=new Image(); _i.src=SRC(c.id); }); // 預載卡圖
+const isNoun=c=>D.nouns.includes(c), isVerb=c=>D.verbs.includes(c), isAdj=c=>D.adjs.includes(c);
 const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
 const $=i=>document.getElementById(i);
 const MAXB=4, SUMHP=16;
-let S, sel;
 
-// 訊息框
+// ── 模式（教學/訓練=攤牌；對戰=蓋牌）──
+const MODE=(new URLSearchParams(location.search).get("mode"))||"training";
+const MODE_NAME={teaching:"教學",training:"訓練",battle:"對戰"}[MODE]||"訓練";
+const AI_OPEN = MODE!=="battle";
+let S;
+
 function bubble(kind,text,sub){ const d=document.createElement("div"); d.className="msg "+kind;
   d.innerHTML=text+(sub?`<div class="sub">${sub}</div>`:""); $("chat").appendChild(d); $("chat").scrollTop=$("chat").scrollHeight; }
 const sys=t=>bubble("sys",t);
+const inspect=id=>{ $("inspect").querySelector("img").src=SRC(id); $("inspect").style.display="flex"; };
 
-function drawFrom(deck,pred){ const i=deck.findIndex(pred); return i>=0?deck.splice(i,1)[0]:null; }
 function newMon(c,ready=false){ return {...c, chp:c.hp, used:!ready}; }
 
 function deal(){
-  const md=shuffle(ALL), od=shuffle(ALL);
-  S={ me:{hp:SUMHP,board:[],hand:[],deck:md,discard:[]}, opp:{hp:SUMHP,board:[],hand:[],deck:od,discard:[]}, turn:"me" };
+  S={ me:{hp:SUMHP,board:[],hand:[],deck:shuffle(ALL),discard:[]}, opp:{hp:SUMHP,board:[],hand:[],deck:shuffle(ALL),discard:[]}, turn:"me" };
   for(let i=0;i<5;i++){ S.me.hand.push(S.me.deck.shift()); S.opp.hand.push(S.opp.deck.shift()); }
-  // 各先擺 2 隻（從牌庫抽名詞）
-  for(let i=0;i<2;i++){ const n=drawFrom(S.me.deck,isNoun); if(n)S.me.board.push(newMon(n,true)); }
-  for(let i=0;i<2;i++){ const n=drawFrom(S.opp.deck,isNoun); if(n)S.opp.board.push(newMon(n)); }
-  sel={attacker:null,verb:null,target:null};
+  $("rtop").textContent=`📜 ${MODE_NAME}模式 · 造句對話`;
   $("chat").innerHTML=""; render();
-  sys("⚔️ 對局開始 — 打倒對方召喚師（HP 歸 0）獲勝");
+  sys(`⚔️ ${MODE_NAME}模式開始 — 打倒對方召喚師（HP 歸 0）獲勝`);
+  sys("空場開局：先打一句話「召喚」你的怪獸（寫出手牌名詞，如 Cat）");
+  if(AI_OPEN) sys("（AI 的手牌是攤開的，可以偷看它有什麼牌）");
 }
 
-function monEl(m,side){ const d=document.createElement("div"); d.className="mon";
+// ── 渲染 ──
+function monEl(m){ const d=document.createElement("div"); d.className="mon"+(m.used?" used":"");
   d.innerHTML=`<img src="${SRC(m.id)}"><span class="mhp">❤️<b>${Math.max(0,m.chp)}</b>/${m.hp}</span>`;
-  if(side==="me"){ if(!m.used&&S.turn==="me")d.classList.add("atkable"); if(sel.attacker===m)d.classList.add("sel"); if(m.used)d.classList.add("used");
-    d.onclick=()=>{ if(m.used||S.turn!=="me")return; sel.attacker=(sel.attacker===m)?null:m; sel.target=null; render(); }; }
-  else { if(sel.attacker&&sel.verb)d.classList.add("target"); if(sel.target===m)d.classList.add("sel");
-    d.onclick=()=>{ if(!sel.attacker||!sel.verb)return; sel.target=m; buildSentence(); render(); }; }
-  return d; }
+  d.onclick=()=>inspect(m.id); return d; }
 function boardRow(side){ const box=$(side==="me"?"meBoard":"oppBoard"); box.innerHTML=""; const b=S[side].board;
-  for(let i=0;i<MAXB;i++){ if(b[i])box.appendChild(monEl(b[i],side));
-    else{ const s=document.createElement("div"); s.className="slot"; s.textContent="＋"; if(side==="me")s.onclick=()=>trySummon(); box.appendChild(s); } } }
-function handEl(){ const h=$("hand"); h.innerHTML="";
-  S.me.hand.forEach(c=>{ const e=document.createElement("div"); e.className="card"; e.innerHTML=`<img src="${SRC(c.id)}">`;
-    const k=isNoun(c)?"noun":isVerb(c)?"verb":"adj";
-    if(k==="verb"&&sel.verb===c)e.classList.add("selc"); if(k==="verb"&&sel.attacker)e.classList.add("playable");
-    e.onclick=()=>onHand(c,k); h.appendChild(e); }); }
-function onHand(c,k){ if(S.turn!=="me")return;
-  if(k==="noun"){ if(S.me.board.length>=MAXB){sys("我方場上滿了");return;} summon(c); }
-  else if(k==="verb"){ if(!sel.attacker){sys("先點一隻你的怪獸當攻擊者");return;} sel.verb=(sel.verb===c)?null:c; sel.target=null; buildSentence(); render(); }
-  else applyAdj(c); }
-function trySummon(){ const n=S.me.hand.find(isNoun); if(!n){sys("手上沒有名詞可召");return;} summon(n); }
-function summon(c){ S.me.board.push(newMon(c)); S.me.hand=S.me.hand.filter(x=>x!==c); sys(`召喚【${c.w}】上場（本回合尚不能行動）`); render(); }
-function applyAdj(c){ const v=c.eff[0],pos=v[1]>=0,tgt=pos?S.me.board[0]:S.opp.board[0]; if(!tgt){sys("沒有可套用的目標");return;}
-  const st={"🗡️":"atk","🛡️":"def","🦶":"spd","❤️":"hp"}[v[0]]||"atk"; tgt[st]=Math.max(0,(tgt[st]||0)+v[1]); if(st==="hp")tgt.chp+=v[1];
-  S.me.hand=S.me.hand.filter(x=>x!==c); S.me.discard.push(c); sys(`【${c.w}】：${pos?"我方":"敵方"} ${tgt.w} ${v[0]}${v[1]>=0?"+":""}${v[1]}`); render(); }
-function buildSentence(){ if(!sel.attacker||!sel.verb){$("say").value="";return;}
-  $("say").value=`${sel.attacker.w} ${sel.verb.w.toLowerCase()}s ${sel.target?sel.target.w:"the enemy summoner"}`; }
-
-function render(){ boardRow("opp"); boardRow("me"); handEl();
+  for(let i=0;i<MAXB;i++){ if(b[i])box.appendChild(monEl(b[i]));
+    else{ const s=document.createElement("div"); s.className="slot"; s.textContent="＋"; box.appendChild(s); } } }
+function faceCard(c){ const e=document.createElement("div"); e.className="card"; e.innerHTML=`<img src="${SRC(c.id)}">`; e.onclick=()=>inspect(c.id); return e; }
+function render(){
+  boardRow("opp"); boardRow("me");
+  // 我方手牌（正面、可點放大）
+  const h=$("hand"); h.innerHTML=""; S.me.hand.forEach(c=>h.appendChild(faceCard(c)));
+  // 對手手牌：攤開=正面 / 蓋牌=卡背
+  const oh=$("oppHand"); oh.innerHTML="";
+  if(AI_OPEN){ oh.className="hand"; S.opp.hand.forEach(c=>oh.appendChild(faceCard(c))); }
+  else { oh.className="hand backs"; S.opp.hand.forEach(()=>{ const e=document.createElement("div"); e.className="cb"; oh.appendChild(e); }); }
   $("oppHpF").style.width=Math.max(0,S.opp.hp/SUMHP*100)+"%"; $("oppHpN").textContent=Math.max(0,S.opp.hp);
   $("meHpF").style.width=Math.max(0,S.me.hp/SUMHP*100)+"%"; $("meHpN").textContent=Math.max(0,S.me.hp);
   $("deckCnt").textContent=S.me.deck.length; $("discCnt").textContent=S.me.discard.length;
-  const dsc=$("discard"); dsc.querySelectorAll("img").forEach(x=>x.remove());
-  if(S.me.discard.length){ const im=document.createElement("img"); im.src=SRC(S.me.discard[S.me.discard.length-1].id); dsc.insertBefore(im,dsc.firstChild); }
-  // 對手手牌（卡背）＋牌堆
   $("oppDeckCnt").textContent=S.opp.deck.length; $("oppDiscCnt").textContent=S.opp.discard.length;
-  const odsc=$("oppDiscard"); odsc.querySelectorAll("img").forEach(x=>x.remove());
-  if(S.opp.discard.length){ const im=document.createElement("img"); im.src=SRC(S.opp.discard[S.opp.discard.length-1].id); odsc.insertBefore(im,odsc.firstChild); }
-  const oh=$("oppHand"); oh.innerHTML=""; for(let i=0;i<S.opp.hand.length;i++){ const e=document.createElement("div"); e.className="cb"; oh.appendChild(e); }
-  $("sS").textContent=sel.attacker?sel.attacker.w:"選你的怪獸";
-  $("sV").textContent=sel.verb?sel.verb.w:"選動詞"; $("sV").classList.toggle("on",!!sel.verb);
-  $("sO").textContent=sel.target?sel.target.w:(sel.attacker&&sel.verb?"點敵方目標":"選目標");
+  pileTop("discard",S.me.discard); pileTop("oppDiscard",S.opp.discard);
   $("turnPill").textContent=S.turn==="me"?"你的回合":"AI 回合";
-  $("atk").disabled=!(sel.attacker&&sel.verb); }
+}
+function pileTop(id,arr){ const p=$(id); p.querySelectorAll("img").forEach(x=>x.remove());
+  if(arr.length){ const im=document.createElement("img"); im.src=SRC(arr[arr.length-1].id); p.insertBefore(im,p.firstChild); } }
 
-// 掛接點：CF Whisper / CF LLM 天裁
-const detectVerb=(t,v)=>t.toLowerCase().includes(v.w.toLowerCase().slice(0,3));
-const judgeTier=t=>{const w=t.trim().split(/\s+/).length;return w>=4?2:w>=3?1:0;};
+// ── 核心：句子驅動（裁判＝腳本，句中出現卡牌的字就發動）──
+function submit(){
+  if(S.turn!=="me") return;
+  const text=$("say").value.trim(); if(!text) return;
+  bubble("me", text);                         // 玩家寫的句子＝聊天泡泡
+  $("say").value="";
+  const words=text.toLowerCase().split(/[^a-z']+/).filter(Boolean);
+  const has=w=>words.includes(w.toLowerCase());
+  const vmatch=cw=>{const s=cw.toLowerCase().slice(0,Math.min(3,cw.length)); return words.some(w=>w.slice(0,s.length)===s);};
+  const adjCard=S.me.hand.find(c=>isAdj(c)&&has(c.w));
+  const verbCard=S.me.hand.find(c=>isVerb(c)&&vmatch(c.w));
 
-$("atk").onclick=()=>{ if(S.turn!=="me"||!sel.attacker||!sel.verb)return;
-  const text=$("say").value.trim();
-  if(!text||!detectVerb(text,sel.verb)){ bubble("me",text||"（沒說出口）"); sys(`🎤 沒偵測到「${sel.verb.w}」→ 攻擊落空`); return; }
-  const tier=judgeTier(text),mult=[1,1.3,1.6][tier],tt=["亂唸 ×1.0","通順 ×1.3","有創意 ×1.6 暴擊"][tier];
-  const vA=(sel.verb.eff.find(e=>e[0]==="🗡️")||[,0])[1], base=Math.max(1,sel.attacker.atk+(vA>0?vA:0));
-  bubble("me",text,`🧠 天裁：${tt}`);
-  if(sel.target){ const d=sel.target.spd-sel.attacker.spd;
-    if(d>=1&&(1+Math.floor(Math.random()*6))<=Math.min(d,5)){ sys(`🦶 ${sel.target.w} 閃過了！`); return afterAttack(); }
-    const dmg=Math.round(Math.max(1,base-sel.target.def)*mult); sel.target.chp-=dmg;
-    sys(`💥 ${sel.attacker.w} → ${sel.target.w}　−${dmg}`);
-    if(sel.target.chp<=0){ sys(`☠️ ${sel.target.w} 倒下，進棄牌區`); S.opp.discard.push(sel.target); S.opp.board=S.opp.board.filter(m=>m!==sel.target); }
-  } else { const dmg=Math.round(base*mult); S.opp.hp-=dmg; sys(`💥 直擊 AI 召喚師　−${dmg}`); if(S.opp.hp<=0)return win("🏆 你贏了！"); }
-  afterAttack(); };
-function afterAttack(){ if(sel.attacker)sel.attacker.used=true;
-  if(sel.verb){ S.me.hand=S.me.hand.filter(x=>x!==sel.verb); S.me.discard.push(sel.verb); }
-  sel.attacker=null; sel.verb=null; sel.target=null; $("say").value=""; render(); }
+  if(verbCard){                               // 有動詞字 → 攻擊
+    const subject=S.me.board.find(m=>!m.used&&has(m.w));
+    if(!subject){ sys("句子裡要有你「場上、且本回合可行動」的怪獸當主詞（先召喚一隻）"); return; }
+    const target=S.opp.board.find(m=>has(m.w))||null;   // 沒指定敵方怪 → 直擊召喚師
+    resolveAttack(subject,verbCard,target,adjCard); return;
+  }
+  const nounCard=S.me.hand.find(c=>isNoun(c)&&has(c.w));  // 有名詞字 → 召喚
+  if(nounCard){ if(S.me.board.length>=MAXB){ sys(`你場上滿了（最多 ${MAXB} 隻）`); } else summon(nounCard); return; }
+  if(adjCard){ applyAdj(adjCard,S.me.board[0],S.opp.board[0]); render(); return; }
+  sys("沒對上任何手牌上的字——句子裡要包含你手牌的單字（名詞召喚／動詞攻擊）");
+}
+function summon(c){ S.me.board.push(newMon(c)); S.me.hand=S.me.hand.filter(x=>x!==c);
+  sys(`✨ 召喚【${c.w}】上場（本回合尚不能行動）`); render(); }
+function applyAdj(c,myMon,enemyMon){ const v=c.eff[0],pos=v[1]>=0, tgt=pos?(myMon):(enemyMon); if(!tgt) return;
+  const st={"🗡️":"atk","🛡️":"def","🦶":"spd","❤️":"hp"}[v[0]]||"atk"; tgt[st]=Math.max(0,(tgt[st]||0)+v[1]); if(st==="hp")tgt.chp+=v[1];
+  S.me.hand=S.me.hand.filter(x=>x!==c); S.me.discard.push(c); sys(`✨ ${c.w}：${pos?"":"敵方 "}${tgt.w} ${v[0]}${v[1]>=0?"+":""}${v[1]}`); }
+function resolveAttack(sub,verb,target,adj){
+  if(adj) applyAdj(adj,sub,target);
+  const vA=(verb.eff.find(e=>e[0]==="🗡️")||[,0])[1], base=Math.max(1,sub.atk+(vA>0?vA:0));
+  S.me.hand=S.me.hand.filter(x=>x!==verb); S.me.discard.push(verb);   // 動詞卡用掉
+  if(target){
+    const d=target.spd-sub.spd;
+    if(d>=1 && (1+Math.floor(Math.random()*6))<=Math.min(d,5)){ sys(`🦶 ${target.w} 太快、閃過了！`); sub.used=true; render(); return; }
+    const dmg=Math.max(1,base-target.def); target.chp-=dmg;
+    sys(`💥 ${sub.w} ${verb.w.toLowerCase()} ${target.w}　−${dmg}`);
+    if(target.chp<=0){ sys(`☠️ ${target.w} 倒下，進棄牌`); S.opp.discard.push(target); S.opp.board=S.opp.board.filter(m=>m!==target); }
+  } else { S.opp.hp-=base; sys(`💥 ${sub.w} 直擊 AI 召喚師　−${base}`); if(S.opp.hp<=0)return win("🏆 你贏了！"); }
+  sub.used=true; render();
+}
 
-$("end").onclick=()=>{ if(S.turn!=="me")return; S.turn="opp"; render(); sys("— AI 回合 —"); setTimeout(aiTurn,650); };
-function aiTurn(){ // TODO: 換 CF LLM 當對手（依手牌召喚+造句攻擊）
-  if(S.opp.deck.length&&S.opp.hand.length<7) S.opp.hand.push(S.opp.deck.shift()); // 抽 1
-  if(S.opp.board.length<2){ const n=drawFrom(S.opp.hand,isNoun); if(n){S.opp.board.push(newMon(n));sys(`🤖 召喚【${n.w}】`);} }
-  S.opp.board.forEach(m=>{ const v=drawFrom(S.opp.hand,isVerb)||{w:"Hit",eff:[["🗡️",2]]}; if(v.id)S.opp.discard.push(v); const vA=(v.eff.find(e=>e[0]==="🗡️")||[,0])[1];
-    const base=Math.max(1,m.atk+(vA>0?vA:0)), t=S.me.board[0];
-    if(t){ const dmg=Math.round(Math.max(1,base-t.def)*1.3); t.chp-=dmg;
-      bubble("ai",`${m.w} ${v.w.toLowerCase()}s ${t.w}`); sys(`💥 ${m.w} → 你的 ${t.w}　−${dmg}`);
+// ── AI 對手（先用模板「會出句子」；之後接 CF LLM）──
+$("end").onclick=()=>{ if(S.turn!=="me")return; S.turn="opp"; render(); sys("— AI 回合 —"); setTimeout(aiTurn,700); };
+function aiTurn(){ // TODO: 換 CF LLM 產生對手句子
+  if(S.opp.deck.length&&S.opp.hand.length<7) S.opp.hand.push(S.opp.deck.shift());
+  const rnd=a=>a[Math.floor(Math.random()*a.length)];
+  if(S.opp.board.length<2){ const i=S.opp.hand.findIndex(isNoun); if(i>=0){ const n=S.opp.hand.splice(i,1)[0]; S.opp.board.push(newMon(n)); bubble("ai",`I summon ${n.w}.`); sys(`🤖 召喚【${n.w}】`); } }
+  S.opp.board.forEach(m=>{ if(m.used)return; const vi=S.opp.hand.findIndex(isVerb); const v=vi>=0?S.opp.hand.splice(vi,1)[0]:{w:"Hit",eff:[["🗡️",2]]}; if(v.id)S.opp.discard.push(v);
+    const vA=(v.eff.find(e=>e[0]==="🗡️")||[,0])[1], base=Math.max(1,m.atk+(vA>0?vA:0)), t=S.me.board[0];
+    if(t){ const dmg=Math.max(1,base-t.def); t.chp-=dmg; bubble("ai",`${m.w} ${v.w.toLowerCase()}s ${t.w}.`); sys(`💥 ${m.w} → 你的 ${t.w}　−${dmg}`);
       if(t.chp<=0){ sys(`☠️ 你的 ${t.w} 倒下`); S.me.discard.push(t); S.me.board=S.me.board.filter(x=>x!==t); } }
-    else { const dmg=Math.round(base*1.3); S.me.hp-=dmg; bubble("ai",`${m.w} strikes your summoner!`); sys(`💥 直擊你　−${dmg}`); } });
+    else { const dmg=base; S.me.hp-=dmg; bubble("ai",`${m.w} strikes your summoner!`); sys(`💥 直擊你　−${dmg}`); } });
   if(S.me.hp<=0)return win("AI 獲勝…再來一局");
   S.turn="me"; S.me.board.forEach(m=>m.used=false);
-  if(S.me.deck.length&&S.me.hand.length<7){ S.me.hand.push(S.me.deck.shift()); sys("你的回合 — 抽 1 張"); } else sys("你的回合");
-  render(); }
+  if(S.me.deck.length&&S.me.hand.length<7){ S.me.hand.push(S.me.deck.shift()); sys("你的回合 — 抽了 1 張"); } else sys("你的回合");
+  render();
+}
 function win(t){ $("bigTxt").textContent=t; $("bigTxt").style.color=t.includes("贏")?"#e7c873":"#e58b7d"; $("banner").style.display="flex"; }
-$("mic").onclick=()=>sys("🎤 語音＝接 CF Whisper（未接，請打字）");
+
+$("send").onclick=submit;
+$("mic").onclick=()=>sys("🎤 語音＝接 CF Whisper（未接，先用打字）");
 $("reset").onclick=deal;
-$("say").addEventListener("keydown",e=>{if(e.key==="Enter")$("atk").click();});
+$("inspect").onclick=()=>$("inspect").style.display="none";
+$("say").addEventListener("keydown",e=>{ if(e.key==="Enter") submit(); });
 deal();
 </script>
 </body>
