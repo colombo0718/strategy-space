@@ -22,8 +22,8 @@
   .shpnum{ font-size:11px } .turnpill{ margin-left:auto;font-size:11px;padding:3px 10px;border-radius:20px;background:#0005;color:#e7c873 }
 
   .board{ flex:1; display:flex; gap:7px; align-items:center; justify-content:center; min-height:0 }
-  .slot{ width:80px;height:108px;border-radius:9px;border:2px dashed #ffffff22;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:#ffffff33;font-size:24px }
-  .mon{ width:80px;height:108px;border-radius:9px;position:relative;flex:0 0 auto;cursor:pointer;transition:.12s;box-shadow:0 3px 7px #0007 }
+  .slot{ width:90px;height:122px;border-radius:9px;border:2px dashed #ffffff22;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:#ffffff33;font-size:24px }
+  .mon{ width:90px;height:122px;border-radius:9px;position:relative;flex:0 0 auto;cursor:pointer;transition:.12s;box-shadow:0 3px 7px #0007 }
   .mon img{ width:100%;height:100%;border-radius:9px;display:block }
   .mon:hover{ transform:translateY(-4px) }
   .mon.atkable{ box-shadow:0 0 0 3px #8fd7a0,0 0 12px #8fd7a0aa }
@@ -35,13 +35,13 @@
 
   /* 手牌區：棄牌 | 手牌(橫排微疊) | 牌庫 */
   .handzone{ flex:0 0 auto; display:flex; align-items:flex-end; justify-content:space-between; height:150px; padding:4px 34px 0 }
-  .pile{ width:76px;height:104px;border-radius:9px;flex:0 0 auto;position:relative;display:flex;align-items:center;justify-content:center;font-size:11px;color:#cbb }
+  .pile{ width:86px;height:117px;border-radius:9px;flex:0 0 auto;position:relative;display:flex;align-items:center;justify-content:center;font-size:11px;color:#cbb }
   .pile .cnt{ position:absolute;bottom:4px;left:50%;transform:translateX(-50%);background:#000b;border-radius:9px;padding:1px 7px;font-weight:800;color:#fff }
   .pile .lbl{ position:absolute;top:-16px;font-size:10px;color:#ffffff66 }
   .deck{ background:repeating-linear-gradient(45deg,rgba(255,255,255,.03) 0 6px,transparent 6px 12px),radial-gradient(circle at 50% 40%,#2f5d52,#1c3b34 70%);border:2px solid #c2922c;color:#e7c873;font-weight:900 }
   .discard{ border:2px dashed #ffffff2a; overflow:hidden } .discard img{ width:100%;height:100%;border-radius:7px;opacity:.55;filter:grayscale(.4) }
   .hand{ display:flex; align-items:flex-end }
-  .hand .card{ width:82px;height:112px;border-radius:8px;margin-left:-22px;cursor:pointer;transition:.14s;box-shadow:0 4px 10px #0008 }
+  .hand .card{ width:94px;height:128px;border-radius:8px;margin-left:-22px;cursor:pointer;transition:.14s;box-shadow:0 4px 10px #0008 }
   .hand .card:first-child{ margin-left:0 }
   .hand .card img{ width:100%;height:100%;border-radius:8px;display:block }
   .hand .card:hover{ transform:translateY(-24px) scale(1.07);z-index:30;margin-right:14px }
@@ -49,7 +49,7 @@
   .hand .card.playable{ box-shadow:0 0 0 2px #8fd7a0aa,0 4px 10px #0008 }
   /* 對手手牌區（卡背）＋左右牌堆 — 尺寸與我方一致 */
   .hand.backs{ display:flex; align-items:flex-end }
-  .cb{ width:82px;height:112px;border-radius:8px;margin-left:-22px;border:2px solid #c2922c;
+  .cb{ width:94px;height:128px;border-radius:8px;margin-left:-22px;border:2px solid #c2922c;
     background:repeating-linear-gradient(45deg,rgba(255,255,255,.03) 0 6px,transparent 6px 12px),radial-gradient(circle at 50% 40%,#2f5d52,#1c3b34 70%);box-shadow:0 4px 10px #0008 }
   .cb:first-child{ margin-left:0 }
 
