@@ -12,8 +12,13 @@
   body{ font-family:"Segoe UI","Noto Sans TC",sans-serif; color:#eee; display:flex; overflow:hidden }
 
   /* ═══ 左 6：棋盤 ═══ */
-  .left{ flex:6; min-width:0; height:100vh; display:flex; flex-direction:column; padding:8px 12px;
+  .left{ flex:6; min-width:0; height:100vh; display:flex; flex-direction:column; padding:8px 12px; position:relative;
     background:radial-gradient(900px 620px at 50% 45%, #2f5d44 0%, #1b3327 62%, #12211a 100%) }
+  /* 閃避骰子（需要時才出現、有動畫）*/
+  #dice{ position:absolute; left:50%; top:42%; transform:translate(-50%,-50%); width:110px; height:110px; display:none;
+    align-items:center; justify-content:center; font-size:88px; line-height:1; color:#fff; text-shadow:0 6px 18px #000,0 0 8px #000; z-index:55; pointer-events:none }
+  #dice.roll{ animation:diceroll .55s cubic-bezier(.2,.8,.3,1.2) }
+  @keyframes diceroll{ 0%{ transform:translate(-50%,-50%) scale(.2) rotate(-200deg); opacity:0 } 55%{ transform:translate(-50%,-50%) scale(1.35) rotate(25deg); opacity:1 } 100%{ transform:translate(-50%,-50%) scale(1) rotate(0) } }
   .summoner{ display:flex; align-items:center; gap:10px; padding:2px 4px; flex:0 0 auto }
   .summoner.me{ flex-direction:row-reverse }   /* 己方靠右且反向：數字→血條→頭像(最右) */
   .summoner.me .sname{ text-align:right }   /* 「你」靠右、貼近頭像 */
@@ -31,7 +36,7 @@
   .monwrap .modcard{ position:absolute;left:0;width:90px;height:122px;border-radius:9px;overflow:hidden;box-shadow:0 2px 5px #0007;cursor:zoom-in }
   .monwrap .modcard.tmod{ outline:2px dashed #79d2ff;outline-offset:-3px }   /* 暫時buff卡：青色虛線標示、失效會進棄牌 */
   .monwrap .modcard img{ width:90px;height:122px;display:block }
-  .mon{ width:90px;height:122px;border-radius:9px;position:absolute;top:0;left:0;cursor:zoom-in;transition:.12s;box-shadow:0 3px 7px #0007 }
+  .mon{ width:90px;height:122px;border-radius:9px;position:absolute;top:0;left:0;cursor:zoom-in;transition:.12s;box-shadow:0 3px 7px #0007;background:#fffaf0;overflow:hidden }
   .mon img{ width:100%;height:100%;border-radius:9px;display:block }
   .mon:hover{ transform:translateY(-4px);box-shadow:0 0 0 2px #ffffff55,0 5px 10px #0008 }
   .mon.used{ filter:grayscale(.6) brightness(.7) }
@@ -106,6 +111,7 @@
       <div class="turnpill" id="turnPill">你的回合</div></div>
     <div class="board opp" id="oppBoard"></div>
     <div class="board me" id="meBoard"></div>
+    <div id="dice"></div>
     <div class="summoner me"><div class="por">🧑</div><div><div class="sname">你</div>
       <div class="shpbar"><div class="shpfill" id="meHpF"></div></div></div><div class="shpnum" id="meHpN"></div></div>
     <div class="handzone">
@@ -307,13 +313,24 @@ function attachAdj(mon,adj){ mon.mods=mon.mods||[]; mon.mods.push(adj);
     else if(ic==="🛡️"){ mon.def=Math.max(0,mon.def+v); mon.armor=Math.max(0,(mon.armor??mon.def)+v); }  // 護甲上限＝def，同步升降
     else if(ic==="🦶") mon.spd=Math.max(0,mon.spd+v);
   } }
+// 閃避骰子：只有守方較快(速度差≥1)才擲；動畫顯示點數 + 訊息寫清楚計算過程
+const DICE=["⚀","⚁","⚂","⚃","⚄","⚅"];
+function showDice(n){ const el=$("dice"); el.style.display="flex"; el.classList.remove("roll"); void el.offsetWidth; el.classList.add("roll");
+  let t=0; clearInterval(el._iv); el._iv=setInterval(()=>{ el.textContent=DICE[Math.floor(Math.random()*6)]; if(++t>=8){ clearInterval(el._iv); el.textContent=DICE[n-1]; } },70);
+  clearTimeout(el._t); el._t=setTimeout(()=>{ el.style.display="none"; },1600); }
+function dodgeRoll(atk,def){   // 回傳是否閃過；並顯示骰子＋把計算過程寫進訊息
+  const d=eSpd(def)-eSpd(atk);
+  if(d<1) return false;                                  // 攻方不慢 → 必中、不擲骰
+  const need=Math.min(d,5), roll=1+Math.floor(Math.random()*6), dodged=roll<=need;
+  showDice(roll);
+  sys(`🎲 閃避判定：${def.w} 速${eSpd(def)} − ${atk.w} 速${eSpd(atk)} ＝ 差 ${d}（擲 1d6 ≤ ${need} 才閃）· 擲出 ${roll} → ${dodged?"閃過！":"沒閃、命中"}`);
+  return dodged; }
 function resolveAttack(sub,verb,target){
   const vA=verb?(verb.eff.find(e=>e[0]==="🗡️")||[,0])[1]:0, base=sub.atk+(vA>0?vA:0);   // 攻擊力＝ATK＋動詞🗡️（無 max，純加）
   if(verb){ S.me.hand=S.me.hand.filter(x=>x!==verb); S.me.discard.push(verb); refill(); }  // 動詞卡才消耗＋補抽
   const label=verb?verb.w.toLowerCase():"attacks";
   if(target){
-    const d=eSpd(target)-eSpd(sub);
-    if(d>=1 && (1+Math.floor(Math.random()*6))<=Math.min(d,5)){ sys(`🦶 ${target.w} 太快、閃過了！`); sub.used=true; render(); return; }
+    if(dodgeRoll(sub,target)){ sub.used=true; render(); return; }
     if(target.armor==null) target.armor=target.def;
     const block=Math.min(target.armor,base), dmg=base-block; target.armor-=block; target.chp-=dmg;   // 護甲吸收＝min(護甲,攻擊)、消耗護甲；傷害＝攻擊−吸收（自然 ≥0）
     sys(`💥 ${sub.w} ${label} ${target.w}：🗡️${sub.atk}${vA>0?"＋"+vA:""}−🛡️${block} ＝ ${dmg>0?"−"+dmg:"0（護甲全擋）"}${target.armor<=0&&target.def>0?"　💢護甲破！":""}`);
@@ -373,11 +390,11 @@ async function aiTurn(){ // 腳本對手：一回合多個動作，每句間隔�
     let t=null;
     if(S.me.board.length){ const bychp=S.me.board.slice().sort((a,b)=>a.chp-b.chp);
       t=bychp.find(x=>(base-Math.min(x.armor??x.def,base))>=x.chp) || S.me.board.slice().sort((a,b)=>(a.armor??a.def)-(b.armor??b.def))[0]; }
-    if(t){ const d=eSpd(t)-eSpd(m);
-      if(d>=1 && (1+Math.floor(Math.random()*6))<=Math.min(d,5)){ bubble("ai",`${m.w} ${label} ${t.w}.`); sys(`🦶 你的 ${t.w} 閃過了！`); m.used=true; render(); await sleep(AI_GAP); continue; }
+    if(t){ bubble("ai",`${m.w} ${label} ${t.w}.`);
+      if(dodgeRoll(m,t)){ m.used=true; render(); await sleep(AI_GAP); continue; }
       if(t.armor==null) t.armor=t.def;
       const block=Math.min(t.armor,base), dmg=base-block; t.armor-=block; t.chp-=dmg;
-      bubble("ai",`${m.w} ${label} ${t.w}.`); sys(`💥 ${m.w} → 你的 ${t.w}：🗡️${m.atk}${vA>0?"＋"+vA:""}−🛡️${block} ＝ ${dmg>0?"−"+dmg:"0（護甲全擋）"}${t.armor<=0&&t.def>0?"　💢護甲破！":""}`);
+      sys(`💥 ${m.w} → 你的 ${t.w}：🗡️${m.atk}${vA>0?"＋"+vA:""}−🛡️${block} ＝ ${dmg>0?"−"+dmg:"0（護甲全擋）"}${t.armor<=0&&t.def>0?"　💢護甲破！":""}`);
       if(t.chp<=0){ sys(`☠️ 你的 ${t.w} 倒下`); S.me.discard.push(t,...(t.mods||[]),...(t.tmods||[])); S.me.board=S.me.board.filter(x=>x!==t); } }
     else { S.me.hp-=base; bubble("ai",`${m.w} strikes your summoner!`); sys(`💥 直擊你　−${base}`); }
     m.used=true; render();
