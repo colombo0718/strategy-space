@@ -74,7 +74,7 @@
 
   .ov{ position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:60 }
   #inspect{ background:#000b } #inspect>img{ height:72vh;max-width:92vw;border-radius:16px;box-shadow:0 12px 44px #000 }
-  #inspect .stackview{ position:relative } #inspect .stackview img{ position:absolute;left:0;border-radius:14px;box-shadow:0 10px 40px #000 }
+  #inspect .stackview{ display:flex;align-items:center;justify-content:center } #inspect .stackview img{ border-radius:14px;box-shadow:0 10px 40px #000 }
   #banner{ background:#000c;flex-direction:column;gap:16px } #banner .big{ font-size:46px;font-weight:900;letter-spacing:4px }
 </style>
 </head>
@@ -142,12 +142,13 @@ const sys=t=>bubble("sys",t);
 const inspect=id=>{ const ov=$("inspect"); ov.innerHTML=`<img src="${SRC(id)}" alt="">`; ov.style.display="flex"; };
 // 有疊卡的怪獸：整組放大檢視（形容詞在上、名詞壓最下，各露上緣，同棋盤堆疊）
 function inspectMon(m){ const mods=m.mods||[]; if(!mods.length){ inspect(m.id); return; }
-  const REVF=0.157, H=Math.min(window.innerHeight*0.82/(1+REVF*mods.length), window.innerHeight*0.6);
-  const CH=Math.round(H), CW=Math.round(CH*0.726), REV=Math.round(CH*REVF), total=CH+REV*mods.length;
-  const ids=[...mods.map(a=>a.id), m.id];
+  const ids=[m.id, ...mods.map(a=>a.id)];               // 名詞在左、形容詞往右橫向攤開
+  const n=ids.length, vw=window.innerWidth, vh=window.innerHeight, gap=Math.round(vw*0.018);
+  const CH=Math.round(Math.min(vh*0.8, ((vw*0.94-(n-1)*gap)/n)/0.726));   // 自動縮放：一排放得下
+  const CW=Math.round(CH*0.726);
   const ov=$("inspect");
-  ov.innerHTML=`<div class="stackview" style="width:${CW}px;height:${total}px">`+
-    ids.map((id,i)=>`<img src="${SRC(id)}" style="width:${CW}px;height:${CH}px;top:${i*REV}px;z-index:${i}">`).join("")+`</div>`;
+  ov.innerHTML=`<div class="stackview" style="gap:${gap}px">`+
+    ids.map(id=>`<img src="${SRC(id)}" style="width:${CW}px;height:${CH}px">`).join("")+`</div>`;
   ov.style.display="flex"; }
 
 function newMon(c,ready=false){ return {...c, chp:c.hp, used:!ready}; }
