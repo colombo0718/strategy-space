@@ -109,7 +109,7 @@
         <button class="end" id="end">結束回合 ⏭</button>
         <button class="ghost" id="reset" title="重開">🔄</button>
       </div>
-      <div class="hint">召喚：寫出手牌<b>名詞</b>（如 <b>Cat</b>）　·　攻擊：<b>你的怪獸 ＋ 動詞 ＋ 敵方</b>（如 <b>Cat bites Dragon</b>）<br>卡片點一下可放大看清楚</div>
+      <div class="hint" id="playhint">召喚：寫出手牌<b>名詞</b>（如 <b>Cat</b>）　·　攻擊：<b>你的怪獸＋攻擊動詞＋敵方</b>（如 <b>Cat bites Dragon</b>）　·　防禦：<b>你的怪獸＋防禦動詞</b>（如 <b>Penguin blocks</b>）<br>卡片點一下可放大看清楚</div>
     </div>
   </div>
 
@@ -144,8 +144,8 @@ function deal(){
   $("rtop").textContent=`📜 ${MODE_NAME}模式 · 造句對話`;
   $("chat").innerHTML=""; render();
   sys(`⚔️ ${MODE_NAME}模式開始 — 打倒對方召喚師（HP 歸 0）獲勝`);
-  sys("空場開局：先打一句話「召喚」你的怪獸（寫出手牌名詞，如 Cat）");
-  if(AI_OPEN) sys("（AI 的手牌是攤開的，可以偷看它有什麼牌）");
+  $("playhint").style.display = MODE==="battle" ? "none" : "block";
+  if(MODE!=="battle"){ sys("🎮 你先召喚：打一句話寫出手牌裡的名詞（如 Cat），就能召喚牠上場"); if(AI_OPEN) sys("（AI 手牌攤開、可偷看牠有什麼）"); }
 }
 
 // ── 渲染 ──
@@ -186,11 +186,17 @@ function submit(){
   const adjCard=S.me.hand.find(c=>isAdj(c)&&has(c.w));
   const verbCard=S.me.hand.find(c=>isVerb(c)&&vmatch(c.w));
 
-  if(verbCard){                               // 有動詞字 → 攻擊
+  if(verbCard){                               // 有動詞字
     const subject=S.me.board.find(m=>!m.used&&has(m.w));
-    if(!subject){ sys("句子裡要有你「場上、且本回合可行動」的怪獸當主詞（先召喚一隻）"); return; }
-    const target=S.opp.board.find(m=>has(m.w))||null;   // 沒指定敵方怪 → 直擊召喚師
-    resolveAttack(subject,verbCard,target,adjCard); return;
+    if(!subject){ sys("句子裡要有你「場上、且本回合可行動」的怪獸（先召喚一隻）"); return; }
+    const isAtk=verbCard.eff.some(e=>e[0]==="🗡️"&&e[1]>0);
+    if(isAtk){                                // 攻擊動詞（帶 🗡️ 傷害）
+      const target=S.opp.board.find(m=>has(m.w));
+      if(!target && S.opp.board.length>0){ sys("敵方場上有怪獸擋著——句子裡要指定一隻敵方怪獸（先打倒牠們才能直擊召喚師）"); return; }
+      resolveAttack(subject,verbCard,target||null,adjCard); return;
+    } else {                                  // 防禦/輔助動詞（🛡️🦶❤️）→ 對自己
+      defendMove(subject,verbCard,adjCard); return;
+    }
   }
   const nounCard=S.me.hand.find(c=>isNoun(c)&&has(c.w));  // 有名詞字 → 召喚
   if(nounCard){ if(S.me.board.length>=MAXB){ sys(`你場上滿了（最多 ${MAXB} 隻）`); } else summon(nounCard); return; }
@@ -216,13 +222,21 @@ function resolveAttack(sub,verb,target,adj){
   sub.used=true; render();
 }
 
+function defendMove(sub,verb,adj){   // 防禦/輔助動詞：強化自己（不攻擊）
+  if(adj) applyAdj(adj,sub,S.opp.board[0]);
+  verb.eff.forEach(([ic,v])=>{ const st={"🛡️":"def","🦶":"spd","❤️":"hp"}[ic]; if(st){ sub[st]=Math.max(0,(sub[st]||0)+v); if(st==="hp")sub.chp+=v; } });
+  S.me.hand=S.me.hand.filter(x=>x!==verb); S.me.discard.push(verb);
+  const eff=verb.eff.map(([ic,v])=>`${ic}${v>=0?"+":""}${v}`).join(" ");
+  sys(`🛡️ ${sub.w} 使出 ${verb.w}（防禦）：${eff}`); sub.used=true; render();
+}
+
 // ── AI 對手（先用模板「會出句子」；之後接 CF LLM）──
 $("end").onclick=()=>{ if(S.turn!=="me")return; S.turn="opp"; render(); sys("— AI 回合 —"); setTimeout(aiTurn,700); };
 function aiTurn(){ // TODO: 換 CF LLM 產生對手句子
   if(S.opp.deck.length&&S.opp.hand.length<7) S.opp.hand.push(S.opp.deck.shift());
   const rnd=a=>a[Math.floor(Math.random()*a.length)];
   if(S.opp.board.length<2){ const i=S.opp.hand.findIndex(isNoun); if(i>=0){ const n=S.opp.hand.splice(i,1)[0]; S.opp.board.push(newMon(n)); bubble("ai",`I summon ${n.w}.`); sys(`🤖 召喚【${n.w}】`); } }
-  S.opp.board.forEach(m=>{ if(m.used)return; const vi=S.opp.hand.findIndex(isVerb); const v=vi>=0?S.opp.hand.splice(vi,1)[0]:{w:"Hit",eff:[["🗡️",2]]}; if(v.id)S.opp.discard.push(v);
+  S.opp.board.forEach(m=>{ if(m.used)return; const vi=S.opp.hand.findIndex(c=>isVerb(c)&&c.eff.some(e=>e[0]==="🗡️"&&e[1]>0)); const v=vi>=0?S.opp.hand.splice(vi,1)[0]:{w:"Hit",eff:[["🗡️",2]]}; if(v.id)S.opp.discard.push(v);
     const vA=(v.eff.find(e=>e[0]==="🗡️")||[,0])[1], base=Math.max(1,m.atk+(vA>0?vA:0)), t=S.me.board[0];
     if(t){ const dmg=Math.max(1,base-t.def); t.chp-=dmg; bubble("ai",`${m.w} ${v.w.toLowerCase()}s ${t.w}.`); sys(`💥 ${m.w} → 你的 ${t.w}　−${dmg}`);
       if(t.chp<=0){ sys(`☠️ 你的 ${t.w} 倒下`); S.me.discard.push(t); S.me.board=S.me.board.filter(x=>x!==t); } }
