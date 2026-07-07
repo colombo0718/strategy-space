@@ -442,7 +442,8 @@ function resolveAttack(sub,verb,target){
     if(target.armor==null) target.armor=target.def;
     const block=Math.min(target.armor,base), dmg=base-block; target.armor-=block; target.chp-=dmg;   // 護甲吸收＝min(護甲,攻擊)、消耗護甲；傷害＝攻擊−吸收（自然 ≥0）
     sys(`💥 ${sub.w} ${label} ${target.w}：🗡️${sub.atk}${vA>0?"＋"+vA:""}−🛡️${block} ＝ ${dmg>0?"−"+dmg:"0（護甲全擋）"}${target.armor<=0&&target.def>0?"　💢護甲破！":""}`);
-    if(target.chp<=0){ sys(`☠️ ${target.w} 倒下，進棄牌`); S.opp.discard.push(target,...(target.mods||[]),...(target.tmods||[])); S.opp.board=S.opp.board.filter(m=>m!==target); }
+    if(target.chp<=0){ sys(`☠️ ${target.w} 倒下，進棄牌`); S.opp.discard.push(target,...(target.mods||[]),...(target.tmods||[])); S.opp.board=S.opp.board.filter(m=>m!==target);
+      const ov=-target.chp; if(ov>0){ S.opp.hp-=ov; sys(`⚡ 溢出 ${ov} 傷害衝破、直擊 AI 召喚師！`); if(S.opp.hp<=0){ sub.used=true; render(); return win("🏆 你贏了！"); } } }
   } else { S.opp.hp-=base; sys(`💥 ${sub.w} ${label} 直擊 AI 召喚師　−${base}`); if(S.opp.hp<=0)return win("🏆 你贏了！"); }
   sub.used=true; render();
 }
@@ -507,7 +508,8 @@ async function aiTurn(){ // 腳本對手：一回合多個動作，每句間隔�
       if(t.armor==null) t.armor=t.def;
       const block=Math.min(t.armor,base), dmg=base-block; t.armor-=block; t.chp-=dmg;
       sys(`💥 ${m.w} → 你的 ${t.w}：🗡️${m.atk}${vA>0?"＋"+vA:""}−🛡️${block} ＝ ${dmg>0?"−"+dmg:"0（護甲全擋）"}${t.armor<=0&&t.def>0?"　💢護甲破！":""}`);
-      if(t.chp<=0){ sys(`☠️ 你的 ${t.w} 倒下`); S.me.discard.push(t,...(t.mods||[]),...(t.tmods||[])); S.me.board=S.me.board.filter(x=>x!==t); } }
+      if(t.chp<=0){ sys(`☠️ 你的 ${t.w} 倒下`); S.me.discard.push(t,...(t.mods||[]),...(t.tmods||[])); S.me.board=S.me.board.filter(x=>x!==t);
+        const ov=-t.chp; if(ov>0){ S.me.hp-=ov; sys(`⚡ 溢出 ${ov} 傷害衝破、直擊你的召喚師！`); } } }
     else { S.me.hp-=base; bubble("ai",aiFace(m.w)); sys(`💥 直擊你　−${base}`); }
     m.used=true; render();
     if(S.me.hp<=0)return win("AI 獲勝…再來一局");
