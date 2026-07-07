@@ -245,7 +245,13 @@ function submit(){
       defendMove(subject,verbCard); return;
     }
   }
-  if(nounCard){ if(S.me.board.length>=MAXB){ sys(`你場上滿了（最多 ${MAXB} 隻）`); } else summon(nounCard); return; }
+  const nounCards=S.me.hand.filter(c=>isNoun(c)&&has(c.w));   // 一句可多重召喚（Cat and Dog）
+  if(nounCards.length){
+    let blocked=0;
+    for(const c of nounCards){ if(S.me.board.length>=MAXB){ blocked++; continue; } summon(c); }
+    if(blocked) sys(`場上已滿（最多 ${MAXB} 隻）——還有 ${blocked} 隻名詞沒能上場`);
+    return;
+  }
   sys("沒對上任何手牌上的字——句子要包含手牌的單字（名詞召喚／名詞+形容詞強化／怪獸+動詞攻擊）");
 }
 function summon(c){ const m=newMon(c); S.me.board.push(m); S.me.hand=S.me.hand.filter(x=>x!==c);
