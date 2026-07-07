@@ -173,7 +173,7 @@ function monEl(m){ const wrap=document.createElement("div"); wrap.className="mon
     c.innerHTML=`<img src="${SRC(a.id)}" alt="${a.w}">`;
     c.onclick=e=>{ e.stopPropagation(); inspectMon(m); }; wrap.appendChild(c); });   // 點疊卡→看整組
   const d=document.createElement("div"); d.className="mon"+(m.used?" used":""); d.style.zIndex=String(mods.length+1);
-  const arm=(m.armor!=null&&m.def>0&&m.armor<m.def)?` <span class="marm">🛡️${m.armor}</span>`:"";   // 護甲被消耗時顯示剩餘
+  const cur=m.armor??m.def, arm=m.def>0?` <span class="marm" style="color:${cur<m.def?'#ff9a9a':'#a9c7ff'}">🛡️${cur}/${m.def}</span>`:"";   // 護甲當前/上限，永遠顯示（破甲轉紅）
   d.innerHTML=`<img src="${SRC(m.id)}"><span class="mhp">❤️<b>${Math.max(0,m.chp)}</b>/${m.hp}${arm}</span>`;
   d.onclick=()=>inspectMon(m); wrap.appendChild(d);   // 點怪獸→有疊卡就看整組、否則看單卡
   return wrap; }
