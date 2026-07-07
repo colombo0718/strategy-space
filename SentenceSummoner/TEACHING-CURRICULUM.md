@@ -143,7 +143,46 @@ TeachingGame = {
 
 ---
 
-## 6. 待定
+## 7. 教學局 v1（實際排牌 · 一局貫穿）
+
+> 一局約 11 回合的引導對戰。雙方牌組排好、依序抽出自然生出每個教學點。數字為 v1、實測再微調。
+> 表示法：**你的手牌**列「這回合玩家手上有的關鍵卡」；**目標句**是要玩家打出的；**pass** 是引擎驗的狀態；**對手**是該回合對方做的事（由對手牌序自然產生）。
+> 設計備註：教學局手牌由排好的牌庫依序供給；讓玩家大致「每回合出 1 張」使抽牌順暢、避免無用卡塞滿 5 格擋住抽牌（softlock）。廢卡＝「當下無合法用途」的卡（沒 subject 的動詞、場滿的名詞…），自然把玩家導向目標。
+
+### 對手牌序（依序召喚，營造情境）
+`Duck`(弱慢·打靶) → `Turtle`(def6高甲·教破甲) → `Butterfly`(spd5快·教閃避) + `Cow`(慢·可打的靶) → `Panda`(教負向弱化) → `Chicken`(hp2殘血·教詛咒) → 之後不再補、清場後露召喚師（教直擊獲勝）。對手召喚師 HP 設低一點（如 8）讓收尾快。
+
+### 回合流程
+
+| 回合 | 你的手牌(關鍵) | 檢核點 | 目標句 | pass 判定 | 對手 |
+|--|--|--|--|--|--|
+| **T1** | Fox, Cat, Sheep, Bite, Guard | **CP1 召喚+讀卡**：看🗡️召喚最強 | `Fox`（🗡️3>Cat2>Sheep1） | Fox 在場 | — |
+| T1 | （Fox 剛上場睡眠） | **CP2 睡眠+結束** | `end` | 換對方回合 | 召 `Duck`(睡眠) |
+| **T2** | Cat, Sheep, Bite, Guard, Strong | **CP3 基礎攻擊**：Fox 可動了 | `Fox attacks Duck`（3−2=1） | Duck 受傷 | Duck 打 Fox＝0(甲擋)、召 `Turtle` |
+| **T3** | Bite, Guard, Strong, Bear, Kick | **CP4 動詞卡加成** | `Fox bites Duck`（3+3−2=4，Duck 亡） | Bite 用掉＋Duck 死 | 召 `Butterfly`+`Cow` |
+| T3 | （手上有 Bear 可召） | **CP5 多重召喚**：一句召多隻 | `Bear`（或 `Cat and Bear`） | Bear 上場 | — |
+| **T4** | Kick, Strong, Guard, Heal, Sick | **CP6 集火破甲**：Turtle 甲6太硬 | `Fox attacks Turtle` ＋ `Bear kicks Turtle` | Turtle 護甲歸0（護甲破） | Butterfly/Cow 攻擊 |
+| **T5** | Strong, Guard, Heal, Sick, Weak | **CP7 挑慢的打（閃避）**：Butterfly spd5會閃、Cow spd2不會 | `Fox attacks Cow`（避開快的） | 命中 Cow（未閃） | 骰子登場示範：若打 Butterfly→閃 |
+| **T6** | Strong, Guard, Heal, Sick, Weak | **CP8 正向強化自己** | `Strong Bear`（永久+2血） | Bear 疊 Strong | 召 `Panda` |
+| **T7** | Guard, Heal, Sick, Weak, Bump | **CP9 負向弱化對方** | `Panda sick`（對方Panda🗡️-1🛡️-1） | 對方 Panda 疊 Sick | 召 `Chicken`(hp2) |
+| **T8** | Heal, Sick, Weak, Bump, Poke | **CP10 詛咒收頭**：Chicken 殘血 | `Chicken weak`（❤️-2，Chicken 亡） | Chicken 陣亡 | — |
+| **T9** | Heal, Guard, Bump, Poke, Curl | **CP11 防禦/治療**：受傷了補血 | `Fox heal`（或 `Bear blocks`） | 該怪血/甲上升 | 全體攻擊你 |
+| **T10** | （雙方都有同名怪，如都有 Fox） | **CP12 語序要對**：指定咬誰 | `Fox bites Panda`（非同名對方） | 打中 Panda、不誤傷同名 | — |
+| **T11** | （清空對方場上後） | **CP13 清場+直擊獲勝** | 清掉最後一隻 → `Bear attacks`（直擊召喚師） | 對方召喚師 HP→0、獲勝 | 場上已空 |
+
+### 覆蓋對照（§3 的 15 條 → 教學局檢核點）
+- L1+L2 → CP1；L3 → CP2；L4 → CP3；L5 → CP4；L13(多召) → CP5；L7 → CP6；L8 → CP7；L9 → CP8；L10 → CP9；L11 → CP10；L12 → CP11；L14 → CP12；L6+L15 → CP13。
+- 「一回合多動作/一怪一動詞/補抽5」在全程自然體現（CP3 攻完不能再動、CP5 召完還能做別的），用旁白點出即可，不另設檢核點。
+
+### 待補（實作前逐點填）
+- 每個 CP 的**三層提示文案**（第1/2/3 次打錯）。
+- 精確**牌庫順序**（讓上表「你的手牌」在對應回合剛好出現、且不 softlock）。
+- 對手每回合的精確動作腳本（讓 Turtle/Butterfly/Cow/Panda/Chicken 在對的回合出現、且不會意外打死玩家）。
+- CP7 的閃避示範：要不要「強制先讓玩家打一次快的、看牠閃、再引導打慢的」。
+
+---
+
+## 8. 待定
 
 - 每課要不要有「星星/完成度」回饋（動機層）？先做核心過關、動機層第二版。
 - 錯誤提示的分層文案（第 1/2/3 次錯）——需實作時逐課撰寫。
