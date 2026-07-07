@@ -25,10 +25,9 @@
   .board{ flex:1; display:flex; gap:7px; align-items:center; justify-content:center; min-height:0 }
   .slot{ width:90px;height:122px;border-radius:9px;border:2px dashed #ffffff22;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:#ffffff2a;font-size:22px }
   .monwrap{ position:relative;width:90px;height:122px;flex:0 0 auto }
-  /* 形容詞疊卡（同 deck 堆疊 demo）：往上疊、露出上緣「四維強化欄」，四欄與怪獸對齊 */
-  .monwrap .modstrip{ position:absolute;left:0;width:90px;height:20px;display:grid;grid-template-columns:repeat(4,1fr);align-items:center;
-    background:linear-gradient(180deg,#cc9c34,#ac821d);border:1px solid #6d5111;border-radius:4px;box-shadow:0 2px 4px #0008;cursor:zoom-in }
-  .monwrap .modstrip .mcell{ display:flex;align-items:center;justify-content:center;gap:1px;color:#fff;font-size:10px;font-weight:800;text-shadow:0 1px 1px #0008 }
+  /* 形容詞疊卡（同 deck 堆疊 demo）：真卡 PNG 往上疊、怪獸壓最前，各露出上緣四維欄 */
+  .monwrap .modcard{ position:absolute;left:0;width:90px;height:122px;border-radius:9px;overflow:hidden;box-shadow:0 2px 5px #0007;cursor:zoom-in }
+  .monwrap .modcard img{ width:90px;height:122px;display:block }
   .mon{ width:90px;height:122px;border-radius:9px;position:absolute;top:0;left:0;cursor:zoom-in;transition:.12s;box-shadow:0 3px 7px #0007 }
   .mon img{ width:100%;height:100%;border-radius:9px;display:block }
   .mon:hover{ transform:translateY(-4px);box-shadow:0 0 0 2px #ffffff55,0 5px 10px #0008 }
@@ -74,7 +73,8 @@
   .hint{ font-size:11px;color:#9aa39c;text-align:center;margin-top:7px;line-height:1.5 }
 
   .ov{ position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:60 }
-  #inspect{ background:#000b } #inspect img{ height:72vh;max-width:92vw;border-radius:16px;box-shadow:0 12px 44px #000 }
+  #inspect{ background:#000b } #inspect>img{ height:72vh;max-width:92vw;border-radius:16px;box-shadow:0 12px 44px #000 }
+  #inspect .stackview{ position:relative } #inspect .stackview img{ position:absolute;left:0;border-radius:14px;box-shadow:0 10px 40px #000 }
   #banner{ background:#000c;flex-direction:column;gap:16px } #banner .big{ font-size:46px;font-weight:900;letter-spacing:4px }
 </style>
 </head>
@@ -139,7 +139,16 @@ let S;
 function bubble(kind,text,sub){ const d=document.createElement("div"); d.className="msg "+kind;
   d.innerHTML=text+(sub?`<div class="sub">${sub}</div>`:""); $("chat").appendChild(d); $("chat").scrollTop=$("chat").scrollHeight; }
 const sys=t=>bubble("sys",t);
-const inspect=id=>{ $("inspect").querySelector("img").src=SRC(id); $("inspect").style.display="flex"; };
+const inspect=id=>{ const ov=$("inspect"); ov.innerHTML=`<img src="${SRC(id)}" alt="">`; ov.style.display="flex"; };
+// 有疊卡的怪獸：整組放大檢視（形容詞在上、名詞壓最下，各露上緣，同棋盤堆疊）
+function inspectMon(m){ const mods=m.mods||[]; if(!mods.length){ inspect(m.id); return; }
+  const REVF=0.157, H=Math.min(window.innerHeight*0.82/(1+REVF*mods.length), window.innerHeight*0.6);
+  const CH=Math.round(H), CW=Math.round(CH*0.726), REV=Math.round(CH*REVF), total=CH+REV*mods.length;
+  const ids=[...mods.map(a=>a.id), m.id];
+  const ov=$("inspect");
+  ov.innerHTML=`<div class="stackview" style="width:${CW}px;height:${total}px">`+
+    ids.map((id,i)=>`<img src="${SRC(id)}" style="width:${CW}px;height:${CH}px;top:${i*REV}px;z-index:${i}">`).join("")+`</div>`;
+  ov.style.display="flex"; }
 
 function newMon(c,ready=false){ return {...c, chp:c.hp, used:!ready}; }
 
@@ -154,19 +163,16 @@ function deal(){
 }
 
 // ── 渲染 ──
-const STRIP_ORDER=["❤️","🗡️","🛡️","🦶"];
 function monEl(m){ const wrap=document.createElement("div"); wrap.className="monwrap";
   const mods=m.mods||[], STEP=20;
-  // 形容詞往上疊、露出上緣「四維強化欄」（四欄對齊怪獸）；怪獸壓最前最下、z 最高
-  mods.forEach((a,i)=>{ const map={}; a.eff.forEach(([ic,v])=>map[ic]=v);
-    const s=document.createElement("div"); s.className="modstrip"; s.title=a.w;
-    s.style.top=(-(i+1)*STEP)+"px"; s.style.zIndex=String(mods.length-i);
-    s.innerHTML=STRIP_ORDER.map(ic=> ic in map
-      ? `<span class="mcell">${ic}<b>${map[ic]>=0?"+":""}${map[ic]}</b></span>` : `<span class="mcell"></span>`).join("");
-    s.onclick=e=>{ e.stopPropagation(); inspect(a.id); }; wrap.appendChild(s); });
+  // 形容詞真卡 PNG 往上疊：怪獸(名詞)在最前最下、z 最高；每張形容詞露出上緣四維欄
+  mods.forEach((a,i)=>{ const c=document.createElement("div"); c.className="modcard";
+    c.style.top=(-(i+1)*STEP)+"px"; c.style.zIndex=String(mods.length-i); c.title=a.w;
+    c.innerHTML=`<img src="${SRC(a.id)}" alt="${a.w}">`;
+    c.onclick=e=>{ e.stopPropagation(); inspectMon(m); }; wrap.appendChild(c); });   // 點疊卡→看整組
   const d=document.createElement("div"); d.className="mon"+(m.used?" used":""); d.style.zIndex=String(mods.length+1);
   d.innerHTML=`<img src="${SRC(m.id)}"><span class="mhp">❤️<b>${Math.max(0,m.chp)}</b>/${m.hp}</span>`;
-  d.onclick=()=>inspect(m.id); wrap.appendChild(d);
+  d.onclick=()=>inspectMon(m); wrap.appendChild(d);   // 點怪獸→有疊卡就看整組、否則看單卡
   return wrap; }
 function boardRow(side){ const box=$(side==="me"?"meBoard":"oppBoard"); box.innerHTML=""; const b=S[side].board;
   for(let i=0;i<MAXB;i++){ if(b[i])box.appendChild(monEl(b[i]));
