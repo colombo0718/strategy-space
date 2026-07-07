@@ -98,8 +98,10 @@
   #inspect{ background:#000b } #inspect>img{ height:58vh;max-width:80vw;border-radius:16px;box-shadow:0 12px 44px #000 }
   #inspect .stackview{ display:flex;align-items:center;justify-content:center } #inspect .stackview img{ border-radius:14px;box-shadow:0 10px 40px #000 }
   #banner{ background:#000c;flex-direction:column;gap:22px } #banner .big{ font-size:46px;font-weight:900;letter-spacing:4px }
+  #banBtns{ display:flex; gap:12px }
   #banner .again{ background:linear-gradient(135deg,#c9a44a,#e7c873);color:#3a2f1f;border-radius:14px;padding:13px 34px;font-size:19px;font-weight:800;letter-spacing:1px;box-shadow:0 6px 20px rgba(231,200,115,.45) }
   #banner .again:hover{ transform:translateY(-2px) }
+  #banner .again.ghost2{ background:#2c2723;color:#e7c873;border:1px solid #5a4d38;box-shadow:none }
 </style>
 </head>
 <body>
@@ -154,7 +156,7 @@
     <div class="hnote">出牌自動補到 5 張 · 卡片點一下可放大看清楚 · 護甲每回合回滿、集火可破甲</div>
     <div class="hclose">點任意處關閉</div>
   </div></div>
-  <div class="ov" id="banner"><div class="big" id="bigTxt"></div><button class="again" onclick="location.reload()">🔄 再來一局</button></div>
+  <div class="ov" id="banner"><div class="big" id="bigTxt"></div><div id="banBtns"><button class="again" onclick="location.reload()">🔄 再來一局</button></div></div>
 
 <script>
 const D=window.SS_DECK, SRC=id=>`cards/${id}.png`;
@@ -254,7 +256,15 @@ function checkTeaching(){ if(MODE!=="teaching")return; const t=TT[S.cp]; if(!t)r
     if(S.gi<t.goals.length && t.goals[S.gi].teach) coach(t.goals[S.gi].teach); }
   if(S.gi>=t.goals.length && !S._endPrompted){ S._endPrompted=true;
     if(S.cp<TT.length-1) coach("👍 這回合目標完成！打 <b>end</b> 結束回合，換對手行動。"); }
+  if(S.cp===TT.length-1 && S.gi>=t.goals.length && !S._done){ S._done=true; teachComplete(); }
   render();
+}
+function teachComplete(){   // 教學全破 → 導向訓練模式（教學→訓練→對戰的階梯）
+  $("bigTxt").textContent="🎓 教學完成！";
+  $("bigTxt").style.color="#e7c873";
+  $("banBtns").innerHTML=`<button class="again" onclick="location.href='play.html?mode=training'">▶️ 進入訓練模式</button>`
+    +`<button class="again ghost2" onclick="location.reload()">🔁 重玩教學</button>`;
+  $("banner").style.display="flex";
 }
 async function teachEndTurn(){   // 玩家結束回合 → 對手真的行動一回合 → 換你
   const t=TT[S.cp]; if(!t || S.turn!=="me")return;
