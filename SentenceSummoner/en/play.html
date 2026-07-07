@@ -25,12 +25,15 @@
   .board{ flex:1; display:flex; gap:7px; align-items:center; justify-content:center; min-height:0 }
   .slot{ width:90px;height:122px;border-radius:9px;border:2px dashed #ffffff22;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:#ffffff2a;font-size:22px }
   .monwrap{ position:relative;width:90px;height:122px;flex:0 0 auto }
-  .monwrap .under{ position:absolute;left:0;width:90px;height:122px;border-radius:9px;box-shadow:0 2px 6px #0007;filter:brightness(.9) }
-  .mon{ width:90px;height:122px;border-radius:9px;position:absolute;top:0;left:0;cursor:zoom-in;transition:.12s;box-shadow:0 3px 7px #0007 }
+  /* 形容詞疊卡：只露出「上緣」四維強化條、往下層層疊 */
+  .monwrap .modtab{ position:absolute;left:0;width:90px;height:19px;display:flex;align-items:center;justify-content:center;gap:6px;
+    background:linear-gradient(180deg,#cc9c34,#ad831e);border:1px solid #6d5111;border-radius:3px;box-shadow:0 2px 4px #0007;
+    font-size:11px;font-weight:800;color:#fff;text-shadow:0 1px 1px #0007;cursor:zoom-in;z-index:3;white-space:nowrap;overflow:hidden }
+  .mon{ width:90px;height:122px;border-radius:9px;position:absolute;top:0;left:0;cursor:zoom-in;transition:.12s;box-shadow:0 3px 7px #0007;z-index:5 }
   .mon img{ width:100%;height:100%;border-radius:9px;display:block }
   .mon:hover{ transform:translateY(-4px);box-shadow:0 0 0 2px #ffffff55,0 5px 10px #0008 }
   .mon.used{ filter:grayscale(.6) brightness(.7) }
-  .mhp{ position:absolute;bottom:-3px;left:50%;transform:translateX(-50%);background:#111c;border:1px solid #000;border-radius:9px;font-size:10px;font-weight:800;padding:0 5px;color:#ff9 }
+  .mhp{ position:absolute;bottom:3px;left:50%;transform:translateX(-50%);background:#111c;border:1px solid #000;border-radius:9px;font-size:10px;font-weight:800;padding:0 5px;color:#ff9;z-index:6 }
   .mhp b{ color:#7fe08a }
 
   /* 手牌區：棄牌 | 手牌(橫排微疊) | 牌庫 */
@@ -152,11 +155,15 @@ function deal(){
 
 // ── 渲染 ──
 function monEl(m){ const wrap=document.createElement("div"); wrap.className="monwrap";
-  (m.mods||[]).forEach((a,i)=>{ const u=document.createElement("img"); u.className="under"; u.src=SRC(a.id);
-    u.style.top=(14+i*11)+"px"; u.style.zIndex=String(m.mods.length-i); wrap.appendChild(u); });
-  const d=document.createElement("div"); d.className="mon"+(m.used?" used":""); d.style.zIndex="20";
+  const d=document.createElement("div"); d.className="mon"+(m.used?" used":"");
   d.innerHTML=`<img src="${SRC(m.id)}"><span class="mhp">❤️<b>${Math.max(0,m.chp)}</b>/${m.hp}</span>`;
-  d.onclick=()=>inspect(m.id); wrap.appendChild(d); return wrap; }
+  d.onclick=()=>inspect(m.id); wrap.appendChild(d);
+  // 形容詞：往怪獸下方層層疊、每張只露出上緣四維強化條（直接渲染、不裁圖）
+  (m.mods||[]).forEach((a,i)=>{ const t=document.createElement("div"); t.className="modtab";
+    t.style.top=(120+i*20)+"px"; t.title=a.w;
+    t.innerHTML=a.eff.map(([ic,v])=>`${ic}${v>=0?"+":""}${v}`).join(" ");
+    t.onclick=e=>{ e.stopPropagation(); inspect(a.id); }; wrap.appendChild(t); });
+  return wrap; }
 function boardRow(side){ const box=$(side==="me"?"meBoard":"oppBoard"); box.innerHTML=""; const b=S[side].board;
   for(let i=0;i<MAXB;i++){ if(b[i])box.appendChild(monEl(b[i]));
     else{ const s=document.createElement("div"); s.className="slot"; s.textContent="＋"; box.appendChild(s); } } }
