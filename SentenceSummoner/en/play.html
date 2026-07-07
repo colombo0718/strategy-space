@@ -41,7 +41,7 @@
   .pile .cnt{ position:absolute;bottom:4px;left:50%;transform:translateX(-50%);background:#000b;border-radius:9px;padding:1px 7px;font-weight:800;color:#fff }
   .pile .lbl{ position:absolute;top:-16px;font-size:10px;color:#ffffff66 }
   .deck .cnt,.discard .cnt{ top:-16px;bottom:auto }   /* 牌庫/棄牌張數寫在卡片上方、不擋卡面 */
-  .deck{ background:url(cardback.png) center/cover no-repeat;color:#e7c873;font-weight:900 }
+  .deck{ background:url(cardback.png) center/100% 100% no-repeat;color:#e7c873;font-weight:900 }
   .discard{ border:2px dashed #ffffff2a; overflow:hidden } .discard img{ width:100%;height:100%;border-radius:7px;opacity:.55;filter:grayscale(.4) }
   .hand{ display:flex; align-items:flex-end }
   .hand .card{ width:94px;height:128px;border-radius:8px;margin-left:-22px;cursor:zoom-in;transition:.14s;box-shadow:0 4px 10px #0008 }
@@ -50,7 +50,7 @@
   .hand .card:hover{ transform:translateY(-24px) scale(1.07);z-index:30;margin-right:14px }
   .hand.backs{ display:flex; align-items:flex-end }
   .cb{ width:94px;height:128px;border-radius:8px;margin-left:-22px;
-    background:url(cardback.png) center/cover no-repeat;box-shadow:0 4px 10px #0008 }
+    background:url(cardback.png) center/100% 100% no-repeat;box-shadow:0 4px 10px #0008 }
   .cb:first-child{ margin-left:0 }
   .oppzone .hand .card:hover{ transform:translateY(24px) scale(1.07) } /* 對手在上、hover 往下展 */
 
