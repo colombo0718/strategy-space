@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Sentence Summoner — Battle</title>
+<script src="deck.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{ height:100% }
+  body{ font-family:"Segoe UI","Noto Sans TC",sans-serif; color:#eee; display:flex; overflow:hidden }
+
+  /* ═══ 左 6：棋盤 ═══ */
+  .left{ flex:6; min-width:0; height:100vh; display:flex; flex-direction:column; padding:8px 12px;
+    background:radial-gradient(900px 620px at 50% 45%, #2f5d44 0%, #1b3327 62%, #12211a 100%) }
+  .summoner{ display:flex; align-items:center; gap:10px; padding:2px 4px; flex:0 0 auto }
+  .por{ width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:23px;border:2px solid;background:#0004 }
+  .opp .por{ border-color:#e58b7d } .me .por{ border-color:#8fd7a0 }
+  .sname{ font-size:12px } .opp .sname{color:#e58b7d} .me .sname{color:#8fd7a0}
+  .shpbar{ width:190px;height:15px;background:#0006;border-radius:8px;overflow:hidden;border:1px solid #000 }
+  .shpfill{ height:100%;transition:width .3s } .opp .shpfill{background:linear-gradient(90deg,#e07a6a,#c94f3c)} .me .shpfill{background:linear-gradient(90deg,#5ac16a,#3a9d4a)}
+  .shpnum{ font-size:11px } .turnpill{ margin-left:auto;font-size:11px;padding:3px 10px;border-radius:20px;background:#0005;color:#e7c873 }
+
+  .board{ flex:1; display:flex; gap:7px; align-items:center; justify-content:center; min-height:0 }
+  .slot{ width:80px;height:108px;border-radius:9px;border:2px dashed #ffffff22;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:#ffffff33;font-size:24px }
+  .mon{ width:80px;height:108px;border-radius:9px;position:relative;flex:0 0 auto;cursor:pointer;transition:.12s;box-shadow:0 3px 7px #0007 }
+  .mon img{ width:100%;height:100%;border-radius:9px;display:block }
+  .mon:hover{ transform:translateY(-4px) }
+  .mon.atkable{ box-shadow:0 0 0 3px #8fd7a0,0 0 12px #8fd7a0aa }
+  .mon.sel{ box-shadow:0 0 0 3px #e7c873,0 0 16px #e7c873;transform:translateY(-6px) }
+  .mon.target{ box-shadow:0 0 0 3px #e58b7d,0 0 14px #e58b7d }
+  .mon.used{ filter:grayscale(.6) brightness(.7) }
+  .mhp{ position:absolute;bottom:-3px;left:50%;transform:translateX(-50%);background:#111c;border:1px solid #000;border-radius:9px;font-size:10px;font-weight:800;padding:0 5px;color:#ff9 }
+  .mhp b{ color:#7fe08a }
+
+  /* 手牌區：棄牌 | 手牌(橫排微疊) | 牌庫 */
+  .handzone{ flex:0 0 auto; display:flex; align-items:flex-end; justify-content:space-between; height:150px; padding:4px 34px 0 }
+  .pile{ width:76px;height:104px;border-radius:9px;flex:0 0 auto;position:relative;display:flex;align-items:center;justify-content:center;font-size:11px;color:#cbb }
+  .pile .cnt{ position:absolute;bottom:4px;left:50%;transform:translateX(-50%);background:#000b;border-radius:9px;padding:1px 7px;font-weight:800;color:#fff }
+  .pile .lbl{ position:absolute;top:-16px;font-size:10px;color:#ffffff66 }
+  .deck{ background:repeating-linear-gradient(45deg,rgba(255,255,255,.03) 0 6px,transparent 6px 12px),radial-gradient(circle at 50% 40%,#2f5d52,#1c3b34 70%);border:2px solid #c2922c;color:#e7c873;font-weight:900 }
+  .discard{ border:2px dashed #ffffff2a; overflow:hidden } .discard img{ width:100%;height:100%;border-radius:7px;opacity:.55;filter:grayscale(.4) }
+  .hand{ display:flex; align-items:flex-end }
+  .hand .card{ width:82px;height:112px;border-radius:8px;margin-left:-22px;cursor:pointer;transition:.14s;box-shadow:0 4px 10px #0008 }
+  .hand .card:first-child{ margin-left:0 }
+  .hand .card img{ width:100%;height:100%;border-radius:8px;display:block }
+  .hand .card:hover{ transform:translateY(-24px) scale(1.07);z-index:30;margin-right:14px }
+  .hand .card.selc{ transform:translateY(-16px);box-shadow:0 0 0 3px #e7c873,0 6px 14px #000a;z-index:20 }
+  .hand .card.playable{ box-shadow:0 0 0 2px #8fd7a0aa,0 4px 10px #0008 }
+  /* 對手手牌區（卡背）＋左右牌堆 — 尺寸與我方一致 */
+  .hand.backs{ display:flex; align-items:flex-end }
+  .cb{ width:82px;height:112px;border-radius:8px;margin-left:-22px;border:2px solid #c2922c;
+    background:repeating-linear-gradient(45deg,rgba(255,255,255,.03) 0 6px,transparent 6px 12px),radial-gradient(circle at 50% 40%,#2f5d52,#1c3b34 70%);box-shadow:0 4px 10px #0008 }
+  .cb:first-child{ margin-left:0 }
+
+  /* ═══ 右 4：LINE 式訊息框（白底）═══ */
+  .right{ flex:4; min-width:300px; height:100vh; display:flex; flex-direction:column; background:#fff; border-left:1px solid #cdd6cf }
+  .rtop{ padding:9px 12px; background:#e7efe8; border-bottom:1px solid #d5ddd6; font-size:13px; color:#3a5a44; letter-spacing:1px; font-weight:700 }
+  .chat{ flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:7px; background:#eef2ee }
+  .msg{ max-width:82%; padding:7px 11px; border-radius:14px; font-size:13px; line-height:1.4; word-break:break-word; box-shadow:0 1px 1px #0000000d }
+  .msg.sys{ align-self:center; background:none; color:#8a938c; font-size:11px; max-width:100%; text-align:center; padding:2px; box-shadow:none }
+  .msg.me{ align-self:flex-end; background:#8ce069; color:#173a12; border-bottom-right-radius:4px }
+  .msg.ai{ align-self:flex-start; background:#fff; color:#333; border:1px solid #e2e2e2; border-bottom-left-radius:4px }
+  .msg .sub{ font-size:10px; margin-top:2px; color:#3a6a2a }
+  .msg.ai .sub{ color:#999 }
+
+  /* 造句 compose（LINE 輸入區風格，白底） */
+  .compose{ border-top:1px solid #d5ddd6; padding:10px 12px; background:#fafbfa }
+  .svo{ display:flex; align-items:center; gap:6px; justify-content:center; font-size:13px; margin-bottom:8px; flex-wrap:wrap }
+  .sl{ padding:4px 9px;border-radius:8px;border:2px solid #ccc;color:#666;font-weight:700 }
+  .sl.s{ border-color:#3a7d44;color:#2a6d38 } .sl.v.on{ border-color:#b3402f;color:#b3402f;background:#fbe9e5 } .sl.o{ border-color:#d9776a;color:#c1524a } .ar{color:#bbb}
+  .inrow{ display:flex; gap:6px }
+  input.say{ flex:1;min-width:0;background:#fff;border:1px solid #cbd3cc;color:#222;border-radius:20px;padding:9px 14px;font-size:14px }
+  .btnrow{ display:flex; gap:6px; margin-top:8px }
+  button{ border:0;border-radius:20px;padding:8px 12px;font-size:13px;font-weight:800;cursor:pointer }
+  .mic{ background:#efeaf7;color:#6a4fa0;border-radius:50%;width:40px;height:40px;flex:0 0 auto;font-size:16px }
+  .atk{ background:#b3402f;color:#fff;flex:1 } .atk:disabled{ opacity:.4;cursor:default }
+  .end{ background:#e0b84a;color:#4a3a10;flex:1 } .ghost{ background:#eef1f4;color:#556;border:1px solid #ccd3d8 }
+  .hint{ font-size:11px;color:#9aa39c;text-align:center;margin-top:6px }
+
+  .banner{ position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:#000a;z-index:50;flex-direction:column;gap:14px }
+  .banner .big{ font-size:44px;font-weight:900;letter-spacing:4px }
+</style>
+</head>
+<body>
+  <!-- 左 6：棋盤 -->
+  <div class="left">
+    <div class="handzone opp">
+      <div class="pile deck" id="oppDeck" title="對手牌庫"><span class="lbl">牌庫</span>🂠<span class="cnt" id="oppDeckCnt">0</span></div>
+      <div class="hand backs" id="oppHand"></div>
+      <div class="pile discard" id="oppDiscard" title="對手棄牌"><span class="lbl">棄牌</span><span class="cnt" id="oppDiscCnt">0</span></div>
+    </div>
+    <div class="summoner opp"><div class="por">🤖</div><div><div class="sname">AI 召喚師</div>
+      <div class="shpbar"><div class="shpfill" id="oppHpF"></div></div></div><div class="shpnum" id="oppHpN"></div>
+      <div class="turnpill" id="turnPill">你的回合</div></div>
+    <div class="board opp" id="oppBoard"></div>
+    <div class="board me" id="meBoard"></div>
+    <div class="summoner me"><div class="por">🧑</div><div><div class="sname">你</div>
+      <div class="shpbar"><div class="shpfill" id="meHpF"></div></div></div><div class="shpnum" id="meHpN"></div></div>
+    <div class="handzone">
+      <div class="pile discard" id="discard" title="棄牌區"><span class="lbl">棄牌</span><span class="cnt" id="discCnt">0</span></div>
+      <div class="hand" id="hand"></div>
+      <div class="pile deck" id="deck" title="牌庫"><span class="lbl">牌庫</span>🂠<span class="cnt" id="deckCnt">0</span></div>
+    </div>
+  </div>
+
+  <!-- 右 4：LINE 式訊息框 -->
+  <div class="right">
+    <div class="rtop">📜 戰報 · 造句對話</div>
+    <div class="chat" id="chat"></div>
+    <div class="compose">
+      <div class="svo">
+        <span class="sl s" id="sS">選你的怪獸</span><span class="ar">▶</span>
+        <span class="sl v" id="sV">選動詞</span><span class="ar">▶</span>
+        <span class="sl o" id="sO">選目標</span>
+      </div>
+      <div class="inrow">
+        <input class="say" id="say" placeholder="唸出或打出你的句子…">
+        <button class="mic" id="mic" title="CF Whisper">🎤</button>
+      </div>
+      <div class="btnrow">
+        <button class="atk" id="atk" disabled>⚔️ 出招</button>
+        <button class="end" id="end">結束回合 ⏭</button>
+        <button class="ghost" id="reset" title="重開">🔄</button>
+      </div>
+      <div class="hint">點你的怪獸 → 選動詞 → 點敵方目標（怪獸或召喚師）</div>
+    </div>
+  </div>
+  <div class="banner" id="banner"><div class="big" id="bigTxt"></div><button class="end" onclick="location.reload()">再來一局</button></div>
+
+<script>
+const D=window.SS_DECK, SRC=id=>`cards/${id}.png`;
+const ALL=[...D.nouns,...D.verbs,...D.adjs];
+ALL.forEach(c=>{ const _i=new Image(); _i.src=SRC(c.id); }); // 預載全部卡圖，避免重繪破圖/閃爍
+const isNoun=c=>D.nouns.includes(c), isVerb=c=>D.verbs.includes(c);
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const $=i=>document.getElementById(i);
+const MAXB=4, SUMHP=16;
+let S, sel;
+
+// 訊息框
+function bubble(kind,text,sub){ const d=document.createElement("div"); d.className="msg "+kind;
+  d.innerHTML=text+(sub?`<div class="sub">${sub}</div>`:""); $("chat").appendChild(d); $("chat").scrollTop=$("chat").scrollHeight; }
+const sys=t=>bubble("sys",t);
+
+function drawFrom(deck,pred){ const i=deck.findIndex(pred); return i>=0?deck.splice(i,1)[0]:null; }
+function newMon(c,ready=false){ return {...c, chp:c.hp, used:!ready}; }
+
+function deal(){
+  const md=shuffle(ALL), od=shuffle(ALL);
+  S={ me:{hp:SUMHP,board:[],hand:[],deck:md,discard:[]}, opp:{hp:SUMHP,board:[],hand:[],deck:od,discard:[]}, turn:"me" };
+  for(let i=0;i<5;i++){ S.me.hand.push(S.me.deck.shift()); S.opp.hand.push(S.opp.deck.shift()); }
+  // 各先擺 2 隻（從牌庫抽名詞）
+  for(let i=0;i<2;i++){ const n=drawFrom(S.me.deck,isNoun); if(n)S.me.board.push(newMon(n,true)); }
+  for(let i=0;i<2;i++){ const n=drawFrom(S.opp.deck,isNoun); if(n)S.opp.board.push(newMon(n)); }
+  sel={attacker:null,verb:null,target:null};
+  $("chat").innerHTML=""; render();
+  sys("⚔️ 對局開始 — 打倒對方召喚師（HP 歸 0）獲勝");
+}
+
+function monEl(m,side){ const d=document.createElement("div"); d.className="mon";
+  d.innerHTML=`<img src="${SRC(m.id)}"><span class="mhp">❤️<b>${Math.max(0,m.chp)}</b>/${m.hp}</span>`;
+  if(side==="me"){ if(!m.used&&S.turn==="me")d.classList.add("atkable"); if(sel.attacker===m)d.classList.add("sel"); if(m.used)d.classList.add("used");
+    d.onclick=()=>{ if(m.used||S.turn!=="me")return; sel.attacker=(sel.attacker===m)?null:m; sel.target=null; render(); }; }
+  else { if(sel.attacker&&sel.verb)d.classList.add("target"); if(sel.target===m)d.classList.add("sel");
+    d.onclick=()=>{ if(!sel.attacker||!sel.verb)return; sel.target=m; buildSentence(); render(); }; }
+  return d; }
+function boardRow(side){ const box=$(side==="me"?"meBoard":"oppBoard"); box.innerHTML=""; const b=S[side].board;
+  for(let i=0;i<MAXB;i++){ if(b[i])box.appendChild(monEl(b[i],side));
+    else{ const s=document.createElement("div"); s.className="slot"; s.textContent="＋"; if(side==="me")s.onclick=()=>trySummon(); box.appendChild(s); } } }
+function handEl(){ const h=$("hand"); h.innerHTML="";
+  S.me.hand.forEach(c=>{ const e=document.createElement("div"); e.className="card"; e.innerHTML=`<img src="${SRC(c.id)}">`;
+    const k=isNoun(c)?"noun":isVerb(c)?"verb":"adj";
+    if(k==="verb"&&sel.verb===c)e.classList.add("selc"); if(k==="verb"&&sel.attacker)e.classList.add("playable");
+    e.onclick=()=>onHand(c,k); h.appendChild(e); }); }
+function onHand(c,k){ if(S.turn!=="me")return;
+  if(k==="noun"){ if(S.me.board.length>=MAXB){sys("我方場上滿了");return;} summon(c); }
+  else if(k==="verb"){ if(!sel.attacker){sys("先點一隻你的怪獸當攻擊者");return;} sel.verb=(sel.verb===c)?null:c; sel.target=null; buildSentence(); render(); }
+  else applyAdj(c); }
+function trySummon(){ const n=S.me.hand.find(isNoun); if(!n){sys("手上沒有名詞可召");return;} summon(n); }
+function summon(c){ S.me.board.push(newMon(c)); S.me.hand=S.me.hand.filter(x=>x!==c); sys(`召喚【${c.w}】上場（本回合尚不能行動）`); render(); }
+function applyAdj(c){ const v=c.eff[0],pos=v[1]>=0,tgt=pos?S.me.board[0]:S.opp.board[0]; if(!tgt){sys("沒有可套用的目標");return;}
+  const st={"🗡️":"atk","🛡️":"def","🦶":"spd","❤️":"hp"}[v[0]]||"atk"; tgt[st]=Math.max(0,(tgt[st]||0)+v[1]); if(st==="hp")tgt.chp+=v[1];
+  S.me.hand=S.me.hand.filter(x=>x!==c); S.me.discard.push(c); sys(`【${c.w}】：${pos?"我方":"敵方"} ${tgt.w} ${v[0]}${v[1]>=0?"+":""}${v[1]}`); render(); }
+function buildSentence(){ if(!sel.attacker||!sel.verb){$("say").value="";return;}
+  $("say").value=`${sel.attacker.w} ${sel.verb.w.toLowerCase()}s ${sel.target?sel.target.w:"the enemy summoner"}`; }
+
+function render(){ boardRow("opp"); boardRow("me"); handEl();
+  $("oppHpF").style.width=Math.max(0,S.opp.hp/SUMHP*100)+"%"; $("oppHpN").textContent=Math.max(0,S.opp.hp);
+  $("meHpF").style.width=Math.max(0,S.me.hp/SUMHP*100)+"%"; $("meHpN").textContent=Math.max(0,S.me.hp);
+  $("deckCnt").textContent=S.me.deck.length; $("discCnt").textContent=S.me.discard.length;
+  const dsc=$("discard"); dsc.querySelectorAll("img").forEach(x=>x.remove());
+  if(S.me.discard.length){ const im=document.createElement("img"); im.src=SRC(S.me.discard[S.me.discard.length-1].id); dsc.insertBefore(im,dsc.firstChild); }
+  // 對手手牌（卡背）＋牌堆
+  $("oppDeckCnt").textContent=S.opp.deck.length; $("oppDiscCnt").textContent=S.opp.discard.length;
+  const odsc=$("oppDiscard"); odsc.querySelectorAll("img").forEach(x=>x.remove());
+  if(S.opp.discard.length){ const im=document.createElement("img"); im.src=SRC(S.opp.discard[S.opp.discard.length-1].id); odsc.insertBefore(im,odsc.firstChild); }
+  const oh=$("oppHand"); oh.innerHTML=""; for(let i=0;i<S.opp.hand.length;i++){ const e=document.createElement("div"); e.className="cb"; oh.appendChild(e); }
+  $("sS").textContent=sel.attacker?sel.attacker.w:"選你的怪獸";
+  $("sV").textContent=sel.verb?sel.verb.w:"選動詞"; $("sV").classList.toggle("on",!!sel.verb);
+  $("sO").textContent=sel.target?sel.target.w:(sel.attacker&&sel.verb?"點敵方目標":"選目標");
+  $("turnPill").textContent=S.turn==="me"?"你的回合":"AI 回合";
+  $("atk").disabled=!(sel.attacker&&sel.verb); }
+
+// 掛接點：CF Whisper / CF LLM 天裁
+const detectVerb=(t,v)=>t.toLowerCase().includes(v.w.toLowerCase().slice(0,3));
+const judgeTier=t=>{const w=t.trim().split(/\s+/).length;return w>=4?2:w>=3?1:0;};
+
+$("atk").onclick=()=>{ if(S.turn!=="me"||!sel.attacker||!sel.verb)return;
+  const text=$("say").value.trim();
+  if(!text||!detectVerb(text,sel.verb)){ bubble("me",text||"（沒說出口）"); sys(`🎤 沒偵測到「${sel.verb.w}」→ 攻擊落空`); return; }
+  const tier=judgeTier(text),mult=[1,1.3,1.6][tier],tt=["亂唸 ×1.0","通順 ×1.3","有創意 ×1.6 暴擊"][tier];
+  const vA=(sel.verb.eff.find(e=>e[0]==="🗡️")||[,0])[1], base=Math.max(1,sel.attacker.atk+(vA>0?vA:0));
+  bubble("me",text,`🧠 天裁：${tt}`);
+  if(sel.target){ const d=sel.target.spd-sel.attacker.spd;
+    if(d>=1&&(1+Math.floor(Math.random()*6))<=Math.min(d,5)){ sys(`🦶 ${sel.target.w} 閃過了！`); return afterAttack(); }
+    const dmg=Math.round(Math.max(1,base-sel.target.def)*mult); sel.target.chp-=dmg;
+    sys(`💥 ${sel.attacker.w} → ${sel.target.w}　−${dmg}`);
+    if(sel.target.chp<=0){ sys(`☠️ ${sel.target.w} 倒下，進棄牌區`); S.opp.discard.push(sel.target); S.opp.board=S.opp.board.filter(m=>m!==sel.target); }
+  } else { const dmg=Math.round(base*mult); S.opp.hp-=dmg; sys(`💥 直擊 AI 召喚師　−${dmg}`); if(S.opp.hp<=0)return win("🏆 你贏了！"); }
+  afterAttack(); };
+function afterAttack(){ if(sel.attacker)sel.attacker.used=true;
+  if(sel.verb){ S.me.hand=S.me.hand.filter(x=>x!==sel.verb); S.me.discard.push(sel.verb); }
+  sel.attacker=null; sel.verb=null; sel.target=null; $("say").value=""; render(); }
+
+$("end").onclick=()=>{ if(S.turn!=="me")return; S.turn="opp"; render(); sys("— AI 回合 —"); setTimeout(aiTurn,650); };
+function aiTurn(){ // TODO: 換 CF LLM 當對手（依手牌召喚+造句攻擊）
+  if(S.opp.deck.length&&S.opp.hand.length<7) S.opp.hand.push(S.opp.deck.shift()); // 抽 1
+  if(S.opp.board.length<2){ const n=drawFrom(S.opp.hand,isNoun); if(n){S.opp.board.push(newMon(n));sys(`🤖 召喚【${n.w}】`);} }
+  S.opp.board.forEach(m=>{ const v=drawFrom(S.opp.hand,isVerb)||{w:"Hit",eff:[["🗡️",2]]}; if(v.id)S.opp.discard.push(v); const vA=(v.eff.find(e=>e[0]==="🗡️")||[,0])[1];
+    const base=Math.max(1,m.atk+(vA>0?vA:0)), t=S.me.board[0];
+    if(t){ const dmg=Math.round(Math.max(1,base-t.def)*1.3); t.chp-=dmg;
+      bubble("ai",`${m.w} ${v.w.toLowerCase()}s ${t.w}`); sys(`💥 ${m.w} → 你的 ${t.w}　−${dmg}`);
+      if(t.chp<=0){ sys(`☠️ 你的 ${t.w} 倒下`); S.me.discard.push(t); S.me.board=S.me.board.filter(x=>x!==t); } }
+    else { const dmg=Math.round(base*1.3); S.me.hp-=dmg; bubble("ai",`${m.w} strikes your summoner!`); sys(`💥 直擊你　−${dmg}`); } });
+  if(S.me.hp<=0)return win("AI 獲勝…再來一局");
+  S.turn="me"; S.me.board.forEach(m=>m.used=false);
+  if(S.me.deck.length&&S.me.hand.length<7){ S.me.hand.push(S.me.deck.shift()); sys("你的回合 — 抽 1 張"); } else sys("你的回合");
+  render(); }
+function win(t){ $("bigTxt").textContent=t; $("bigTxt").style.color=t.includes("贏")?"#e7c873":"#e58b7d"; $("banner").style.display="flex"; }
+$("mic").onclick=()=>sys("🎤 語音＝接 CF Whisper（未接，請打字）");
+$("reset").onclick=deal;
+$("say").addEventListener("keydown",e=>{if(e.key==="Enter")$("atk").click();});
+deal();
+</script>
+</body>
+</html>
