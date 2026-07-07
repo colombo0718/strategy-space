@@ -24,7 +24,9 @@
 
   .board{ flex:1; display:flex; gap:7px; align-items:center; justify-content:center; min-height:0 }
   .slot{ width:90px;height:122px;border-radius:9px;border:2px dashed #ffffff22;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:#ffffff2a;font-size:22px }
-  .mon{ width:90px;height:122px;border-radius:9px;position:relative;flex:0 0 auto;cursor:zoom-in;transition:.12s;box-shadow:0 3px 7px #0007 }
+  .monwrap{ position:relative;width:90px;height:122px;flex:0 0 auto }
+  .monwrap .under{ position:absolute;left:0;width:90px;height:122px;border-radius:9px;box-shadow:0 2px 6px #0007;filter:brightness(.9) }
+  .mon{ width:90px;height:122px;border-radius:9px;position:absolute;top:0;left:0;cursor:zoom-in;transition:.12s;box-shadow:0 3px 7px #0007 }
   .mon img{ width:100%;height:100%;border-radius:9px;display:block }
   .mon:hover{ transform:translateY(-4px);box-shadow:0 0 0 2px #ffffff55,0 5px 10px #0008 }
   .mon.used{ filter:grayscale(.6) brightness(.7) }
@@ -36,8 +38,7 @@
   .pile{ width:86px;height:117px;border-radius:9px;flex:0 0 auto;position:relative;display:flex;align-items:center;justify-content:center;font-size:11px;color:#cbb }
   .pile .cnt{ position:absolute;bottom:4px;left:50%;transform:translateX(-50%);background:#000b;border-radius:9px;padding:1px 7px;font-weight:800;color:#fff }
   .pile .lbl{ position:absolute;top:-16px;font-size:10px;color:#ffffff66 }
-  .deck{ background:repeating-linear-gradient(45deg,rgba(255,255,255,.03) 0 6px,transparent 6px 12px),radial-gradient(circle at 50% 40%,#2f62b0 0%,#1a3c78 48%,#0e2148 100%);border:2px solid #c9a227;color:#e7c873;font-weight:900 }
-  .pile .dm{ width:24px;height:24px }
+  .deck{ background:url(cardback.png) center/cover no-repeat;color:#e7c873;font-weight:900 }
   .discard{ border:2px dashed #ffffff2a; overflow:hidden } .discard img{ width:100%;height:100%;border-radius:7px;opacity:.55;filter:grayscale(.4) }
   .hand{ display:flex; align-items:flex-end }
   .hand .card{ width:94px;height:128px;border-radius:8px;margin-left:-22px;cursor:zoom-in;transition:.14s;box-shadow:0 4px 10px #0008 }
@@ -45,8 +46,8 @@
   .hand .card img{ width:100%;height:100%;border-radius:8px;display:block }
   .hand .card:hover{ transform:translateY(-24px) scale(1.07);z-index:30;margin-right:14px }
   .hand.backs{ display:flex; align-items:flex-end }
-  .cb{ width:94px;height:128px;border-radius:8px;margin-left:-22px;border:2px solid #c9a227;
-    background:repeating-linear-gradient(45deg,rgba(255,255,255,.03) 0 6px,transparent 6px 12px),radial-gradient(circle at 50% 40%,#2f62b0 0%,#1a3c78 48%,#0e2148 100%);box-shadow:0 4px 10px #0008 }
+  .cb{ width:94px;height:128px;border-radius:8px;margin-left:-22px;
+    background:url(cardback.png) center/cover no-repeat;box-shadow:0 4px 10px #0008 }
   .cb:first-child{ margin-left:0 }
   .oppzone .hand .card:hover{ transform:translateY(24px) scale(1.07) } /* 對手在上、hover 往下展 */
 
@@ -78,7 +79,7 @@
   <!-- 左 6：棋盤 -->
   <div class="left">
     <div class="handzone opp oppzone">
-      <div class="pile deck" id="oppDeck" title="對手牌庫"><span class="lbl">牌庫</span><img class="dm" src="../openmoji/1F319.svg"><span class="cnt" id="oppDeckCnt">0</span></div>
+      <div class="pile deck" id="oppDeck" title="對手牌庫"><span class="lbl">牌庫</span><span class="cnt" id="oppDeckCnt">0</span></div>
       <div class="hand backs" id="oppHand"></div>
       <div class="pile discard" id="oppDiscard" title="對手棄牌"><span class="lbl">棄牌</span><span class="cnt" id="oppDiscCnt">0</span></div>
     </div>
@@ -92,7 +93,7 @@
     <div class="handzone">
       <div class="pile discard" id="discard" title="棄牌區"><span class="lbl">棄牌</span><span class="cnt" id="discCnt">0</span></div>
       <div class="hand" id="hand"></div>
-      <div class="pile deck" id="deck" title="牌庫"><span class="lbl">牌庫</span><img class="dm" src="../openmoji/1F319.svg"><span class="cnt" id="deckCnt">0</span></div>
+      <div class="pile deck" id="deck" title="牌庫"><span class="lbl">牌庫</span><span class="cnt" id="deckCnt">0</span></div>
     </div>
   </div>
 
@@ -110,7 +111,7 @@
         <button class="end" id="end">結束回合 ⏭</button>
         <button class="ghost" id="reset" title="重開">🔄</button>
       </div>
-      <div class="hint" id="playhint">召喚：寫出手牌<b>名詞</b>（如 <b>Cat</b>）　·　攻擊：<b>你的怪獸＋攻擊動詞＋敵方</b>（如 <b>Cat bites Dragon</b>）　·　防禦：<b>你的怪獸＋防禦動詞</b>（如 <b>Penguin blocks</b>）<br>卡片點一下可放大看清楚</div>
+      <div class="hint" id="playhint">召喚：寫出手牌<b>名詞</b>（如 <b>Cat</b>）　·　強化：<b>名詞＋形容詞</b>（如 <b>Strong Tiger</b>，永久疊在怪獸下）　·　攻擊：<b>你的怪獸＋攻擊動詞＋敵方</b>（如 <b>Cat bites Dragon</b>）　·　防禦：<b>你的怪獸＋防禦動詞</b>（如 <b>Penguin blocks</b>）<br>卡片點一下可放大看清楚</div>
     </div>
   </div>
 
@@ -146,13 +147,16 @@ function deal(){
   $("chat").innerHTML=""; render();
   sys(`⚔️ ${MODE_NAME}模式開始 — 打倒對方召喚師（HP 歸 0）獲勝`);
   $("playhint").style.display = MODE==="battle" ? "none" : "block";
-  if(MODE!=="battle"){ sys("🎮 你先召喚：打一句話寫出手牌裡的名詞（如 Cat），就能召喚牠上場"); if(AI_OPEN) sys("（AI 手牌攤開、可偷看牠有什麼）"); }
+  if(MODE!=="battle"){ sys("🎮 你先召喚：打一句話寫出手牌裡的名詞（如 Cat）就能召喚牠上場；再說「形容詞＋名詞」（如 Strong Cat）可永久強化牠"); if(AI_OPEN) sys("（AI 手牌攤開、可偷看牠有什麼）"); }
 }
 
 // ── 渲染 ──
-function monEl(m){ const d=document.createElement("div"); d.className="mon"+(m.used?" used":"");
+function monEl(m){ const wrap=document.createElement("div"); wrap.className="monwrap";
+  (m.mods||[]).forEach((a,i)=>{ const u=document.createElement("img"); u.className="under"; u.src=SRC(a.id);
+    u.style.top=(14+i*11)+"px"; u.style.zIndex=String(m.mods.length-i); wrap.appendChild(u); });
+  const d=document.createElement("div"); d.className="mon"+(m.used?" used":""); d.style.zIndex="20";
   d.innerHTML=`<img src="${SRC(m.id)}"><span class="mhp">❤️<b>${Math.max(0,m.chp)}</b>/${m.hp}</span>`;
-  d.onclick=()=>inspect(m.id); return d; }
+  d.onclick=()=>inspect(m.id); wrap.appendChild(d); return wrap; }
 function boardRow(side){ const box=$(side==="me"?"meBoard":"oppBoard"); box.innerHTML=""; const b=S[side].board;
   for(let i=0;i<MAXB;i++){ if(b[i])box.appendChild(monEl(b[i]));
     else{ const s=document.createElement("div"); s.className="slot"; s.textContent="＋"; box.appendChild(s); } } }
@@ -186,6 +190,21 @@ function submit(){
   const vmatch=cw=>{const s=cw.toLowerCase().slice(0,Math.min(3,cw.length)); return words.some(w=>w.slice(0,s.length)===s);};
   const adjCard=S.me.hand.find(c=>isAdj(c)&&has(c.w));
   const verbCard=S.me.hand.find(c=>isVerb(c)&&vmatch(c.w));
+  const nounCard=S.me.hand.find(c=>isNoun(c)&&has(c.w));
+
+  // ── 形容詞：一句話「名詞＋形容詞」→ 永久強化，卡片常駐疊在怪獸下 ──
+  if(adjCard){
+    let mon=S.me.board.find(m=>has(m.w));               // 已在場、句中點名的怪獸
+    if(!mon && nounCard){                                // 或順手召喚要被強化的名詞
+      if(S.me.board.length>=MAXB){ sys(`你場上滿了（最多 ${MAXB} 隻），無法再召喚`); return; }
+      mon=summon(nounCard);
+    }
+    if(!mon){ sys("形容詞要搭配「你的名詞」——同一句話裡也要出現名詞（例：<b>Strong Tiger</b>）"); return; }
+    attachAdj(mon,adjCard);
+    S.me.hand=S.me.hand.filter(x=>x!==adjCard);
+    const eff=adjCard.eff.map(([ic,v])=>`${ic}${v>=0?"+":""}${v}`).join(" ");
+    sys(`✨ ${mon.w} 疊上「${adjCard.w}」永久強化：${eff}（常駐）`); render(); return;
+  }
 
   if(verbCard){                               // 有動詞字
     const subject=S.me.board.find(m=>!m.used&&has(m.w));
@@ -194,23 +213,25 @@ function submit(){
     if(isAtk){                                // 攻擊動詞（帶 🗡️ 傷害）
       const target=S.opp.board.find(m=>has(m.w));
       if(!target && S.opp.board.length>0){ sys("敵方場上有怪獸擋著——句子裡要指定一隻敵方怪獸（先打倒牠們才能直擊召喚師）"); return; }
-      resolveAttack(subject,verbCard,target||null,adjCard); return;
+      resolveAttack(subject,verbCard,target||null); return;
     } else {                                  // 防禦/輔助動詞（🛡️🦶❤️）→ 對自己
-      defendMove(subject,verbCard,adjCard); return;
+      defendMove(subject,verbCard); return;
     }
   }
-  const nounCard=S.me.hand.find(c=>isNoun(c)&&has(c.w));  // 有名詞字 → 召喚
   if(nounCard){ if(S.me.board.length>=MAXB){ sys(`你場上滿了（最多 ${MAXB} 隻）`); } else summon(nounCard); return; }
-  if(adjCard){ applyAdj(adjCard,S.me.board[0],S.opp.board[0]); render(); return; }
-  sys("沒對上任何手牌上的字——句子裡要包含你手牌的單字（名詞召喚／動詞攻擊）");
+  sys("沒對上任何手牌上的字——句子要包含手牌的單字（名詞召喚／名詞+形容詞強化／怪獸+動詞攻擊）");
 }
-function summon(c){ S.me.board.push(newMon(c)); S.me.hand=S.me.hand.filter(x=>x!==c);
-  sys(`✨ 召喚【${c.w}】上場（本回合尚不能行動）`); render(); }
-function applyAdj(c,myMon,enemyMon){ const v=c.eff[0],pos=v[1]>=0, tgt=pos?(myMon):(enemyMon); if(!tgt) return;
-  const st={"🗡️":"atk","🛡️":"def","🦶":"spd","❤️":"hp"}[v[0]]||"atk"; tgt[st]=Math.max(0,(tgt[st]||0)+v[1]); if(st==="hp")tgt.chp+=v[1];
-  S.me.hand=S.me.hand.filter(x=>x!==c); S.me.discard.push(c); sys(`✨ ${c.w}：${pos?"":"敵方 "}${tgt.w} ${v[0]}${v[1]>=0?"+":""}${v[1]}`); }
-function resolveAttack(sub,verb,target,adj){
-  if(adj) applyAdj(adj,sub,target);
+function summon(c){ const m=newMon(c); S.me.board.push(m); S.me.hand=S.me.hand.filter(x=>x!==c);
+  sys(`✨ 召喚【${c.w}】上場（本回合尚不能行動）`); render(); return m; }
+// 形容詞永久附加到怪獸：直接調整數值 + 記錄卡片以便疊在下面渲染
+function attachAdj(mon,adj){ mon.mods=mon.mods||[]; mon.mods.push(adj);
+  for(const [ic,v] of adj.eff){
+    if(ic==="❤️"){ mon.hp=Math.max(1,mon.hp+v); mon.chp=Math.max(1,mon.chp+v); }
+    else if(ic==="🗡️") mon.atk=Math.max(0,mon.atk+v);
+    else if(ic==="🛡️") mon.def=Math.max(0,mon.def+v);
+    else if(ic==="🦶") mon.spd=Math.max(0,mon.spd+v);
+  } }
+function resolveAttack(sub,verb,target){
   const vA=(verb.eff.find(e=>e[0]==="🗡️")||[,0])[1], base=Math.max(1,sub.atk+(vA>0?vA:0));
   S.me.hand=S.me.hand.filter(x=>x!==verb); S.me.discard.push(verb);   // 動詞卡用掉
   if(target){
@@ -218,13 +239,12 @@ function resolveAttack(sub,verb,target,adj){
     if(d>=1 && (1+Math.floor(Math.random()*6))<=Math.min(d,5)){ sys(`🦶 ${target.w} 太快、閃過了！`); sub.used=true; render(); return; }
     const dmg=Math.max(1,base-target.def); target.chp-=dmg;
     sys(`💥 ${sub.w} ${verb.w.toLowerCase()} ${target.w}　−${dmg}`);
-    if(target.chp<=0){ sys(`☠️ ${target.w} 倒下，進棄牌`); S.opp.discard.push(target); S.opp.board=S.opp.board.filter(m=>m!==target); }
+    if(target.chp<=0){ sys(`☠️ ${target.w} 倒下，進棄牌`); S.opp.discard.push(target,...(target.mods||[])); S.opp.board=S.opp.board.filter(m=>m!==target); }
   } else { S.opp.hp-=base; sys(`💥 ${sub.w} 直擊 AI 召喚師　−${base}`); if(S.opp.hp<=0)return win("🏆 你贏了！"); }
   sub.used=true; render();
 }
 
-function defendMove(sub,verb,adj){   // 防禦/輔助動詞：強化自己（不攻擊）
-  if(adj) applyAdj(adj,sub,S.opp.board[0]);
+function defendMove(sub,verb){   // 防禦/輔助動詞：強化自己（不攻擊）
   verb.eff.forEach(([ic,v])=>{ const st={"🛡️":"def","🦶":"spd","❤️":"hp"}[ic]; if(st){ sub[st]=Math.max(0,(sub[st]||0)+v); if(st==="hp")sub.chp+=v; } });
   S.me.hand=S.me.hand.filter(x=>x!==verb); S.me.discard.push(verb);
   const eff=verb.eff.map(([ic,v])=>`${ic}${v>=0?"+":""}${v}`).join(" ");
@@ -240,7 +260,7 @@ function aiTurn(){ // TODO: 換 CF LLM 產生對手句子
   S.opp.board.forEach(m=>{ if(m.used)return; const vi=S.opp.hand.findIndex(c=>isVerb(c)&&c.eff.some(e=>e[0]==="🗡️"&&e[1]>0)); const v=vi>=0?S.opp.hand.splice(vi,1)[0]:{w:"Hit",eff:[["🗡️",2]]}; if(v.id)S.opp.discard.push(v);
     const vA=(v.eff.find(e=>e[0]==="🗡️")||[,0])[1], base=Math.max(1,m.atk+(vA>0?vA:0)), t=S.me.board[0];
     if(t){ const dmg=Math.max(1,base-t.def); t.chp-=dmg; bubble("ai",`${m.w} ${v.w.toLowerCase()}s ${t.w}.`); sys(`💥 ${m.w} → 你的 ${t.w}　−${dmg}`);
-      if(t.chp<=0){ sys(`☠️ 你的 ${t.w} 倒下`); S.me.discard.push(t); S.me.board=S.me.board.filter(x=>x!==t); } }
+      if(t.chp<=0){ sys(`☠️ 你的 ${t.w} 倒下`); S.me.discard.push(t,...(t.mods||[])); S.me.board=S.me.board.filter(x=>x!==t); } }
     else { const dmg=base; S.me.hp-=dmg; bubble("ai",`${m.w} strikes your summoner!`); sys(`💥 直擊你　−${dmg}`); } });
   if(S.me.hp<=0)return win("AI 獲勝…再來一局");
   S.turn="me"; S.me.board.forEach(m=>m.used=false);
