@@ -292,11 +292,11 @@ function deal(){
     coach("🎓 <b>教學模式</b>：跟著提示打句子、一步步學會怎麼玩。打錯沒關係、再試就好！");
     teachStart(); return;
   }
-  S={ me:{hp:SUMHP,board:[],hand:[],deck:[],discard:[]}, opp:{hp:SUMHP,board:[],hand:[],deck:shuffle(ALL),discard:[]}, turn:"me" };
-  // 開局手牌保底（僅玩家）：重洗到起手 5 張至少有 1 隻 ≥2★ 名詞 ＋ 1 張動詞卡，避免爛牌起手勸退
-  let mdeck, tries=0;
-  do{ mdeck=shuffle(ALL); } while(!(mdeck.slice(0,5).some(c=>isNoun(c)&&c.star>=2) && mdeck.slice(0,5).some(isVerb)) && ++tries<40);
-  S.me.deck=mdeck;
+  S={ me:{hp:SUMHP,board:[],hand:[],deck:[],discard:[]}, opp:{hp:SUMHP,board:[],hand:[],deck:[],discard:[]}, turn:"me" };
+  // 開局手牌保底（雙方都做）：重洗到起手 5 張至少有 1 隻 ≥2★ 名詞 ＋ 1 張動詞卡，避免任一方爛牌起手玩不動
+  const goodOpen=d=> d.slice(0,5).some(c=>isNoun(c)&&c.star>=2) && d.slice(0,5).some(isVerb);
+  const guardDeck=()=>{ let d,t=0; do{ d=shuffle(ALL); }while(!goodOpen(d)&&++t<40); return d; };
+  S.me.deck=guardDeck(); S.opp.deck=guardDeck();
   for(let i=0;i<5;i++){ S.me.hand.push(S.me.deck.shift()); S.opp.hand.push(S.opp.deck.shift()); }
   $("rtitle").textContent=`📜 造句召喚師 · ${MODE_NAME}模式`;
   $("chat").innerHTML=""; render();
