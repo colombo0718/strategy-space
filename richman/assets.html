@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大富翁 · OpenMoji 素材盤點</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:"Segoe UI","Microsoft JhengHei",sans-serif;background:#f2f5ec;color:#2f3b33;padding:28px 20px 60px}
+  header{max-width:1080px;margin:0 auto 6px}
+  h1{font-size:24px;letter-spacing:2px}
+  .sub{color:#7a8a7e;font-size:13px;margin-top:6px;line-height:1.7}
+  .stats{color:#4a7a5a;font-size:13px;margin-top:4px;font-weight:600}
+  main{max-width:1080px;margin:0 auto}
+  h2{font-size:16px;margin:30px 0 10px;padding-left:10px;border-left:4px solid #4a7a5a}
+  h2 small{color:#8a9a8e;font-weight:400;font-size:12px;margin-left:8px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
+  .cell{background:#fff;border:1px solid #dfe6da;border-radius:12px;padding:12px 8px 10px;text-align:center;transition:transform .1s}
+  .cell:hover{transform:translateY(-2px)}
+  .cell img{width:56px;height:56px;display:block;margin:0 auto 6px}
+  .cell .ch{font-size:13px;color:#9aa89e}
+  .cell .zh{font-size:13px;font-weight:600;margin-top:2px}
+  .cell .use{font-size:11px;color:#8a9a8e;margin-top:2px;line-height:1.4}
+  .cell.miss{border-color:#e5a0a0;background:#fdf3f3}
+  .cell.miss .zh::after{content:"（OpenMoji 缺）";color:#c66;font-size:10px;display:block}
+  footer{max-width:1080px;margin:40px auto 0;color:#9aa89e;font-size:12px;line-height:1.8;border-top:1px solid #dfe6da;padding-top:14px}
+  a{color:#4a7a5a}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎲 大富翁 · OpenMoji 素材盤點</h1>
+  <div class="sub">構想期素材清單——全部取自 OpenMoji（CC BY-SA 4.0），確認 grid 畫面可用零自製素材開工。缺圖者自動標紅。</div>
+  <div class="stats" id="stats">載入中…</div>
+</header>
+<main id="main"></main>
+<footer>
+  素材來源：<a href="https://openmoji.org" target="_blank">OpenMoji</a> — CC BY-SA 4.0。
+  正式素材將經 <b>MojiSmith</b> 鍛造（換色／區域色塊／統一風格）。
+  資料夾暫名 richman；本頁為 <code>richman/assets.html</code> 靜態盤點、非遊戲畫面。
+</footer>
+<script>
+// [emoji, 中文名, 用途說明]
+const GROUPS = [
+ ["棋子（玩家代表物）", "沿用 LL 動物宇宙——跟造句召喚師/NN 共用角色", [
+  ["🐱","貓","玩家1"],["🐶","狗","玩家2"],["🦊","狐狸","玩家3"],["🐻","熊","玩家4"],
+  ["🐼","貓熊","備用棋子"],["🐰","兔子","備用棋子"],["🎩","高帽","致敬經典棋子"],["🚗","汽車","致敬經典棋子"],
+ ]],
+ ["棋盤基礎格", [
+  ["🏁","起點 GO","經過領薪水"],["⛓️","監獄","蹲牢房"],["👮","警察","入獄格"],
+  ["🅿️","免費停車","休息格"],["❓","機會","抽機會卡"],["🎁","命運","抽命運卡"],
+  ["💰","繳稅","稅金格"],["🎲","骰子","擲骰 UI"],
+ ]],
+ ["地產與建物", [
+  ["🏠","小房","蓋房 Lv1"],["🏡","庭院房","蓋房 Lv2"],["🏘️","房群","蓋房 Lv3"],
+  ["🏨","旅館","蓋房頂級"],["🏢","大樓","商業地"],["🏪","便利店","商業地"],
+  ["🏬","百貨","商業地"],["🏦","銀行","銀行/貸款"],["🏗️","工地","蓋房動畫"],["🔨","鎚子","蓋房按鈕"],
+ ]],
+ ["地段風味（色組主題）", [
+  ["🌳","公園","綠色組"],["🏖️","海灘","藍色組"],["🗻","高山","棕色組"],["🌉","大橋","橘色組"],
+  ["🎡","樂園","粉色組"],["⛲","噴泉","黃色組"],["🏯","古城","紫色組"],["🗼","地標塔","紅色組"],
+ ]],
+ ["車站與公用事業", [
+  ["🚂","火車","車站×4"],["🚌","公車","車站備用"],["✈️","飛機","機場"],["🚢","郵輪","港口"],
+  ["💡","電力公司","公用事業"],["🚰","自來水","公用事業"],["📶","電信","公用事業備用"],
+ ]],
+ ["金錢與經濟", [
+  ["💵","鈔票","現金"],["🪙","金幣","小額"],["💸","飛錢","付款動畫"],["💳","卡片","電子支付風味"],
+  ["🏧","ATM","領錢"],["🧾","帳單","付租金"],["📈","漲","地價上漲"],["📉","跌","地價下跌"],
+  ["🔒","抵押","資產抵押"],["🔓","贖回","解除抵押"],
+ ]],
+ ["卡片與事件", [
+  ["🃏","小丑牌","出獄卡"],["🎴","花牌","卡背"],["📜","卷軸","事件文本"],["✉️","信封","通知"],
+  ["🎉","彩帶","中獎事件"],["⚡","閃電","突發事件"],["🚑","救護車","醫藥費事件"],["🛠️","修路","修繕費事件"],
+ ]],
+ ["UI 與狀態", [
+  ["🏆","獎盃","獲勝"],["⭐","星星","成套地產"],["⏳","沙漏","回合計時"],["🔔","鈴鐺","提示"],
+  ["✅","勾","確認"],["❌","叉","取消"],["💀","骷髏","破產"],["🤝","握手","交易(後補)"],
+ ]],
+];
+// emoji → OpenMoji 檔名（去 FE0F、大寫 hex、- 連接）
+const code = e => [...e].map(c=>c.codePointAt(0).toString(16).toUpperCase())
+                        .filter(h=>h!=="FE0F").join("-");
+const URLBASE = "https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji@15.1.0/color/svg/";
+let total=0, missing=0;
+const main = document.getElementById("main");
+GROUPS.forEach(g=>{
+  const [title, noteOrItems, maybeItems] = g;
+  const note = Array.isArray(noteOrItems) ? "" : noteOrItems;
+  const items = Array.isArray(noteOrItems) ? noteOrItems : maybeItems;
+  const h = document.createElement("h2");
+  h.innerHTML = title + (note?`<small>${note}</small>`:"");
+  main.appendChild(h);
+  const grid = document.createElement("div"); grid.className="grid";
+  items.forEach(([e,zh,use])=>{
+    total++;
+    const c = document.createElement("div"); c.className="cell";
+    c.innerHTML = `<img loading="lazy" src="${URLBASE+code(e)}.svg" alt="${e}">
+      <div class="ch">${e}　<span style="font-size:10px">${code(e)}</span></div>
+      <div class="zh">${zh}</div><div class="use">${use}</div>`;
+    c.querySelector("img").onerror = ()=>{ c.classList.add("miss"); missing++; upd(); };
+    grid.appendChild(c);
+  });
+  main.appendChild(grid);
+});
+function upd(){ document.getElementById("stats").textContent =
+  `共 ${total} 枚候選 · OpenMoji 覆蓋 ${total-missing}/${total}` + (missing?`（${missing} 枚缺、標紅）`:"　✅ 全數可用"); }
+window.addEventListener("load", upd);
+</script>
+</body>
+</html>
