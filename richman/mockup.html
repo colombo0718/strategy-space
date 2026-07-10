@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大富翁 · 遊戲畫面模擬</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:"Segoe UI","Microsoft JhengHei",sans-serif;background:#e8efe2;color:#2f3b33;padding:14px;display:flex;gap:14px;justify-content:center;align-items:flex-start;min-height:100vh}
+  /* ── 棋盤 ── */
+  #board{display:grid;grid-template-columns:repeat(11,66px);grid-template-rows:repeat(11,66px);gap:2px;background:#c9d6bf;padding:6px;border-radius:14px;flex:none}
+  .tile{background:#fbfdf8;border-radius:6px;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;overflow:hidden;border:2px solid transparent}
+  .tile .strip{position:absolute;top:0;left:0;right:0;height:9px}
+  .tile img.ico{width:26px;height:26px;margin-top:7px}
+  .tile .nm{font-size:8.5px;line-height:1.15;text-align:center;margin-top:1px;color:#4a564c}
+  .tile .pr{font-size:8px;color:#9aa89e}
+  .tile.corner{background:#f2f7ea}
+  .tile.corner img.ico{width:30px;height:30px;margin-top:2px}
+  .tile.corner .nm{font-size:9px;font-weight:700;white-space:nowrap}
+  .boost{position:absolute;bottom:1px;right:2px;font-size:7.5px;color:#d0662a;font-weight:700}
+  .houses{position:absolute;top:9px;left:2px;display:flex}
+  .houses img{width:11px;height:11px}
+  .tokens{position:absolute;bottom:1px;left:2px;display:flex}
+  .tokens img{width:20px;height:20px;margin-right:-6px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+  /* 中央 */
+  #center{grid-column:2/11;grid-row:2/11;background:#eef4e6;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+  #center h1{font-size:34px;letter-spacing:10px;color:#3c5a3f}
+  #center .sub{font-size:13px;color:#7a8a7e;letter-spacing:3px}
+  #dice{display:flex;gap:10px;align-items:center;margin-top:6px}
+  .die{width:44px;height:44px;background:#fff;border:2px solid #3c5a3f;border-radius:10px;font-size:26px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#3c5a3f}
+  #card{background:#fff;border:1px dashed #c9a24b;border-radius:10px;padding:8px 14px;font-size:12px;color:#6a5a2a;display:flex;gap:8px;align-items:center;max-width:420px}
+  #card img{width:28px;height:28px}
+  /* ── 右側 UI ── */
+  #ui{width:330px;display:flex;flex-direction:column;gap:10px;flex:none}
+  .panel{background:#fff;border:1px solid #dfe6da;border-radius:12px;padding:12px}
+  .turn{font-size:13px;font-weight:700;color:#3c5a3f;display:flex;justify-content:space-between;align-items:center}
+  .turn .rd{font-size:11px;color:#9aa89e;font-weight:400}
+  .pl{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:9px;margin-top:6px;border:2px solid transparent}
+  .pl.active{background:#f0f7ea;border-color:#7cb56b}
+  .pl img{width:30px;height:30px}
+  .pl .info{flex:1;min-width:0}
+  .pl .nm{font-size:13px;font-weight:600}
+  .pl .nm .tag{font-size:10px;color:#8a9a8e;font-weight:400;margin-left:5px}
+  .pl .sts{font-size:11px;color:#7a8a7e}
+  .pl .cash{font-size:14px;font-weight:700;color:#3c5a3f}
+  .pl .dot{width:9px;height:9px;border-radius:50%;flex:none}
+  /* 決策區 */
+  .land{display:flex;gap:10px;align-items:center}
+  .land img{width:42px;height:42px}
+  .land .t{font-size:13px;line-height:1.5}
+  .btns{display:flex;gap:8px;margin-top:10px}
+  .btn{flex:1;border:none;border-radius:10px;padding:11px 0;font-size:14px;font-weight:700;cursor:pointer}
+  .buy{background:#4a7a5a;color:#fff}
+  .pass{background:#eef1ec;color:#6a766c}
+  .roll{background:#c9d6bf;color:#5a6a5c;width:100%;border:none;border-radius:10px;padding:10px 0;font-size:13px;margin-top:8px}
+  /* 泡泡 */
+  .bub{display:flex;gap:8px;margin-top:8px;font-size:12px;line-height:1.55}
+  .bub img{width:26px;height:26px;flex:none}
+  .bub .txt{background:#f5f8f2;border-radius:10px;padding:7px 10px}
+  .bub.coach .txt{background:#fff6df;border:1px solid #ecd9a0}
+  .log{font-size:11px;color:#8a9a8e;line-height:1.8;margin-top:4px;border-top:1px solid #eef1ec;padding-top:6px}
+  .note{font-size:11px;color:#9aa89e;text-align:center}
+</style>
+</head>
+<body>
+<div id="board"></div>
+<div id="ui">
+  <div class="panel">
+    <div class="turn"><span>🎲 第 12 回合 · 輪到你</span><span class="rd">家庭場 · 4 人局</span></div>
+    <div class="pl active"><span class="dot" style="background:#4a7ad6"></span><img data-e="🧑"><div class="info"><div class="nm">你</div><div class="sts">地產 2 · 橘組差1塊成套</div></div><div class="cash">$8,350</div></div>
+    <div class="pl"><span class="dot" style="background:#e0842a"></span><img data-e="🦊"><div class="info"><div class="nm">阿狐<span class="tag">AI·槓桿型</span></div><div class="sts">地產 5 · 抵押 2 · 🏬逛百貨中</div></div><div class="cash">$1,180</div></div>
+    <div class="pl"><span class="dot" style="background:#5c9e31"></span><img data-e="🐶"><div class="info"><div class="nm">旺財<span class="tag">AI·穩健型</span></div><div class="sts">地產 3 · 紅組成套 ⭐</div></div><div class="cash">$6,820</div></div>
+    <div class="pl"><span class="dot" style="background:#8a6a4a"></span><img data-e="🐻"><div class="info"><div class="nm">大熊<span class="tag">AI·囤錢型</span></div><div class="sts">地產 0 · 現金最多</div></div><div class="cash">$12,400</div></div>
+  </div>
+  <div class="panel">
+    <div class="land"><img data-e="🌉"><div class="t">你來到 <b>觀景橋道</b>（橘組 · 無主）<br><span style="color:#9aa89e;font-size:11px">地價 $2,000 · 租金 $160 · 🔥商圈+30%</span></div></div>
+    <div class="btns"><button class="btn buy">💰 買下 $2,000</button><button class="btn pass">先不買</button></div>
+    <button class="roll">🎲 擲骰子（已擲出 5＋3）</button>
+  </div>
+  <div class="panel">
+    <div class="bub coach"><img data-e="🧠"><div class="txt"><b>財商教練</b>：這是橘組最後一塊！湊滿成套租金翻倍——而且橘組緊鄰百貨商圈、是全盤被踩率最高的地段。</div></div>
+    <div class="bub"><img data-e="🦊"><div class="txt">你不買的話……嘿嘿，下一圈它就是我的了。</div></div>
+    <div class="log">🐶 旺財 付給 你 租金 $160（大橋北路）<br>🦊 阿狐 踩到「週年慶」→ 被送進百貨公司<br>🐻 大熊 經過便利店，擲骰 6——進去花了 $50</div>
+  </div>
+  <div class="note">靜態畫面模擬 · OpenMoji（CC BY-SA 4.0）· richman/mockup.html</div>
+</div>
+<script>
+const CODE = e => [...e].map(c=>c.codePointAt(0).toString(16).toUpperCase()).filter(h=>h!=="FE0F").join("-");
+const URLB = "https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji@15.1.0/color/svg/";
+const IMG = e => URLB+CODE(e)+".svg";
+// 色組（OpenMoji 官方色系）
+const G = {棕:"#a57939",藍:"#61b2e4",粉:"#ffa7c0",橘:"#f4aa41",紅:"#ea5a47",黃:"#fcea2b",綠:"#5c9e31",紫:"#b399c8"};
+// 40 格：[emoji, 名, 價, 色組, 角落?]
+const T = [
+ ["🏁","起點 GO","經過領$2000",null,1],
+ ["🗻","玉山道","$600","棕"],["🎁","命運","",null],["🗻","合歡山路","$600","棕"],["💰","所得稅","付$1000",null],
+ ["🏪","便利店·北門","$2000",null],
+ ["🏖️","白沙灣大街","$1000","藍"],["❓","機會","",null],["🏖️","墾丁大街","$1000","藍"],["🏖️","福隆海岸","$1200","藍"],
+ ["🏬","百貨公司","強制消費",null,1],
+ ["🎡","樂園一街","$1400","粉"],["💡","電力公司","$1500",null],["🎡","樂園二街","$1400","粉"],["🎡","摩天輪大道","$1600","粉"],
+ ["🏪","便利店·東門","$2000",null],
+ ["🌉","大橋北路","$1800","橘"],["🎁","命運","",null],["🌉","大橋南路","$1800","橘"],["🌉","觀景橋道","$2000","橘"],
+ ["🅿️","免費停車","休息",null,1],
+ ["🗼","燈塔紅街","$2200","紅"],["❓","機會","",null],["🗼","塔前路","$2200","紅"],["🗼","觀星大道","$2400","紅"],
+ ["🏪","便利店·南門","$2000",null],
+ ["⛲","噴泉一路","$2600","黃"],["⛲","噴泉二路","$2600","黃"],["🚰","自來水廠","$1500",null],["⛲","廣場大道","$2800","黃"],
+ ["🛍️","週年慶","→送進百貨",null,1],
+ ["🌳","公園東路","$3000","綠"],["🌳","公園西路","$3000","綠"],["🎁","命運","",null],["🌳","林蔭大道","$3200","綠"],
+ ["🏪","便利店·西門","$2000",null],
+ ["❓","機會","",null],["🏯","古城巷","$3500","紫"],["💰","奢侈稅","付$1500",null],["🏯","王城大道","$4000","紫"],
+];
+// 擁有權/房子/棋子/商圈加成（模擬盤面故事）
+const OWN = {6:"#e0842a",8:"#e0842a",9:"#e0842a", 16:"#4a7ad6",18:"#4a7ad6", 21:"#5c9e31",23:"#5c9e31",24:"#5c9e31", 11:"#e0842a"};
+const HOUSE = {8:1, 16:2, 18:1, 23:1};
+const TOKEN = {19:["🧑"], 10:["🦊"], 24:["🐶"], 2:["🐻"]};
+const BOOST = new Set([9,11,16,18,19]);   // 百貨商圈周邊
+// 40 格 → 11×11 邊框座標（GO 右下、逆時針）
+function pos(i){
+  if(i<=10)  return [11, 11-i];      // 底排 右→左
+  if(i<=20)  return [11-(i-10), 1];  // 左排 下→上
+  if(i<=30)  return [1, 1+(i-20)];   // 頂排 左→右
+  return [1+(i-30), 11];             // 右排 上→下
+}
+const bd = document.getElementById("board");
+T.forEach((t,i)=>{
+  const [e,nm,pr,grp,corner]=t, [r,c]=pos(i);
+  const d=document.createElement("div");
+  d.className="tile"+(corner?" corner":"");
+  d.style.gridRow=r; d.style.gridColumn=c;
+  if(OWN[i]) d.style.borderColor=OWN[i];
+  let h="";
+  if(grp) h+=`<div class="strip" style="background:${G[grp]}"></div>`;
+  if(HOUSE[i]) h+=`<div class="houses">${'<img src="'+IMG("🏠")+'">'.repeat(HOUSE[i])}</div>`;
+  h+=`<img class="ico" src="${IMG(e)}"><div class="nm">${nm}</div><div class="pr">${pr}</div>`;
+  if(BOOST.has(i)) h+=`<div class="boost">🔥+30%</div>`;
+  if(TOKEN[i]) h+=`<div class="tokens">${TOKEN[i].map(x=>'<img src="'+IMG(x)+'">').join("")}</div>`;
+  d.innerHTML=h; bd.appendChild(d);
+});
+// 中央
+const ct=document.createElement("div"); ct.id="center";
+ct.innerHTML=`<h1>大富翁</h1><div class="sub">財 商 教 育 版 · 名 稱 未 定</div>
+  <div id="dice"><div class="die">5</div><div class="die">3</div></div>
+  <div id="card"><img src="${IMG("🎁")}"><div><b>命運</b>：便利店集點活動——本圈經過便利店消費半價！</div></div>`;
+bd.appendChild(ct);
+// UI 區 emoji 圖
+document.querySelectorAll("img[data-e]").forEach(im=>im.src=IMG(im.dataset.e));
+</script>
+</body>
+</html>
