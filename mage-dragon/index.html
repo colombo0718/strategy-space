@@ -1753,8 +1753,7 @@ function gsResolve() {
     }
 
     // 龍蓄力提示
-    if (dr.action === 1) msgs.push(`惡龍正在吸氣……（第 ${dr.chargeTurns} 回合）`);
-    if (dr.action === 2) msgs.push(`惡龍緩緩抬起利爪……`);
+
 
     // 補血（死亡的法師不可復活、HP 0 維持 0）
     const aHeal = newA === 6, bHeal = newB === 6;
@@ -1818,6 +1817,10 @@ function gsReveal() {
         summary
     };
     gsAppendLog(logEntry.turn, logEntry.mageA, logEntry.mageB, logEntry.dragon, summary);
+    // 掀牌：隊友與龍各自用泡泡亮招（玩家的選擇在送出時已亮）
+    appendMessage('ally', `出招：${MAGE_STATES[gs.mageB.action]}`);
+    const DR_CALLS = ['⭕ ……', `👃 吸氣（${gs.dragon.chargeTurns}/2）`, '✋ 緩緩抬起利爪……', '🔥 噴火！', '💥 爪擊！'];
+    appendMessage('dragon', DR_CALLS[gs.dragon.action]);
     msgs.forEach(m => appendMessage('system', m));
     gsUpdateStats();
 

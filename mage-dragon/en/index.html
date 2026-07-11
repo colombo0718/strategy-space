@@ -1728,8 +1728,7 @@ function gsResolve() {
     }
 
     // 龍蓄力提示
-    if (dr.action === 1) msgs.push(`The dragon is inhaling… (turn ${dr.chargeTurns})`);
-    if (dr.action === 2) msgs.push(`The dragon slowly raises its claw…`);
+
 
     // 補血（死亡的法師不可復活、HP 0 維持 0）
     const aHeal = newA === 6, bHeal = newB === 6;
@@ -1793,6 +1792,10 @@ function gsReveal() {
         summary
     };
     gsAppendLog(logEntry.turn, logEntry.mageA, logEntry.mageB, logEntry.dragon, summary);
+    // 掀牌：隊友與龍各自用泡泡亮招（玩家的 Pick 在送出時已亮）
+    appendMessage('ally', `Pick: ${MAGE_STATES[gs.mageB.action]}`);
+    const DR_CALLS = ['⭕ …', `👃 Inhale (${gs.dragon.chargeTurns}/2)`, '✋ Claw raised…', '🔥 FIRE BREATH!', '💥 CLAW STRIKE!'];
+    appendMessage('dragon', DR_CALLS[gs.dragon.action]);
     msgs.forEach(m => appendMessage('system', m));
     gsUpdateStats();
 
