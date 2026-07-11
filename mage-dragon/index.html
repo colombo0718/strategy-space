@@ -189,25 +189,27 @@ body {
             width: 26px;
             text-align: center;
         }
-        .player-msg { justify-content: flex-start; }
+        .player-msg {
+            flex-direction: row-reverse;   /* 我在右：頭像貼右緣、泡泡在其左 */
+            justify-content: flex-start;
+        }
         .player-msg .msg-text {
             background: #2b6cb0;
             color: #fff;
-            border-bottom-left-radius: 4px;
+            border-bottom-right-radius: 4px;
         }
         .ally-msg, .dragon-msg {
-            justify-content: flex-end;
-            flex-direction: row-reverse;
+            justify-content: flex-start;   /* 隊友/龍在左：頭像在泡泡左側 */
         }
         .ally-msg .msg-text {
             background: rgba(255,255,255,0.10);
             border: 1px solid rgba(255,255,255,0.16);
-            border-bottom-right-radius: 4px;
+            border-bottom-left-radius: 4px;
         }
         .dragon-msg .msg-text {
             background: rgba(234,90,71,0.16);
             border: 1px solid rgba(234,90,71,0.35);
-            border-bottom-right-radius: 4px;
+            border-bottom-left-radius: 4px;
         }
         .system-msg, .hint-msg { justify-content: center; }
         .system-msg .msg-avatar, .hint-msg .msg-avatar { display: none; }
