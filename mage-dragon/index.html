@@ -1,0 +1,2146 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐉</text></svg>">
+    <title>法師鬥惡龍 Mage vs Dragon</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+html, body {
+    height: 100%;
+}
+
+body {
+    height: 100dvh;
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    font-family: "Microsoft JhengHei", sans-serif;
+    background: #111;
+    color: #f5f5f5;
+}
+
+.app {
+    display: flex;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+        .panel {
+            flex: 1;
+            min-width: 0;
+            min-height: 0;
+            border-right: 1px solid rgba(255,255,255,0.15);
+            padding: 16px;
+            position: relative;
+            overflow: auto;
+        }
+
+        .panel:last-child {
+            border-right: none;
+        }
+
+        .placeholder {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 96px;
+        }
+
+        .rules-panel {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .promo-image {
+            width: 100%;
+            display: block;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .game-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .game-subtitle {
+            font-size: 14px;
+            color: #d0d0d0;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .intro-card {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 14px;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+        }
+
+        .intro-card h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #ffd36b;
+        }
+
+        .intro-card p,
+        .intro-card li {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #f0f0f0;
+        }
+
+        .intro-card ul {
+            padding-left: 20px;
+        }
+
+        .status-demo {
+            font-family: monospace;
+            white-space: pre-line;
+            background: rgba(0,0,0,0.25);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 8px;
+            line-height: 1.7;
+        }
+
+.battle-scene {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.mages-col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.mage-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 22px;
+}
+
+.dragon-col {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.dragon-col #dragon {
+    font-size: 52px;
+    line-height: 1;
+}
+
+.dragon-col #dragon-skill,
+.dragon-col #dragon-hp {
+    font-size: 28px;
+}
+
+
+        .battle-message-box {
+            margin-top: 12px;
+            padding: 8px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .msg {
+            margin-bottom: 8px;
+        }
+
+        .msg-avatar {
+            margin-right: 6px;
+        }
+
+        .system-msg .msg-avatar,
+        .dragon-msg .msg-avatar,
+        .ally-msg .msg-avatar {
+            display: inline-block;
+            width: 24px;
+            text-align: center;
+        }
+
+.game-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow: hidden;
+}
+
+.battle-card,
+.message-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 16px;
+    line-height: 1.8;
+}
+
+.message-card {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.message-card > div {
+    margin-bottom: 8px;
+}
+
+.message-card > div:last-child {
+    margin-bottom: 0;
+}
+
+.dashboard-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.dashboard-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 14px;
+}
+
+.dashboard-card h3 {
+    margin-bottom: 10px;
+    font-size: 18px;
+    color: #8fd8ff;
+}
+
+details.dashboard-card > summary {
+    list-style: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #8fd8ff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+details.dashboard-card > summary::-webkit-details-marker {
+    display: none;
+}
+
+details.dashboard-card > summary::after {
+    content: '›';
+    font-size: 20px;
+    color: rgba(255,255,255,0.35);
+    transition: transform 0.2s;
+}
+
+details.dashboard-card[open] > summary {
+    margin-bottom: 10px;
+}
+
+details.dashboard-card[open] > summary::after {
+    transform: rotate(90deg);
+}
+
+details.dashboard-card.locked > summary {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+details.dashboard-card.locked > summary::before {
+    content: '🔒 ';
+    font-size: 14px;
+}
+
+.dashboard-card p,
+.dashboard-card li,
+.dashboard-card label,
+.dashboard-card input,
+.dashboard-card select,
+.dashboard-card button {
+    font-size: 14px;
+}
+
+.dashboard-stack {
+    display: grid;
+    gap: 10px;
+}
+
+.dashboard-field {
+    display: grid;
+    gap: 6px;
+    color: #d6dce3;
+}
+
+.dashboard-field input,
+.dashboard-field select {
+    width: 100%;
+    padding: 9px 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(0,0,0,0.2);
+    color: #fff;
+}
+
+.dashboard-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.dashboard-inline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.dashboard-inline input[type="checkbox"] {
+    width: auto;
+}
+
+.dashboard-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.dashboard-actions button {
+    flex: 1;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    background: #5bbcff;
+    color: #0a1520;
+    font-weight: bold;
+}
+
+.dashboard-actions button.secondary {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+}
+
+.dashboard-help,
+.dashboard-status {
+    color: #b9c5d1;
+    line-height: 1.6;
+}
+
+.dashboard-status {
+    min-height: 22px;
+}
+
+.role-config {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 10px;
+    margin-top: 10px;
+}
+
+.role-config:first-of-type {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0;
+}
+
+.role-config h4 {
+    margin-bottom: 8px;
+    font-size: 15px;
+    color: #ffd36b;
+}
+
+.role-fields {
+    display: grid;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.mode-hint {
+    color: #b9c5d1;
+    line-height: 1.6;
+}
+
+.dashboard-field textarea {
+    width: 100%;
+    min-height: 92px;
+    padding: 9px 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(0,0,0,0.2);
+    color: #fff;
+    resize: vertical;
+}
+
+.report-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.report-item {
+    padding: 10px;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.18);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.report-item strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #8fd8ff;
+    font-size: 13px;
+}
+
+.report-item span {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.decision-list {
+    display: grid;
+    gap: 8px;
+}
+
+.decision-line {
+    padding: 10px;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.18);
+    border: 1px solid rgba(255,255,255,0.08);
+    line-height: 1.6;
+}
+
+.decision-line strong {
+    color: #ffd36b;
+}
+
+.mage-name {
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+.player-id-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+.player-id-row input {
+    flex: 1;
+    min-width: 0;
+    padding: 9px 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(0,0,0,0.2);
+    color: #fff;
+    font-size: 14px;
+}
+
+.avatar-picker {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 4px 6px;
+}
+
+.avatar-opt {
+    font-size: 20px;
+    line-height: 1;
+    padding: 3px 4px;
+    border-radius: 6px;
+    cursor: pointer;
+    opacity: 0.35;
+    transition: opacity 0.15s;
+    user-select: none;
+}
+
+.avatar-opt:hover  { opacity: 0.7; }
+.avatar-opt.selected { opacity: 1; background: rgba(255,255,255,0.12); }
+
+.upload-btn {
+    width: 100%;
+    padding: 9px 10px;
+    border-radius: 10px;
+    border: 1px dashed rgba(255,255,255,0.2);
+    background: rgba(0,0,0,0.15);
+    color: #ccc;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.file-hint {
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+    margin-top: -2px;
+}
+
+.invite-btn {
+    padding: 9px 10px;
+    border-radius: 10px;
+    border: none;
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.invite-code-field {
+    width: 100%;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    color: #fff;
+    padding: 9px 10px;
+    font-size: 14px;
+    letter-spacing: 0.1em;
+}
+
+.battle-log-wrap {
+    overflow-x: auto;
+    margin-top: 2px;
+}
+
+.battle-log-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 18px;
+    white-space: nowrap;
+}
+
+.battle-log-table th {
+    color: #8fd8ff;
+    font-weight: normal;
+    padding: 4px 8px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.battle-log-table td {
+    padding: 5px 8px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.battle-log-table tr:last-child td {
+    border-bottom: none;
+}
+
+.input-bar {
+    display: flex;
+    gap: 8px;
+}
+
+.input-bar input {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(0,0,0,0.25);
+    color: #fff;
+    font-size: 15px;
+    font-family: inherit;
+    transition: width 0.2s, opacity 0.2s;
+}
+
+.input-bar input::placeholder {
+    color: rgba(255,255,255,0.35);
+}
+
+.input-bar button {
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: none;
+    background: #5bbcff;
+    color: #0a1520;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: flex 0.2s;
+}
+
+.input-bar.idle input {
+    display: none;
+}
+
+.input-bar.idle button {
+    flex: 1;
+    background: linear-gradient(135deg, #ff6b35, #ffb347);
+    color: #1a0800;
+    font-size: 16px;
+}
+
+.desktop-panel-tab {
+    position: absolute;
+    left: 12px;
+    bottom: 8px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.75);
+}
+
+.mobile-tabbar {
+    background: #1a1a1a;
+    border-top: 1px solid rgba(255,255,255,0.15);
+}
+
+.mobile-tabbar-inner {
+    display: flex;
+}
+
+.mobile-tabbar button {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: #ddd;
+    padding: 12px 8px;
+    font-size: 15px;
+}
+
+.mobile-tabbar button.active {
+    color: #fff;
+    font-weight: bold;
+    background: rgba(255,255,255,0.08);
+}
+
+@media (max-width: 768px) {
+    .app {
+        display: block;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .panel {
+        display: none;
+        height: 100%;
+        min-height: 0;
+        overflow: auto;
+        border-right: none;
+    }
+
+    .panel.active {
+        display: block;
+    }
+
+    .game-panel.active,
+    .dashboard-panel.active {
+        display: flex;
+    }
+
+    .desktop-panel-tab {
+        display: none;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="app">
+    <!-- 左：規則 -->
+    <div class="panel rules-panel" data-panel="rules">
+        <img class="promo-image" src="cover.jpg" alt="法師鬥惡龍宣傳圖">
+
+        <div class="intro-card">
+            <h3>🎯 遊戲介紹</h3>
+            <p>
+                [法師鬥惡龍] 是一款兩名法師合作對抗惡龍的回合制策略遊戲。<br>
+                每回合法師與惡龍三方先各自選擇動作，再同時施放技能並結算傷害與效果。<br>
+                擊敗惡龍即獲勝；若兩名法師都死亡則失敗。
+            </p>
+
+            <h3>🧙 法師行動</h3>
+            <ul>
+                <li>⭕ 無：不做任何事</li>
+                <li>⚡ 閃電：單人施放造成 1 點傷害；若兩名法師同回合同時施放總傷害提升為 4 點</li>
+                <li>🛡️ 護盾：單人護盾時，總傷害減半後由兩人平分；雙人護盾時，反彈全部傷害</li>
+                <li>💚 補血：幫隊友回 2 HP；若兩名法師同回合同時施放補血，兩名法師各回 3 HP</li>
+            </ul>
+            <p>所有法術都要先詠唱👄 1 回合，接著下一回合就一定會施放👉，不能取消。</p>
+
+            <h3>🐉 惡龍行動</h3>
+            <ul>
+                <li>⭕ 無：不做任何事</li>
+                <li>🔥 噴火：先連續吸氣👃 2 回合，之後可噴火造成 8 傷害</li>
+                <li>💥 爪擊：先抬手✋ 1 回合，之後可爪擊造成 4 傷害</li>
+            </ul>
+            <p>惡龍可以中途選擇無動作，自行打斷不放招，或選擇另一種準備動作。</p>
+
+
+        </div>
+</div>
+
+    <!-- 中：遊戲 -->
+<div class="panel game-panel" data-panel="battle">
+    <div class="battle-card">
+        <div class="battle-scene">
+            <div class="mages-col">
+                <div class="mage-row">
+                    <span id="mageA-hp">❤️5</span>
+                    <span id="mageA">🧙</span>
+                    <span id="mageA-name" class="mage-name">我</span>
+                    <span id="mageA-skill">👉⚡</span>
+                </div>
+                <div class="mage-row">
+                    <span id="mageB-hp">❤️5</span>
+                    <span id="mageB">🧙</span>
+                    <span id="mageB-name" class="mage-name">隊友</span>
+                    <span id="mageB-skill">👄❓</span>
+                </div>
+            </div>
+            <div class="dragon-col">
+                <span id="dragon-skill">🔥</span>
+                <span id="dragon">🐉</span>
+                <span id="dragon-hp">❤️20</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="message-card">
+        <div class="msg system-msg">
+            <span class="msg-avatar">📜:</span>
+            <span class="msg-text">選好設定後，按下「開始遊戲」出發。</span>
+        </div>
+    </div>
+
+    <div class="input-bar idle" id="input-bar">
+        <input id="player-input" type="text" inputmode="text" placeholder="輸入 0–3 選招，或傳訊息給隊友…" autocomplete="off" />
+        <button id="player-send">⚔️ 戰鬥開始</button>
+    </div>
+</div>
+
+
+
+    <!-- 右：紀錄 / AI -->
+    <div class="panel dashboard-panel" data-panel="dashboard">
+        <details class="dashboard-card">
+            <summary>🤖 智能模型</summary>
+            <div class="dashboard-stack">
+                <div class="dashboard-row">
+                    <label class="dashboard-field">
+                        全域 Provider
+                        <select id="global-provider">
+                            <option value="groq">Groq</option>
+                            <option value="openrouter">OpenRouter</option>
+                            <option value="gemini">Gemini</option>
+                            <option value="remote_worker">Remote Worker</option>
+                        </select>
+                    </label>
+                    <label class="dashboard-field">
+                        全域 Model
+                        <input id="global-model" type="text" value="llama-3.3-70b-versatile" />
+                    </label>
+                </div>
+
+                <label class="dashboard-field">
+                    API Key
+                    <input id="global-api-key" type="password" placeholder="貼上你的 key；只存本機瀏覽器，不寫進檔案" />
+                </label>
+
+                <div class="dashboard-actions">
+                    <button id="save-ai-config" type="button">儲存設定</button>
+                    <button id="clear-ai-config" type="button" class="secondary">清空</button>
+                </div>
+                <div id="ai-config-status" class="dashboard-status"></div>
+            </div>
+        </details>
+
+        <details class="dashboard-card">
+            <summary>🎭 角色設定</summary>
+
+            <div class="role-config">
+                <h4>🧙 法師 A</h4>
+                <div class="dashboard-row">
+                    <label class="dashboard-field">
+                        操作模式
+                        <select id="mageA-mode">
+                            <option value="manual">手動</option>
+                            <option value="smart">智能</option>
+                        </select>
+                    </label>
+                    <div class="dashboard-field">
+                        戰術文本
+                        <button type="button" class="upload-btn" id="mageA-strategy-btn">📄 上傳 .txt</button>
+                        <input type="file" id="mageA-strategy-file" accept=".txt" style="display:none">
+                    </div>
+                </div>
+                <p class="file-hint" id="mageA-strategy-name">未上傳</p>
+            </div>
+
+            <div class="role-config">
+                <h4>🧙 法師 B</h4>
+                <div class="dashboard-row">
+                    <label class="dashboard-field">
+                        操作模式
+                        <select id="mageB-mode">
+                            <option value="smart">智能</option>
+                            <option value="network">連線</option>
+                        </select>
+                    </label>
+                    <label class="dashboard-field">
+                        智能體
+                        <select id="mageB-agent">
+                            <option value="moon-sparrow">月影靈雀</option>
+                            <option value="ember-monk">赤燼策士</option>
+                            <option value="glass-heron">鏡羽白鶴</option>
+                            <option value="iron-otter">鐵潮靈獺</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+
+            <div class="role-config">
+                <h4>🐉 惡龍</h4>
+                <label class="dashboard-field">
+                    龍型態
+                    <select id="dragon-archetype">
+                        <optgroup label="木樁（純腳本）">
+                            <option value="stub-fire">木樁烈焰龍</option>
+                            <option value="stub-claw">木樁利爪龍</option>
+                            <option value="stub-brutal">木樁暴虐龍</option>
+                        </optgroup>
+                        <optgroup label="機械（腳本+隨機）">
+                            <option value="mech-fire">機械烈焰龍</option>
+                            <option value="mech-claw">機械利爪龍</option>
+                            <option value="mech-brutal">機械暴虐龍</option>
+                        </optgroup>
+                        <optgroup label="狡詐（LLM）">
+                            <option value="llm-fire">狡詐烈焰龍</option>
+                            <option value="llm-claw">狡詐利爪龍</option>
+                            <option value="llm-brutal">狡詐暴虐龍</option>
+                        </optgroup>
+                    </select>
+                </label>
+            </div>
+        </details>
+
+        <details class="dashboard-card">
+            <summary>🔗 連線對戰</summary>
+            <div class="dashboard-stack">
+                <div class="dashboard-field">
+                    玩家設定
+                    <div class="player-id-row">
+                        <input type="text" id="player-id" placeholder="輸入你的名稱" autocomplete="off" />
+                        <div class="avatar-picker" id="avatar-picker">
+                            <span class="avatar-opt selected" data-emoji="🧙">🧙</span>
+                            <span class="avatar-opt" data-emoji="😎">😎</span>
+                            <span class="avatar-opt" data-emoji="🤠">🤠</span>
+                            <span class="avatar-opt" data-emoji="🥷">🥷</span>
+                            <span class="avatar-opt" data-emoji="🧝">🧝</span>
+                            <span class="avatar-opt" data-emoji="🧞">🧞</span>
+                            <span class="avatar-opt" data-emoji="🥸">🥸</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="dashboard-row">
+                    <button type="button" id="generate-invite" class="invite-btn">產生邀請碼</button>
+                    <input type="text" id="invite-code-out" class="invite-code-field" readonly placeholder="邀請碼" />
+                </div>
+                <div class="dashboard-row">
+                    <input type="text" id="invite-code-in" placeholder="輸入邀請碼加入" style="flex:1;padding:9px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:rgba(0,0,0,0.2);color:#fff;font-size:14px;" />
+                    <button type="button" id="join-game" class="invite-btn">加入</button>
+                </div>
+                <div id="invite-status" class="dashboard-status"></div>
+            </div>
+        </details>
+
+        <div class="dashboard-card">
+            <h3>📋 對戰紀錄</h3>
+            <div class="battle-log-wrap">
+                <table class="battle-log-table">
+                    <thead>
+                        <tr>
+                            <th>回合</th>
+                            <th>法師A</th>
+                            <th>法師B</th>
+                            <th>惡龍</th>
+                        </tr>
+                    </thead>
+                    <tbody id="battle-log-body">
+                        <tr><td colspan="4" style="color:rgba(255,255,255,0.3);padding:12px">尚未開始</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <h3>📊 戰報統計</h3>
+            <div class="report-grid">
+                <div class="report-item">
+                    <strong>回合勝場</strong>
+                    <span id="report-wins">—</span>
+                </div>
+                <div class="report-item">
+                    <strong>雙閃次數</strong>
+                    <span id="report-double-lightning">—</span>
+                </div>
+                <div class="report-item">
+                    <strong>雙盾次數</strong>
+                    <span id="report-double-shield">—</span>
+                </div>
+                <div class="report-item">
+                    <strong>雙補次數</strong>
+                    <span id="report-double-heal">—</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    </div>
+    <!-- 手機底部 tab -->
+    <nav class="mobile-tabbar">
+        <div class="mobile-tabbar-inner">
+            <button class="tab-btn active" data-target="rules">📜規則</button>
+            <button class="tab-btn" data-target="battle">⚔️對戰</button>
+            <button class="tab-btn" data-target="dashboard">📊儀表</button>
+        </div>
+    </nav>
+
+    <script src="https://unpkg.com/peerjs@1/dist/peerjs.min.js"></script>
+    <script>
+const tabButtons = document.querySelectorAll(".tab-btn");
+const panels = document.querySelectorAll(".panel");
+const providerDefaults = {
+    groq: "llama-3.3-70b-versatile",
+    openrouter: "openrouter/auto",
+    gemini: "gemini-2.5-flash-lite",
+    remote_worker: "qwen2.5:7b"
+};
+const aiStorageKey = "mage-dragon-ai-config-v2";
+
+function isMobileView() {
+    return window.innerWidth <= 768;
+}
+
+function switchPanel(target) {
+    if (isMobileView()) {
+        panels.forEach(panel => {
+            panel.classList.toggle("active", panel.dataset.panel === target);
+        });
+        if (target === 'battle') {
+            const mc = document.querySelector('.message-card');
+            if (mc) mc.scrollTop = mc.scrollHeight;
+        }
+    } else {
+        panels.forEach(panel => panel.classList.add("active"));
+    }
+
+    tabButtons.forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.target === target);
+    });
+}
+
+tabButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+        if (isMobileView()) {
+            switchPanel(btn.dataset.target);
+        }
+    });
+});
+
+window.addEventListener("resize", () => {
+    if (isMobileView()) {
+        const activeBtn = document.querySelector(".tab-btn.active");
+        switchPanel(activeBtn ? activeBtn.dataset.target : "rules");
+    } else {
+        switchPanel("rules");
+    }
+});
+
+switchPanel("rules");
+
+const globalProviderEl = document.getElementById("global-provider");
+const globalModelEl = document.getElementById("global-model");
+const globalApiKeyEl = document.getElementById("global-api-key");
+const aiConfigStatusEl = document.getElementById("ai-config-status");
+const saveAiConfigBtn = document.getElementById("save-ai-config");
+const clearAiConfigBtn = document.getElementById("clear-ai-config");
+const mageAModeEl = document.getElementById("mageA-mode");
+const mageAStrategyBtn = document.getElementById("mageA-strategy-btn");
+const mageAStrategyFile = document.getElementById("mageA-strategy-file");
+const mageAStrategyNameEl = document.getElementById("mageA-strategy-name");
+let mageAStrategyContent = "";
+const mageBModeEl = document.getElementById("mageB-mode");
+const mageBAgentEl = document.getElementById("mageB-agent");
+const dragonArchetypeEl = document.getElementById("dragon-archetype");
+
+function setAiStatus(text) {
+    aiConfigStatusEl.textContent = text;
+}
+
+function updateGlobalModelFromProvider() {
+    globalModelEl.value = providerDefaults[globalProviderEl.value] || "";
+}
+
+function collectAiConfig() {
+    return {
+        global: {
+            provider: globalProviderEl.value,
+            model: globalModelEl.value.trim(),
+            apiKey: globalApiKeyEl.value.trim()
+        },
+        roles: {
+            mageA: {
+                mode: mageAModeEl.value,
+                strategy: mageAStrategyContent
+            },
+            mageB: {
+                mode: mageBModeEl.value,
+                agent: mageBAgentEl.value
+            },
+            dragon: {
+                archetype: dragonArchetypeEl.value
+            }
+        }
+    };
+}
+
+function applyAiConfig(config) {
+    if (!config) return;
+
+    if (config.global) {
+        globalProviderEl.value = config.global.provider || "groq";
+        globalModelEl.value = config.global.model || providerDefaults[globalProviderEl.value];
+        globalApiKeyEl.value = config.global.apiKey || "";
+    }
+
+    if (config.roles) {
+        if (config.roles.mageA) {
+            mageAModeEl.value = config.roles.mageA.mode || "manual";
+            mageAStrategyContent = config.roles.mageA.strategy || "";
+            if (mageAStrategyContent) mageAStrategyNameEl.textContent = "（已載入）";
+        }
+        if (config.roles.mageB) {
+            mageBModeEl.value = config.roles.mageB.mode || "smart";
+            mageBAgentEl.value = config.roles.mageB.agent || "moon-sparrow";
+        }
+        if (config.roles.dragon) {
+            dragonArchetypeEl.value = config.roles.dragon.archetype || "stub-fire";
+        }
+    }
+}
+
+function loadAiConfig() {
+    const savedRaw = localStorage.getItem(aiStorageKey);
+    if (!savedRaw) {
+        return;
+    }
+
+    try {
+        applyAiConfig(JSON.parse(savedRaw));
+        setAiStatus("已載入本機 AI 設定");
+    } catch (error) {
+        setAiStatus("本機 AI 設定讀取失敗，已改用預設值");
+    }
+}
+
+globalProviderEl.addEventListener("change", updateGlobalModelFromProvider);
+
+saveAiConfigBtn.addEventListener("click", () => {
+    localStorage.setItem(aiStorageKey, JSON.stringify(collectAiConfig()));
+    setAiStatus("AI 設定已儲存到本機瀏覽器");
+});
+
+clearAiConfigBtn.addEventListener("click", () => {
+    localStorage.removeItem(aiStorageKey);
+    globalProviderEl.value = "groq";
+    updateGlobalModelFromProvider();
+    globalApiKeyEl.value = "";
+    mageAModeEl.value = "manual";
+    mageAStrategyContent = "";
+    mageAStrategyNameEl.textContent = "未上傳";
+    mageBModeEl.value = "smart";
+    mageBAgentEl.value = "moon-sparrow";
+    dragonArchetypeEl.value = "stub-fire";
+    setAiStatus("已清空本機 AI 設定");
+});
+
+updateGlobalModelFromProvider();
+loadAiConfig();
+
+const playerInputEl = document.getElementById("player-input");
+const playerSendBtn = document.getElementById("player-send");
+const playerIdEl    = document.getElementById("player-id");
+
+let playerAvatar = '🧙';
+
+document.getElementById('avatar-picker').addEventListener('click', e => {
+    const opt = e.target.closest('.avatar-opt');
+    if (!opt) return;
+    document.querySelectorAll('.avatar-opt').forEach(el => el.classList.remove('selected'));
+    opt.classList.add('selected');
+    playerAvatar = opt.dataset.emoji;
+    // role-aware：guest 視角自己是 mageB、host 視角自己是 mageA
+    const selfId = p2pRole === 'guest' ? 'mageB' : 'mageA';
+    document.getElementById(selfId).textContent = playerAvatar;
+});
+
+playerIdEl.addEventListener('input', () => {
+    const name = playerIdEl.value.trim();
+    const selfId = p2pRole === 'guest' ? 'mageB-name' : 'mageA-name';
+    document.getElementById(selfId).textContent = name || '我';
+});
+
+// 👄 = 詠唱中（已承諾，下回合強制施放）  👉 = 施放中（本回合生效）
+const MAGE_STATES  = ['⭕⭕','👄⚡','👄🛡️','👄💚','👉⚡','👉🛡️','👉💚'];
+const DRAGON_STATES = ['⭕','👃','✋','🔥','💥'];
+// ── 龍型態定義（名稱、類型、腳本/招式庫、個性）────
+const DRAGON_ARCHETYPES = {
+    // 木樁：純腳本，固定循環
+    'stub-fire':   { name: '木樁烈焰龍', type: 'script', script: [1,1,3,0] },
+    'stub-claw':   { name: '木樁利爪龍', type: 'script', script: [2,4,0] },
+    'stub-brutal': { name: '木樁暴虐龍', type: 'script', script: [1,1,3,2,4,0] },
+    // 機械：腳本為主，30% 機率隨機跳脫
+    'mech-fire':   { name: '機械烈焰龍', type: 'mech', script: [1,1,3,0],   rndMoves: [0,1] },
+    'mech-claw':   { name: '機械利爪龍', type: 'mech', script: [2,4,0],     rndMoves: [0,2] },
+    'mech-brutal': { name: '機械暴虐龍', type: 'mech', script: [1,1,3,2,4,0], rndMoves: [0,1,2] },
+    // 狡詐：LLM，依招式庫限制可選動作，台詞可說謊
+    'llm-fire':  { name: '狡詐烈焰龍', type: 'llm', moves: [0,1,3],
+        style: '你只使用噴火。蓄力時假裝什麼都沒做，說「我在休息」，突然噴火讓對手措手不及。語氣輕蔑，話不多。' },
+    'llm-claw':  { name: '狡詐利爪龍', type: 'llm', moves: [0,2,4],
+        style: '你只使用爪擊，快狠準。常說「下一招是火」，實際上從不噴火。說話簡短，充滿威脅感。' },
+    'llm-brutal':{ name: '狡詐暴虐龍', type: 'llm', moves: [0,1,2,3,4],
+        style: '你火爪並用，最難以預測。台詞幾乎永遠在說謊——蓄力時說在休息，休息時說要爆發。語氣輕蔑，帶著玩味的優雅。' },
+};
+
+const AGENT_PERSONAS = {
+    'moon-sparrow': {
+        name: '月影靈雀',
+        desc: '偏好合作，善於觀察隊友狀態。優先協調雙閃或雙盾。若龍在蓄力且隊友未開盾，主動提醒。說話簡短，語氣沉穩。'
+    },
+    'ember-monk': {
+        name: '赤燼策士',
+        desc: '進攻型，認為輸出才是最好的防守。只要龍沒有直接威脅，優先詠唱閃電。偶爾會押注隊友沒注意到的時機。說話自信，偶爾帶點挑釁。'
+    },
+    'glass-heron': {
+        name: '鏡羽白鶴',
+        desc: '保守型，血量至上。血量低於3時一定先補血或開盾。不會主動出擊，但會準確指出哪一回合可以雙閃。說話謹慎，喜歡給理由。'
+    },
+    'iron-otter': {
+        name: '鐵潮靈獺',
+        desc: '隨機應變，風格難以預測。有時激進，有時保守，偶爾故意沉默。說話簡短甚至奇怪，不解釋自己的選擇。'
+    }
+};
+
+
+const PROVIDER_ENDPOINTS = {
+    groq:          'https://api.groq.com/openai/v1/chat/completions',
+    openrouter:    'https://openrouter.ai/api/v1/chat/completions',
+    gemini:        'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+    remote_worker: 'http://localhost:8787/v1/chat/completions'
+};
+
+const CAST_NAMES = { 4: '⚡閃電', 5: '🛡️護盾', 6: '💚補血' };
+
+let gs = null;
+let dragonIdx = 0;
+let pending = { mageA: null, mageB: null, dragon: null };
+
+// ── LLM 呼叫 ─────────────────────────────────────
+function dragonStateText(dragon) {
+    const labels = ['⭕ 無動作', '👃 吸氣', '✋ 抬手', '🔥 噴火', '💥 爪擊'];
+    const base = labels[dragon.action];
+    return dragon.action === 1 ? `${base}（第 ${dragon.chargeTurns}/2 回合）` : base;
+}
+
+function getRecentDialogue() {
+    const msgs = [...document.querySelectorAll('.message-card .msg')].slice(-4);
+    if (!msgs.length) return '（尚無對話）';
+    return msgs.map(m => {
+        const avatar = m.querySelector('.msg-avatar')?.textContent.replace(':', '').trim() ?? '?';
+        const text   = m.querySelector('.msg-text')?.textContent ?? '';
+        return `${avatar}：${text}`;
+    }).join('\n');
+}
+
+function buildMageBSystemPrompt() {
+    const persona = AGENT_PERSONAS[mageBAgentEl.value] ?? AGENT_PERSONAS['moon-sparrow'];
+    return `你是【${persona.name}】，法師B，與法師A合作對抗惡龍。
+
+【遊戲規則】
+- 法師HP上限 5，惡龍HP上限 20
+- 兩名法師HP皆歸零 → 失敗；惡龍HP歸零 → 勝利
+
+可用招式（選一）：
+  0 = ⭕ 無動作
+  1 = ⚡ 詠唱閃電
+  2 = 🛡️ 詠唱護盾
+  3 = 💚 詠唱補血
+
+技能機制：
+  - 詠唱需要1回合，下一回合強制施放，不可取消
+  - 正在詠唱時，本回合輸入無效，自動施放上回合詠唱的招式
+  - ⚡閃電：你與隊友同時施放 → 惡龍受4傷；單人 → 惡龍受1傷
+  - 🛡️護盾：你與隊友同時施放 → 傷害完全反彈；單人 → 傷害減半
+  - 💚補血：你與隊友同時施放 → 各回3HP；單人施放 → 隊友回2HP
+
+惡龍攻擊：
+  - 🔥噴火：需吸氣2回合才能施放，傷害8（雙人平分，各-4）
+  - 💥爪擊：需抬手1回合才能施放，隨機打一名法師，傷害4
+  - 惡龍可中途取消蓄力製造假動作
+
+【你的個性】
+${persona.desc}`;
+}
+
+function buildMageBUserPrompt(isForced) {
+    const a = gs.mageA, b = gs.mageB, d = gs.dragon;
+    const forcedNote = isForced ? `（本回合強制施放 ${CAST_NAMES[b.action + 3] ?? ''}）` : '';
+    const stateBlock = `【當前狀態 — 第 ${gs.turn} 回合】
+法師A：HP ${a.hp}/5，狀態 ${MAGE_STATES[a.action]}
+法師B：HP ${b.hp}/5，狀態 ${MAGE_STATES[b.action]}（你）${forcedNote}
+惡龍：HP ${d.hp}/20，狀態 ${dragonStateText(d)}
+
+【最近對話】
+${getRecentDialogue()}`;
+
+    if (isForced) {
+        const castSpell = CAST_NAMES[b.action + 3] ?? '招式';
+        return `${stateBlock}
+
+【你的任務】
+本回合你已詠唱完畢，正在施放 ${castSpell}，無需選招。
+請對隊友說一句話（策略、鼓勵、或任何你想說的）。
+只輸出一句話，不要加任何說明。`;
+    }
+
+    return `${stateBlock}
+
+【你的任務】
+請選擇本回合的詠唱招式，回覆格式：
+- 只回一個數字（0/1/2/3）= 決定出招
+- 回文字 = 對隊友說的話（還在討論中，本回合出0）
+
+不要解釋規則，不要講思考過程，只輸出數字或一句話。`;
+}
+
+function parseMageBResponse(text) {
+    const trimmed = text.trim();
+    if (/^[0-3]$/.test(trimmed)) return { action: parseInt(trimmed), dialogue: null };
+    return { action: 0, dialogue: trimmed };
+}
+
+async function callLLM(systemPrompt, userPrompt) {
+    const cfg      = collectAiConfig().global;
+    const endpoint = PROVIDER_ENDPOINTS[cfg.provider] ?? PROVIDER_ENDPOINTS.groq;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 25000);
+    try {
+        const resp = await fetch(endpoint, {
+            method: 'POST',
+            signal: ctrl.signal,
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cfg.apiKey}` },
+            body: JSON.stringify({
+                model: cfg.model,
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user',   content: userPrompt }
+                ],
+                max_tokens: 120,
+                temperature: 0.8
+            })
+        });
+        if (!resp.ok) throw new Error(`LLM API ${resp.status}: ${await resp.text()}`);
+        const data = await resp.json();
+        return data.choices[0].message.content;
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+async function callMageBLLM(isForced) {
+    const systemPrompt = buildMageBSystemPrompt();
+    const userPrompt   = buildMageBUserPrompt(isForced);
+
+    console.log('%c[MageB LLM] System Prompt', 'color:#8fd8ff;font-weight:bold');
+    console.log(systemPrompt);
+    console.log('%c[MageB LLM] User Prompt', 'color:#ffd36b;font-weight:bold');
+    console.log(userPrompt);
+
+    const raw    = await callLLM(systemPrompt, userPrompt);
+    const result = isForced ? { action: 0, dialogue: raw.trim() } : parseMageBResponse(raw);
+
+    console.log('%c[MageB LLM] Raw Response', 'color:#a8ff78;font-weight:bold');
+    console.log(raw);
+    console.log('%c[MageB LLM] Parsed', 'color:#ff9f7f;font-weight:bold', result);
+
+    return result;
+}
+
+// ── 法師A LLM ────────────────────────────────────
+function buildMageASystemPrompt() {
+    const strategyNote = mageAStrategyContent
+        ? `\n\n【你的戰術筆記】\n${mageAStrategyContent}` : '';
+    return `你是【法師A】，與法師B合作對抗惡龍。
+
+【遊戲規則】
+- 法師HP上限 5，惡龍HP上限 20
+- 兩名法師HP皆歸零 → 失敗；惡龍HP歸零 → 勝利
+
+可用招式（選一）：
+  0 = ⭕ 無動作
+  1 = ⚡ 詠唱閃電
+  2 = 🛡️ 詠唱護盾
+  3 = 💚 詠唱補血
+
+技能機制：
+  - 詠唱需要1回合，下一回合強制施放，不可取消
+  - ⚡閃電：你與隊友同時施放 → 惡龍受4傷；單人 → 惡龍受1傷
+  - 🛡️護盾：你與隊友同時施放 → 傷害完全反彈；單人 → 傷害減半
+  - 💚補血：你與隊友同時施放 → 各回3HP；單人施放 → 隊友回2HP
+
+惡龍攻擊：
+  - 🔥噴火：需連續吸氣2回合，傷害8（雙人各-4）
+  - 💥爪擊：需抬手1回合，傷害4
+  - 惡龍可中途取消蓄力製造假動作${strategyNote}`;
+}
+
+function buildMageAUserPrompt(isForced) {
+    const a = gs.mageA, b = gs.mageB, d = gs.dragon;
+    const forcedNote = isForced ? `（本回合強制施放 ${CAST_NAMES[a.action + 3] ?? ''}）` : '';
+    const stateBlock = `【當前狀態 — 第 ${gs.turn} 回合】
+法師A：HP ${a.hp}/5，狀態 ${MAGE_STATES[a.action]}（你）${forcedNote}
+法師B：HP ${b.hp}/5，狀態 ${MAGE_STATES[b.action]}
+惡龍：HP ${d.hp}/20，狀態 ${dragonStateText(d)}
+
+【最近對話】
+${getRecentDialogue()}`;
+
+    if (isForced) {
+        return `${stateBlock}
+
+本回合你已詠唱完畢，正在施放 ${CAST_NAMES[a.action + 3] ?? '招式'}，無需選招。
+請對隊友說一句話（策略、鼓勵、或任何你想說的）。
+只輸出一句話，不要加任何說明。`;
+    }
+
+    return `${stateBlock}
+
+請選擇本回合的詠唱招式，回覆格式：
+- 只回一個數字（0/1/2/3）= 決定出招
+- 回文字 = 對隊友說的話（還在討論中，本回合出0）
+
+不要解釋規則，不要講思考過程，只輸出數字或一句話。`;
+}
+
+async function callMageALLM(isForced) {
+    const raw    = await callLLM(buildMageASystemPrompt(), buildMageAUserPrompt(isForced));
+    const result = isForced ? { action: 0, dialogue: raw.trim() } : parseMageBResponse(raw);
+    console.log('%c[MageA LLM]', 'color:#ffd36b;font-weight:bold', result);
+    return result;
+}
+
+// ── 惡龍 LLM ─────────────────────────────────────
+function buildDragonSystemPrompt(arc) {
+    const allMoves = [
+        '  0 = ⭕ 無動作（或取消蓄力）',
+        '  1 = 👃 吸氣（蓄力；需連續2回合後才能噴火）',
+        '  2 = ✋ 抬手（蓄力；下回合可爪擊）',
+        '  3 = 🔥 噴火（需前2回合連續吸氣才有效；有效時8傷，雙人各-4）',
+        '  4 = 💥 爪擊（需上回合抬手才有效；有效時4傷，打一名法師）',
+    ];
+    const moveLines = arc.moves.map(i => allMoves[i]).join('\n');
+    const validNums = arc.moves.join('/');
+    return `你是【${arc.name}】，對抗兩名合作的法師。
+
+【目標】兩名法師HP皆歸零 → 你獲勝；你的HP歸零 → 你失敗。
+
+你的可用行動（只能選以下數字：${validNums}）：
+${moveLines}
+
+你可以在任意回合選 0 取消蓄力，製造假動作讓法師判斷失誤。
+
+法師的防禦：雙盾完全反彈；單盾傷害減半。
+
+【你的個性】
+${arc.style}
+
+重要：你的台詞是所有人看得到的公開資訊，你的 action 是隱密的（掀牌前法師不知道）。
+台詞可以與你的實際行動完全無關，你有完全的自由選擇欺騙或說真話。
+
+回覆格式（JSON）：{"action": <${validNums}>, "dialogue": "<一句話>"}`;
+}
+
+function buildDragonUserPrompt(arc) {
+    const a = gs.mageA, b = gs.mageB, d = gs.dragon;
+    const canFire = d.action === 1 && d.chargeTurns >= 2;
+    const canClaw = d.action === 2 && d.chargeTurns >= 1;
+    const fireNote = arc.moves.includes(3) ? `\n  → 噴火(3)：${canFire ? '✅ 現在有效' : '❌ 蓄力不足'}` : '';
+    const clawNote = arc.moves.includes(4) ? `\n  → 爪擊(4)：${canClaw ? '✅ 現在有效' : '❌ 蓄力不足'}` : '';
+    return `【第 ${gs.turn} 回合】
+你：HP ${d.hp}/20，${dragonStateText(d)}${fireNote}${clawNote}
+
+法師A：HP ${a.hp}/5${a.hp <= 0 ? '（已倒下）' : `，${MAGE_STATES[a.action]}`}
+法師B：HP ${b.hp}/5${b.hp <= 0 ? '（已倒下）' : `，${MAGE_STATES[b.action]}`}
+
+選擇你的行動和台詞（回覆 JSON）：`;
+}
+
+function parseDragonResponse(text) {
+    try {
+        const json = JSON.parse(text.trim());
+        return {
+            action:   Math.min(4, Math.max(0, parseInt(json.action) || 0)),
+            dialogue: String(json.dialogue ?? '').slice(0, 80)
+        };
+    } catch {
+        const m = text.match(/[0-4]/);
+        return { action: m ? parseInt(m[0]) : 0, dialogue: text.split('\n')[0].slice(0, 80) };
+    }
+}
+
+async function callDragonLLM(arc) {
+    const raw = await callLLM(buildDragonSystemPrompt(arc), buildDragonUserPrompt(arc));
+    console.log('%c[Dragon LLM] Raw', 'color:#ff6b6b;font-weight:bold', raw);
+    return parseDragonResponse(raw);
+}
+
+// ── 龍行動選擇（依型態分流）──────────────────────
+function dragonPickAction() {
+    const arc = DRAGON_ARCHETYPES[dragonArchetypeEl.value] ?? DRAGON_ARCHETYPES['stub-fire'];
+    if (arc.type === 'script') {
+        pending.dragon = arc.script[dragonIdx % arc.script.length];
+        dragonIdx++;
+        gsCheckReady();
+    } else if (arc.type === 'mech') {
+        const useRandom = Math.random() < 0.3;
+        pending.dragon = useRandom
+            ? arc.rndMoves[Math.floor(Math.random() * arc.rndMoves.length)]
+            : arc.script[dragonIdx % arc.script.length];
+        dragonIdx++;
+        gsCheckReady();
+    } else {
+        callDragonLLM(arc).then(result => {
+            const clampedAction = arc.moves.includes(result.action) ? result.action : arc.moves[0];
+            pending.dragon = clampedAction;
+            if (result.dialogue) appendMessage('dragon', result.dialogue);
+            gsCheckReady();
+        }).catch(err => {
+            console.error('[Dragon LLM] 失敗，改用隨機:', err);
+            appendMessage('hint', '（惡龍智能連線失敗，改用隨機）');
+            pending.dragon = arc.moves[Math.floor(Math.random() * arc.moves.length)];
+            gsCheckReady();
+        });
+    }
+}
+
+// ── 初始化 ──────────────────────────────────────
+function gsInit() {
+    const prevStats = gs?.stats
+        ?? JSON.parse(localStorage.getItem('mage-dragon-stats') || 'null')
+        ?? { wins: 0, losses: 0, dblLightning: 0, dblShield: 0, dblHeal: 0 };
+    gs = {
+        phase: 'idle',
+        turn: 0,
+        mageA:   { hp: 5,  action: 0 },
+        mageB:   { hp: 5,  action: 0 },
+        dragon:  { hp: 20, action: 0, chargeTurns: 0 },
+        stats: prevStats
+    };
+    dragonIdx = 0;
+}
+
+function gsSetIdle(text) {
+    const bar = document.getElementById('input-bar');
+    bar.classList.add('idle');
+    const btn = document.getElementById('player-send');
+    btn.textContent = text;
+    btn.style.background = '';  // 重置（後續死亡狀態會再覆蓋成橘色）
+}
+
+function gsSetActive() {
+    const bar = document.getElementById('input-bar');
+    bar.classList.remove('idle');
+    const btn = document.getElementById('player-send');
+    btn.textContent = '送出';
+    btn.disabled = false;
+    btn.style.background = '';
+    const smartA = gs && mageAModeEl.value === 'smart';
+    document.getElementById('player-input').placeholder = smartA
+        ? '法師A 由 AI 操控，可傳訊息給隊友…'
+        : '輸入 0–3 選招，或傳訊息給隊友…';
+}
+
+function gsSetWaiting() {
+    const bar = document.getElementById('input-bar');
+    bar.classList.remove('idle');
+    const btn = document.getElementById('player-send');
+    btn.textContent = '等待結算…';
+    btn.disabled = true;
+    document.getElementById('player-input').placeholder = '等待結算中，可傳訊息給隊友…';
+}
+
+const LOCK_SUMMARIES = ['智能模型', '角色設定', '連線對戰'];
+
+function gsLockDashboard() {
+    document.querySelectorAll('details.dashboard-card').forEach(d => {
+        if (LOCK_SUMMARIES.some(t => d.querySelector('summary')?.textContent.includes(t))) {
+            d.open = false;
+            d.classList.add('locked');
+        }
+    });
+}
+
+function gsUnlockDashboard() {
+    document.querySelectorAll('details.dashboard-card.locked').forEach(d => {
+        d.classList.remove('locked');
+    });
+}
+
+function gsStart() {
+    if (gs?.phase === 'choosing') return; // 防止重複點擊
+    if (p2pRole === 'host' && !p2pConn?.open) {
+        appendMessage('system', '⚠️ P2P 連線已中斷，請重新產生邀請碼再開始。');
+        return;
+    }
+    gsInit();
+    gsSetActive();
+    gsLockDashboard();
+    document.getElementById('battle-log-body').innerHTML = '';
+    document.querySelector('.message-card').innerHTML = '';
+    appendMessage('system', '⚔️ 遊戲開始！惡龍出現在面前！');
+    gsRender();
+    if (p2pRole === 'host') p2pSend({ type: 'game_start' });
+    gsTurnStart();
+}
+
+// ── 回合開始 ─────────────────────────────────────
+function gsTurnStart() {
+    if (gs.phase === 'game_over') return;
+    gs.phase = 'choosing';
+    gs.turn++;
+    pending = { mageA: null, mageB: null, dragon: null };
+
+    document.getElementById('mageA-skill').textContent = '❓';
+    document.getElementById('mageB-skill').textContent = '❓';
+    document.getElementById('dragon-skill').textContent = '❓';
+
+    // 龍決定（依型態：腳本同步，LLM 非同步）
+    dragonPickAction();
+
+    // 法師A：死亡 / 強制施放 / 智能 / 手動
+    const aDead   = gs.mageA.hp <= 0;
+    const aForced = !aDead && gs.mageA.action >= 1 && gs.mageA.action <= 3;
+    if (aDead) {
+        pending.mageA = 0;
+        // host 視角 = 我是 A：自己死了、鎖輸入並顯示死亡標記
+        if (p2pRole !== 'guest') {
+            gsSetIdle('💀 你已經死了，等待隊友收拾殘局');
+            document.getElementById('player-send').style.background = '#ea580c';
+        }
+    } else if (aForced) {
+        pending.mageA = 0;
+        if (mageAModeEl.value === 'smart') {
+            callMageALLM(true).then(r => { if (r.dialogue) appendMessage('player', r.dialogue); }).catch(() => {});
+        } else {
+            appendMessage('hint', `回合 ${gs.turn}｜${MAGE_STATES[gs.mageA.action]} 即將施放，等待其他行動…`);
+        }
+    } else if (mageAModeEl.value === 'smart') {
+        appendMessage('hint', '法師A正在思考…');
+        callMageALLM(false).then(result => {
+            pending.mageA = result.action;
+            if (result.dialogue) appendMessage('player', result.dialogue);
+            gsCheckReady();
+        }).catch(err => {
+            console.error('[MageA LLM] 失敗，改用隨機:', err);
+            pending.mageA = Math.floor(Math.random() * 4);
+            gsCheckReady();
+        });
+    } else {
+        appendMessage('hint', `回合 ${gs.turn}｜請選擇法術：0:⭕⭕　1:👄⚡　2:👄🛡️　3:👄💚`);
+    }
+
+    // 法師B：死亡 → 跳過 LLM，直接出 0
+    const bDead   = gs.mageB.hp <= 0;
+    const bForced = !bDead && gs.mageB.action >= 1 && gs.mageB.action <= 3;
+    if (p2pRole === 'host') {
+        // 通知 guest 輪到她選招
+        p2pSend({ type: 'turn_start', turn: gs.turn,
+            bDead, bForced, bAction: gs.mageB.action });
+        if (bDead) {
+            pending.mageB = 0;
+        } else if (bForced) {
+            pending.mageB = 0;  // host 幫 guest 強制施放
+        } else {
+            p2pWaitingForGuest = true;  // 等 guest 傳 action 回來
+        }
+    } else if (bDead) {
+        pending.mageB = 0;
+    } else if (mageBModeEl.value === 'smart') {
+        appendMessage('hint', '隊友正在思考…');
+        callMageBLLM(bForced).then(result => {
+            pending.mageB = bForced ? 0 : result.action;
+            if (result.dialogue) appendMessage('ally', result.dialogue);
+            gsCheckReady();
+        }).catch(err => {
+            console.error('[MageB LLM] 呼叫失敗，改用隨機:', err);
+            appendMessage('hint', '（智能體連線失敗，改用隨機）');
+            pending.mageB = bForced ? 0 : Math.floor(Math.random() * 4);
+            gsCheckReady();
+        });
+    } else {
+        setTimeout(() => {
+            pending.mageB = bForced ? 0 : Math.floor(Math.random() * 4);
+            gsCheckReady();
+        }, 400);
+    }
+
+    if (aDead || aForced) gsCheckReady();
+    if (p2pRole === 'host') {
+        if (bDead || bForced) gsCheckReady();
+        // else: 等 p2pOnData('action') 觸發 gsCheckReady
+    } else if (bDead) {
+        gsCheckReady();
+    }
+}
+
+// ── 確認 ✅ 狀態，全部就緒則掀牌 ─────────────────
+function gsCheckReady() {
+    if (pending.mageA !== null) document.getElementById('mageA-skill').textContent = '✅';
+    if (pending.mageB !== null) document.getElementById('mageB-skill').textContent = '✅';
+    if (pending.dragon !== null) document.getElementById('dragon-skill').textContent = '✅';
+    // P2P：把目前確認狀態推給 guest，讓他的畫面也能即時顯示 ✅
+    if (p2pRole === 'host') {
+        p2pSend({ type: 'ready_update',
+            mageA:  pending.mageA  !== null,
+            dragon: pending.dragon !== null });
+    }
+    if (pending.mageA !== null && pending.mageB !== null && pending.dragon !== null
+        && gs.phase === 'choosing') {
+        gs.phase = 'revealing';
+        setTimeout(() => gsReveal(), 500);
+    }
+}
+
+// ── 轉換規則 ─────────────────────────────────────
+function gsMageNext(curAction, input) {
+    if (curAction >= 1 && curAction <= 3) return curAction + 3; // 強制施放
+    return input; // 0~3 直接對應
+}
+
+function gsDragonNext(dragon, choice) {
+    let newCharge = dragon.chargeTurns;
+    let selfDmg = 0, fireDmg = 0;
+    if (choice === 1) {
+        newCharge = dragon.action === 1 ? dragon.chargeTurns + 1 : 1;
+        if (newCharge >= 3) selfDmg = 2;
+    } else if (choice === 3) {
+        fireDmg = (dragon.action === 1 && dragon.chargeTurns >= 2) ? 8 : 0;
+        newCharge = 0;
+    } else if (choice === 2) {
+        newCharge = dragon.action === 2 ? dragon.chargeTurns + 1 : 1;
+    } else if (choice === 4) {
+        fireDmg = (dragon.action === 2 && dragon.chargeTurns >= 1) ? 4 : 0;
+        newCharge = 0;
+    } else {
+        newCharge = 0;
+    }
+    return { action: choice, chargeTurns: newCharge, selfDmg, fireDmg };
+}
+
+// ── 結算 ─────────────────────────────────────────
+function gsResolve() {
+    const newA = gs.mageA.hp <= 0 ? 0 : gsMageNext(gs.mageA.action, pending.mageA);
+    const newB = gs.mageB.hp <= 0 ? 0 : gsMageNext(gs.mageB.action, pending.mageB);
+    const dr   = gsDragonNext(gs.dragon, pending.dragon);
+
+    gs.mageA.action  = newA;
+    gs.mageB.action  = newB;
+    gs.dragon.action = dr.action;
+    gs.dragon.chargeTurns = dr.chargeTurns;
+
+    const msgs = [];
+
+    // 龍超蓄自傷
+    if (dr.selfDmg > 0) {
+        gs.dragon.hp = Math.max(0, gs.dragon.hp - dr.selfDmg);
+        msgs.push(`惡龍過度蓄力，自損 ${dr.selfDmg} 點！`);
+    }
+
+    // 法師閃電 → 龍
+    const aLight = newA === 4, bLight = newB === 4;
+    if (aLight && bLight) {
+        gs.dragon.hp = Math.max(0, gs.dragon.hp - 4);
+        gs.stats.dblLightning++;
+        msgs.push('⚡ 雙閃電齊發！對惡龍造成 4 傷！');
+    } else if (aLight || bLight) {
+        gs.dragon.hp = Math.max(0, gs.dragon.hp - 1);
+        msgs.push('⚡ 閃電擊中惡龍，造成 1 傷。');
+    }
+
+    // 龍攻擊 → 法師
+    if (dr.fireDmg > 0) {
+        const aShield = newA === 5, bShield = newB === 5;
+        const tag = dr.action === 3 ? '🔥 噴火' : '💥 爪擊';
+        if (aShield && bShield) {
+            gs.dragon.hp = Math.max(0, gs.dragon.hp - dr.fireDmg);
+            gs.stats.dblShield++;
+            msgs.push(`${tag} 被雙盾完全反彈！惡龍反傷 ${dr.fireDmg}！`);
+        } else {
+            const dmg = (aShield || bShield) ? Math.floor(dr.fireDmg / 2) : dr.fireDmg;
+            const each = Math.floor(dmg / 2);
+            gs.mageA.hp = Math.max(0, gs.mageA.hp - each);
+            gs.mageB.hp = Math.max(0, gs.mageB.hp - each);
+            msgs.push(`${tag}！${aShield || bShield ? '護盾減半，' : ''}兩名法師各受 ${each} 傷。`);
+        }
+    } else if (dr.action === 3) {
+        msgs.push('🔥 惡龍噴火，但蓄力不足，無效！');
+    }
+
+    // 龍蓄力提示
+    if (dr.action === 1) msgs.push(`惡龍正在吸氣……（第 ${dr.chargeTurns} 回合）`);
+    if (dr.action === 2) msgs.push(`惡龍緩緩抬起利爪……`);
+
+    // 補血（死亡的法師不可復活、HP 0 維持 0）
+    const aHeal = newA === 6, bHeal = newB === 6;
+    const aAlive = gs.mageA.hp > 0, bAlive = gs.mageB.hp > 0;
+    if (aHeal && bHeal) {
+        if (aAlive) gs.mageA.hp = Math.min(5, gs.mageA.hp + 3);
+        if (bAlive) gs.mageB.hp = Math.min(5, gs.mageB.hp + 3);
+        if (aAlive && bAlive) {
+            gs.stats.dblHeal++;
+            msgs.push('💚 雙補血！兩名法師各回 3 HP。');
+        } else if (aAlive) {
+            msgs.push('💚 雙補血、但法師B已倒下、法師A獨自回 3 HP。');
+        } else if (bAlive) {
+            msgs.push('💚 雙補血、但法師A已倒下、法師B獨自回 3 HP。');
+        } else {
+            msgs.push('💚 雙補血、但兩人皆倒下、無效。');
+        }
+    } else if (aHeal) {
+        if (bAlive) {
+            gs.mageB.hp = Math.min(5, gs.mageB.hp + 2);
+            msgs.push('💚 法師A補血，法師B回 2 HP。');
+        } else {
+            msgs.push('💚 法師A補血、但法師B已倒下、無效。');
+        }
+    } else if (bHeal) {
+        if (aAlive) {
+            gs.mageA.hp = Math.min(5, gs.mageA.hp + 2);
+            msgs.push('💚 法師B補血，法師A回 2 HP。');
+        } else {
+            msgs.push('💚 法師B補血、但法師A已倒下、無效。');
+        }
+    }
+
+    return msgs;
+}
+
+// ── 掀牌 + 結算 + 推進 ───────────────────────────
+function gsReveal() {
+    gs.phase = 'resolving';
+
+    // 結算前先截 HP 快照（log 用：HP 顯示傷害發生前，動作欄顯示本回合執行的動作）
+    const preHp = { a: gs.mageA.hp, b: gs.mageB.hp, d: gs.dragon.hp };
+
+    const msgs = gsResolve();
+    gsRender();
+
+    // 結算後的 action 正好代表「本回合做了什麼」（👉=施放 👄=詠唱 ⭕=無）
+    const summary = [
+        (gs.mageA.action === 4 && gs.mageB.action === 4) ? '⚡x2' :
+        (gs.mageA.action === 4 || gs.mageB.action === 4) ? '⚡x1' : '',
+        gs.mageA.action === 5 && gs.mageB.action === 5 ? '🛡️x2' : '',
+        gs.dragon.action === 3 ? '🔥' : '',
+        gs.dragon.action === 4 ? '💥' : '',
+    ].filter(Boolean).join(' ') || '—';
+
+    const logEntry = {
+        turn: gs.turn,
+        mageA:  { hp: preHp.a, action: gs.mageA.action },
+        mageB:  { hp: preHp.b, action: gs.mageB.action },
+        dragon: { hp: preHp.d, action: gs.dragon.action },
+        summary
+    };
+    gsAppendLog(logEntry.turn, logEntry.mageA, logEntry.mageB, logEntry.dragon, summary);
+    msgs.forEach(m => appendMessage('system', m));
+    gsUpdateStats();
+
+    const over = gs.mageA.hp <= 0 && gs.mageB.hp <= 0 ? 'lose'
+               : gs.dragon.hp <= 0 ? 'win' : null;
+
+    if (p2pRole === 'host') {
+        p2pSend({ type: 'resolve',
+            gs: JSON.parse(JSON.stringify(gs)),
+            log: logEntry,
+            msgs,
+            over
+        });
+    }
+
+    if (over) {
+        gs.phase = 'game_over';
+        over === 'win' ? gs.stats.wins++ : gs.stats.losses++;
+        // 補一行最終狀態到戰報、讓玩家看到死亡 HP 不是程式卡住
+        gsAppendLog('END',
+            { hp: gs.mageA.hp, action: 0 },
+            { hp: gs.mageB.hp, action: 0 },
+            { hp: gs.dragon.hp, action: 0 },
+            over === 'win' ? '🎉勝' : '💀敗');
+        appendMessage('system', over === 'win'
+            ? '🎉 惡龍已被擊敗！法師們獲勝！'
+            : '💀 兩名法師均已倒下……惡龍獲勝。');
+        gsSetIdle('🔄 再來一局');
+        gsUnlockDashboard();
+        gsUpdateStats();
+        return;
+    }
+
+    setTimeout(() => gsTurnStart(), 800);
+}
+
+// ── 畫面更新 ─────────────────────────────────────
+function gsRender() {
+    if (!gs) return;
+    document.getElementById('mageA-hp').textContent    = '❤️' + gs.mageA.hp;
+    document.getElementById('mageB-hp').textContent    = '❤️' + gs.mageB.hp;
+    document.getElementById('dragon-hp').textContent   = '❤️' + gs.dragon.hp;
+    document.getElementById('mageA-skill').textContent = MAGE_STATES[gs.mageA.action];
+    document.getElementById('mageB-skill').textContent = MAGE_STATES[gs.mageB.action];
+    document.getElementById('dragon-skill').textContent= DRAGON_STATES[gs.dragon.action];
+}
+
+function gsAppendLog(turn, mageA, mageB, dragon, summary) {
+    const tbody = document.getElementById('battle-log-body');
+    tbody.querySelector('[colspan]')?.closest('tr')?.remove();
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${turn}</td>
+        <td>❤️${mageA.hp}${MAGE_STATES[mageA.action]}</td>
+        <td>❤️${mageB.hp}${MAGE_STATES[mageB.action]}</td>
+        <td>❤️${dragon.hp}${DRAGON_STATES[dragon.action]}</td>`;
+    tbody.appendChild(tr);
+    tbody.closest('.battle-log-wrap').scrollTop = 9999;
+}
+
+function gsUpdateStats() {
+    if (!gs) return;
+    localStorage.setItem('mage-dragon-stats', JSON.stringify(gs.stats));
+    const total = gs.stats.wins + gs.stats.losses;
+    document.getElementById('report-wins').textContent             = total ? `${gs.stats.wins}/${total}` : '—';
+    document.getElementById('report-double-lightning').textContent = gs.stats.dblLightning || '—';
+    document.getElementById('report-double-shield').textContent    = gs.stats.dblShield    || '—';
+    document.getElementById('report-double-heal').textContent      = gs.stats.dblHeal      || '—';
+}
+
+// ── 玩家輸入 ─────────────────────────────────────
+function handlePlayerInput() {
+    const raw = playerInputEl.value.trim();
+    if (!raw) return;
+    playerInputEl.value = '';
+
+    const isDigit = /^[0-3]$/.test(raw);
+
+    // Guest P2P 路徑
+    if (p2pRole === 'guest') {
+        if (isDigit && gs?.phase === 'choosing') {
+            const input = parseInt(raw);
+            appendMessage('player', `選擇：${MAGE_STATES[input]}`);
+            p2pSend({ type: 'action', value: input });
+            document.getElementById('mageB-skill').textContent = '✅';
+            gsSetWaiting();
+        } else if (!isDigit) {
+            appendMessage('player', raw);
+            p2pSend({ type: 'chat', from: 'guest', text: raw });
+        }
+        return;
+    }
+
+    // Host / 單機路徑
+    const mageAIsManual = mageAModeEl.value !== 'smart';
+    if (isDigit && gs && gs.phase === 'choosing' && pending.mageA === null && mageAIsManual) {
+        const input = parseInt(raw);
+        pending.mageA = input;
+        appendMessage('player', `選擇：${MAGE_STATES[input]}`);
+        if (p2pRole === 'host') p2pSend({ type: 'chat', from: 'host', text: raw });
+        gsCheckReady();
+    } else if (isDigit && gs?.phase === 'choosing' && (!mageAIsManual || pending.mageA !== null)) {
+        appendMessage('player', mageAIsManual ? '（已確認，等待其他行動）' : '（智能模式中，傳訊給隊友用文字）');
+    } else {
+        appendMessage('player', raw);
+        if (p2pRole === 'host') p2pSend({ type: 'chat', from: 'host', text: raw });
+    }
+}
+
+function appendMessage(type, text) {
+    const avatars = { system: "📜:", dragon: "🐲:", ally: "🤖:", player: playerAvatar + ":", hint: "💡:" };
+    const messageCard = document.querySelector(".message-card");
+    const div = document.createElement("div");
+    div.className = `msg ${type}-msg`;
+    div.innerHTML = `<span class="msg-avatar">${avatars[type] ?? "💬:"}</span><span class="msg-text">${text}</span>`;
+    messageCard.appendChild(div);
+    messageCard.scrollTop = messageCard.scrollHeight;
+}
+
+playerSendBtn.addEventListener("click", () => {
+    const bar = document.getElementById('input-bar');
+    if (bar.classList.contains('idle')) gsStart();
+    else handlePlayerInput();
+});
+playerInputEl.addEventListener("keydown", e => { if (e.key === "Enter") handlePlayerInput(); });
+
+mageAStrategyBtn.addEventListener("click", () => mageAStrategyFile.click());
+mageAStrategyFile.addEventListener("change", () => {
+    const file = mageAStrategyFile.files[0];
+    if (!file) return;
+    mageAStrategyNameEl.textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = e => { mageAStrategyContent = e.target.result; };
+    reader.readAsText(file, "utf-8");
+});
+
+// ── P2P 連線 ──────────────────────────────────────
+let p2pPeer = null;
+let p2pConn = null;
+let p2pRole = null;          // 'host' | 'guest' | null
+let p2pWaitingForGuest = false;
+
+function p2pStatus(text) {
+    document.getElementById('invite-status').textContent = text;
+}
+
+function p2pSetupConn(conn) {
+    p2pConn = conn;
+
+    conn.on('open', () => {
+        p2pStatus('✅ 已連線！');
+        if (p2pRole === 'guest') {
+            // 從 guest 視角：mageB = 我，mageA = 隊友 — 換標籤與頭像
+            document.getElementById('mageB-name').textContent = playerIdEl.value.trim() || '我';
+            document.getElementById('mageA-name').textContent = '隊友';
+            document.getElementById('mageB').textContent = playerAvatar;
+            document.getElementById('mageA').textContent = '🧙';
+            appendMessage('system', '🔗 已連線，等待房主開始遊戲…');
+            gsSetActive();
+        } else {
+            appendMessage('system', '🔗 隊友已連線！');
+        }
+    });
+
+    conn.on('data', raw => {
+        try { p2pOnData(JSON.parse(raw)); }
+        catch (e) { console.error('[P2P] parse error', e); }
+    });
+
+    conn.on('close', () => {
+        p2pStatus('⚠️ 對手已離線');
+        appendMessage('system', '⚠️ 對手已離線。');
+        if (gs?.phase === 'choosing' || gs?.phase === 'resolving') {
+            gs.phase = 'game_over';
+            gsSetIdle('🔄 再來一局');
+            gsUnlockDashboard();
+        } else {
+            // 遊戲尚未開始就斷線，解鎖讓玩家重新連線
+            gsUnlockDashboard();
+        }
+    });
+
+    conn.on('error', err => {
+        console.error('[P2P conn]', err);
+        p2pStatus('連線中斷');
+    });
+}
+
+function p2pSend(msg) {
+    if (p2pConn?.open) p2pConn.send(JSON.stringify(msg));
+}
+
+function p2pHost(code) {
+    if (p2pPeer) { p2pPeer.destroy(); p2pPeer = null; }
+    p2pRole = 'host';
+    p2pStatus('建立房間中…');
+    p2pPeer = new Peer(code);
+
+    p2pPeer.on('open', () => p2pStatus('等待隊友加入… 邀請碼：' + code));
+    p2pPeer.on('connection', conn => p2pSetupConn(conn));
+    p2pPeer.on('error', err => {
+        console.error('[P2P host]', err);
+        p2pStatus('建立失敗：' + err.type);
+        p2pRole = null;
+    });
+}
+
+function p2pJoin(code) {
+    if (p2pPeer) { p2pPeer.destroy(); p2pPeer = null; }
+    p2pRole = 'guest';
+    p2pStatus('連線中…');
+    p2pPeer = new Peer();
+
+    p2pPeer.on('open', () => {
+        const conn = p2pPeer.connect(code, { reliable: true });
+        p2pSetupConn(conn);
+    });
+    p2pPeer.on('error', err => {
+        console.error('[P2P guest]', err);
+        p2pStatus('連線失敗：' + err.type);
+        p2pRole = null;
+    });
+}
+
+function p2pOnData(msg) {
+    switch (msg.type) {
+
+        case 'action':
+            if (p2pRole === 'host' && p2pWaitingForGuest) {
+                p2pWaitingForGuest = false;
+                pending.mageB = msg.value;
+                document.getElementById('mageB-skill').textContent = '✅';
+                gsCheckReady();
+            }
+            break;
+
+        case 'game_start':
+            if (p2pRole === 'guest') {
+                gsInit();
+                document.getElementById('battle-log-body').innerHTML = '';
+                document.querySelector('.message-card').innerHTML = '';
+                appendMessage('system', '⚔️ 遊戲開始！惡龍出現在面前！');
+                gsRender();
+                gsLockDashboard();
+            }
+            break;
+
+        case 'turn_start':
+            if (p2pRole === 'guest') {
+                if (gs.phase === 'game_over') break;
+                gs.phase = 'choosing';
+                gs.turn  = msg.turn;
+                document.getElementById('mageA-skill').textContent = '❓';
+                document.getElementById('mageB-skill').textContent = '❓';
+                document.getElementById('dragon-skill').textContent = '❓';
+
+                if (msg.bDead) {
+                    p2pSend({ type: 'action', value: 0 });
+                    document.getElementById('mageB-skill').textContent = '✅';
+                    // guest 視角 = 我是 B：自己死了、鎖輸入並顯示死亡標記
+                    gsSetIdle('💀 你已經死了，等待隊友收拾殘局');
+                    document.getElementById('player-send').style.background = '#ea580c';
+                } else if (msg.bForced) {
+                    appendMessage('hint', `回合 ${msg.turn}｜${MAGE_STATES[msg.bAction]} 即將施放，等待結算…`);
+                    p2pSend({ type: 'action', value: 0 });
+                    document.getElementById('mageB-skill').textContent = '✅';
+                    gsSetWaiting();
+                } else {
+                    appendMessage('hint', `回合 ${msg.turn}｜選擇法師B的法術：0:⭕⭕　1:👄⚡　2:👄🛡️　3:👄💚`);
+                    gsSetActive();
+                }
+            }
+            break;
+
+        case 'ready_update':
+            if (p2pRole === 'guest') {
+                if (msg.mageA)  document.getElementById('mageA-skill').textContent  = '✅';
+                if (msg.dragon) document.getElementById('dragon-skill').textContent = '✅';
+            }
+            break;
+
+        case 'resolve':
+            if (p2pRole === 'guest') {
+                Object.assign(gs, msg.gs);
+                gsRender();
+                msg.msgs.forEach(m => appendMessage('system', m));
+                const l = msg.log;
+                gsAppendLog(l.turn, l.mageA, l.mageB, l.dragon, l.summary);
+                gsUpdateStats();
+                if (msg.over) {
+                    gs.phase = 'game_over';
+                    appendMessage('system', msg.over === 'win'
+                        ? '🎉 惡龍已被擊敗！法師們獲勝！'
+                        : '💀 兩名法師均已倒下……惡龍獲勝。');
+                    gsSetIdle('🔄 再來一局');
+                    gsUnlockDashboard();
+                }
+            }
+            break;
+
+        case 'chat':
+            appendMessage(msg.from === 'host' ? 'player' : 'ally', msg.text);
+            break;
+    }
+}
+
+document.getElementById("generate-invite").addEventListener("click", () => {
+    const code = Math.random().toString(36).slice(2, 8).toUpperCase();
+    document.getElementById("invite-code-out").value = code;
+    p2pHost(code);
+});
+
+document.getElementById("join-game").addEventListener("click", () => {
+    const code = document.getElementById("invite-code-in").value.trim().toUpperCase();
+    if (!code) return;
+    p2pJoin(code);
+});
+</script>
+<script>
+// ═══ OpenMoji 顯示層（SS 部署版加掛、遊戲邏輯零改動）═══
+// 把 DOM 文字節點裡的 emoji 即時替換成 OpenMoji SVG(twemoji式)；MutationObserver 跟住動態重繪；載入失敗自動退回原字元。
+(function(){
+  const URLB="https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji@15.1.0/color/svg/";
+  const code=e=>[...e].map(c=>c.codePointAt(0).toString(16).toUpperCase()).filter(h=>h!=="FE0F").join("-");
+  const RE=/(\p{Extended_Pictographic}(?:️)?(?:‍\p{Extended_Pictographic}(?:️)?)*|[✅❓❌⭕⚠️❤])/gu;
+  const SKIP=new Set(["SCRIPT","STYLE","TEXTAREA","INPUT","TITLE"]);
+  let busy=false;
+  function makeImg(ch){
+    const im=document.createElement("img");
+    im.src=URLB+code(ch)+".svg"; im.alt=ch; im.className="omoji";
+    im.style.cssText="width:1.15em;height:1.15em;vertical-align:-0.18em;display:inline-block";
+    im.onerror=()=>{ im.replaceWith(document.createTextNode(ch)); };   // OpenMoji 沒有的字元 → 退回原 emoji
+    return im;
+  }
+  function walk(root){
+    const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{
+      if(!n.nodeValue||!RE.test(n.nodeValue)) return NodeFilter.FILTER_REJECT;
+      RE.lastIndex=0;
+      let p=n.parentNode;
+      while(p){ if(SKIP.has(p.nodeName)||(p.classList&&p.classList.contains("omoji"))) return NodeFilter.FILTER_REJECT; p=p.parentNode; }
+      return NodeFilter.FILTER_ACCEPT;
+    }});
+    const nodes=[]; while(tw.nextNode()) nodes.push(tw.currentNode);
+    for(const n of nodes){
+      const frag=document.createDocumentFragment();
+      let last=0, s=n.nodeValue, m; RE.lastIndex=0;
+      while((m=RE.exec(s))){
+        if(m.index>last) frag.appendChild(document.createTextNode(s.slice(last,m.index)));
+        frag.appendChild(makeImg(m[0])); last=m.index+m[0].length;
+      }
+      if(last<s.length) frag.appendChild(document.createTextNode(s.slice(last)));
+      n.parentNode&&n.parentNode.replaceChild(frag,n);
+    }
+  }
+  function run(){ if(busy)return; busy=true; try{ walk(document.body); }finally{ busy=false; } }
+  new MutationObserver(muts=>{ if(busy)return; run(); }).observe(document.body,{childList:true,subtree:true,characterData:true});
+  run();
+  // CC BY-SA 4.0 標示（OpenMoji 授權要求）
+  const cr=document.createElement("div");
+  cr.style.cssText="text-align:center;font-size:11px;color:#999;padding:8px 0 14px";
+  cr.innerHTML='圖示素材：<a href="https://openmoji.org" target="_blank" style="color:#888">OpenMoji</a> — CC BY-SA 4.0';
+  document.body.appendChild(cr);
+})();
+</script>
+</body>
+</html>
