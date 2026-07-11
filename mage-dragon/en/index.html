@@ -1174,7 +1174,10 @@ function dragonStateText(dragon) {
 }
 
 function getRecentDialogue() {
-    const msgs = [...document.querySelectorAll('.message-card .msg')].slice(-4);
+    // 只取真正的發言(玩家/隊友/龍)最近6則——系統結算訊息不擠佔對話視窗
+    const msgs = [...document.querySelectorAll('.message-card .msg')]
+        .filter(m => /player-msg|ally-msg|dragon-msg/.test(m.className))
+        .slice(-6);
     if (!msgs.length) return '(no dialogue yet)';
     return msgs.map(m => {
         const avatar = m.querySelector('.msg-avatar')?.textContent.replace(':', '').trim() ?? '?';
@@ -1860,6 +1863,35 @@ function handlePlayerInput() {
     } else {
         appendMessage('player', raw);
         if (p2pRole === 'host') p2pSend({ type: 'chat', from: 'host', text: raw });
+        allyChatReply(raw);   // 純聊天通道：隊友即時回話、不佔回合不動作
+    }
+}
+
+// ── 純聊天通道：玩家傳訊 → 隊友立刻回一句（不影響任何行動；決策層「說話有成本」原則不變）──
+let allyChatBusy = false;
+async function allyChatReply(text) {
+    if (allyChatBusy || p2pRole === 'guest' || mageBModeEl.value !== 'smart') return;
+    allyChatBusy = true;
+    try {
+        const persona = AGENT_PERSONAS[mageBAgentEl.value] ?? AGENT_PERSONAS['moon-sparrow'];
+        const state = gs ? `[State — Turn ${gs.turn}] Mage A: HP ${gs.mageA.hp}/10, ${MAGE_STATES[gs.mageA.action]} · Mage B (you): HP ${gs.mageB.hp}/10, ${MAGE_STATES[gs.mageB.action]} · Dragon: HP ${gs.dragon.hp}/20, ${dragonStateText(gs.dragon)}`
+                         : '[The battle has not started yet]';
+        const sys = `[Your persona] You are ${persona.name}. ${persona.desc}`;
+        const usr = `${state}
+
+[Recent dialogue]
+${getRecentDialogue()}
+
+[Chat] Your teammate just said to you: "${text}"
+This is pure chat — reply with exactly one short English sentence (tactics or banter). Do NOT output a digit, do NOT commit any action.`;
+        const raw2 = await callLLM(sys, usr);
+        let line = raw2.trim().split('\n')[0].slice(0, 140);
+        if (/^[0-3]$/.test(line)) line = 'Got it — let\'s do it.';   // 防它手滑回數字
+        if (line) appendMessage('ally', line);
+    } catch (e) {
+        console.error('[Ally chat]', e);
+    } finally {
+        allyChatBusy = false;
     }
 }
 
