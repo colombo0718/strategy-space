@@ -130,15 +130,16 @@ body {
 }
 
 .mages-col {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    /* 共用欄位 grid：HP | 法師 | 名字 | 招式——名字欄兩列同寬、招式永遠對齊(不受名字長短影響) */
+    display: grid;
+    grid-template-columns: auto auto minmax(2em, max-content) auto;
+    column-gap: 8px;
+    row-gap: 10px;
+    align-items: center;
 }
 
 .mage-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    display: contents;   /* 讓兩列的格子共用上面的欄位 */
     font-size: 22px;
 }
 
@@ -152,6 +153,8 @@ body {
 .dragon-col #dragon {
     font-size: 52px;
     line-height: 1;
+    display: inline-block;
+    transform: scaleX(-1);   /* 龍翻面、面向左側的法師 */
 }
 
 .dragon-col #dragon-skill,
@@ -438,6 +441,7 @@ details.dashboard-card.locked > summary::before {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    max-width: 8em;   /* 超長名字截斷、避免把招式欄推走 */
     flex-shrink: 1;
     min-width: 0;
 }
@@ -2101,13 +2105,14 @@ document.getElementById("join-game").addEventListener("click", () => {
 // 把 DOM 文字節點裡的 emoji 即時替換成 OpenMoji SVG(twemoji式)；MutationObserver 跟住動態重繪；載入失敗自動退回原字元。
 (function(){
   const URLB="https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji@15.1.0/color/svg/";
+  const OVERRIDE={"🛡️":"assets/shield_blue.svg","🛡":"assets/shield_blue.svg"};   // MS換色技法：護盾用官方藍對(#61B2E4/#1E50A0)的本地衍生版
   const code=e=>[...e].map(c=>c.codePointAt(0).toString(16).toUpperCase()).filter(h=>h!=="FE0F").join("-");
   const RE=/(\p{Extended_Pictographic}(?:️)?(?:‍\p{Extended_Pictographic}(?:️)?)*|[✅❓❌⭕⚠️❤])/gu;
   const SKIP=new Set(["SCRIPT","STYLE","TEXTAREA","INPUT","TITLE"]);
   let busy=false;
   function makeImg(ch){
     const im=document.createElement("img");
-    im.src=URLB+code(ch)+".svg"; im.alt=ch; im.className="omoji";
+    im.src=OVERRIDE[ch]||URLB+code(ch)+".svg"; im.alt=ch; im.className="omoji";
     im.style.cssText="width:1.15em;height:1.15em;vertical-align:-0.18em;display:inline-block";
     im.onerror=()=>{ im.replaceWith(document.createTextNode(ch)); };   // OpenMoji 沒有的字元 → 退回原 emoji
     return im;
