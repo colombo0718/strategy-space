@@ -170,20 +170,53 @@ body {
             line-height: 1.6;
         }
 
+        /* 氣泡框：我=左、隊友/龍=右、系統/提示=置中（colombo 2026-07-12 定） */
         .msg {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
             margin-bottom: 8px;
         }
-
-        .msg-avatar {
-            margin-right: 6px;
+        .msg .msg-text {
+            max-width: 78%;
+            padding: 7px 12px;
+            border-radius: 13px;
+            line-height: 1.55;
+            font-size: 14.5px;
         }
-
-        .system-msg .msg-avatar,
-        .dragon-msg .msg-avatar,
-        .ally-msg .msg-avatar {
-            display: inline-block;
-            width: 24px;
+        .msg-avatar {
+            flex: none;
+            width: 26px;
             text-align: center;
+        }
+        .player-msg { justify-content: flex-start; }
+        .player-msg .msg-text {
+            background: #2b6cb0;
+            color: #fff;
+            border-bottom-left-radius: 4px;
+        }
+        .ally-msg, .dragon-msg {
+            justify-content: flex-end;
+            flex-direction: row-reverse;
+        }
+        .ally-msg .msg-text {
+            background: rgba(255,255,255,0.10);
+            border: 1px solid rgba(255,255,255,0.16);
+            border-bottom-right-radius: 4px;
+        }
+        .dragon-msg .msg-text {
+            background: rgba(234,90,71,0.16);
+            border: 1px solid rgba(234,90,71,0.35);
+            border-bottom-right-radius: 4px;
+        }
+        .system-msg, .hint-msg { justify-content: center; }
+        .system-msg .msg-avatar, .hint-msg .msg-avatar { display: none; }
+        .system-msg .msg-text, .hint-msg .msg-text {
+            background: transparent;
+            color: rgba(255,255,255,0.55);
+            font-size: 12.5px;
+            text-align: center;
+            max-width: 92%;
         }
 
 .game-panel {
