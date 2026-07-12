@@ -1188,6 +1188,44 @@ const AGENT_PERSONAS = {
 };
 
 
+// ── 腳本龍台詞庫（stub=厭世訓練教具、mech=故障機器人）──
+const DRAGON_LINES = {
+  stub: {
+    start:    ["第 4417 場訓練。這次盡量別死。", "喔、新學員。我最喜歡的柴火口味。", "本龍依約出戰。純屬公事。"],
+    inhale:   ["（吸氣）——現在是你們該慌的環節。", "深呼吸……你們知道接下來是什麼。", "吸氣中。這不是演習。好吧、嚴格說是。"],
+    charged:  ["蓄力完成。開個盾吧、友情提示。", "再一回合你們就熟了。字面意思。", "我警告過了。還兩次。"],
+    fire:     ["烤熟。按課綱進行。", "焦香。又一次。", "第一課：尊重蓄力。"],
+    fizzle:   ["……沒噴出來。當作沒看見。", "咳。管線積灰。繼續。"],
+    clawUp:   ["（抬爪）——隨堂考。", "爪子舉起來了。這招比較快。"],
+    claw:     ["一揮。有抄筆記嗎？", "爪擊。教科書等級。"],
+    reflected:["痛！那是我的火欸。沒禮貌。", "反彈？！那是進階課程……", "紀錄：學員學會雙盾了。不妙。"],
+    bigHit:   ["四點傷害？！誰教你們的？", "同步施法。我最討厭的科目。", "雙閃電。這下有感覺了。"],
+    lowHp:    ["剩半血。我開始尊敬你們兩個了。", "好。木樁要認真了。"],
+    win:      ["下課。下學期再來。", "訓練結束。結果：焦脆。"],
+    lose:     ["……我就躺這了。幹得好、畢業生。", "敗給學員。真丟臉。"]
+  },
+  mech: {
+    start:    ["開機完成。目標：法師×2。", "戰鬥協定 v3.7 已載入。隨機率：30%。", "掃描中……軟綿綿。你們兩個都是。"],
+    inhale:   ["進氣閥開啟。溫度上升。", "充能……50%……滋滋。", "警告：噴火系統就緒。"],
+    charged:  ["充能 100%。焚化程序即將執行。", "熱能臨界。那是你們的問題、不是我的。"],
+    fire:     ["火焰閥：開。", "焚化。焚化。", "熱能已送達。祝您有美好的一天。"],
+    fizzle:   ["點火失敗。真難堪。", "錯誤 404：火焰不存在。"],
+    clawUp:   ["伺服臂：舉起。", "機械臂就緒。滋滋。"],
+    claw:     ["衝擊已送達。", "爪擊.EXE 執行成功。"],
+    reflected:["錯誤：火焰被退回寄件人。", "偵測到反射。重新計算……痛。", "保固不含此項目。"],
+    bigHit:   ["損傷報告：顯著。", "電壓過載。你們的法術誰設計的？"],
+    lowHp:    ["結構完整度：40%。照樣怕我。", "系統不穩定。滋滋。依然致命。"],
+    win:      ["目標已清除。關機中。", "勝利已記錄。上傳雲端。"],
+    lose:     ["嚴重故障。請記得我是……滋滋滋。", "關機中。你們打得……還行。"]
+  }
+};
+function dragonQuip(ev) {
+  const fam = (dragonArchetypeEl.value || 'stub-fire').split('-')[0];
+  const pool = DRAGON_LINES[fam]?.[ev];
+  if (!pool || !pool.length) return;
+  appendMessage('dragon', pool[Math.floor(Math.random() * pool.length)]);
+}
+
 const PROVIDER_ENDPOINTS = {
     groq:          'https://api.groq.com/openai/v1/chat/completions',
     openrouter:    'https://openrouter.ai/api/v1/chat/completions',
@@ -1564,6 +1602,7 @@ function gsStart() {
     document.getElementById('battle-log-body').innerHTML = '';
     document.querySelector('.message-card').innerHTML = '';
     appendMessage('system', '⚔️ 遊戲開始！惡龍出現在面前！');
+    dragonQuip('start');
     gsRender();
     if (p2pRole === 'host') p2pSend({ type: 'game_start' });
     gsTurnStart();
@@ -1822,6 +1861,29 @@ function gsReveal() {
     const DR_CALLS = ['⭕ ……', `👃 吸氣（${gs.dragon.chargeTurns}/2）`, '✋ 緩緩抬起利爪……', '🔥 噴火！', '💥 爪擊！'];
     appendMessage('dragon', DR_CALLS[gs.dragon.action]);
     msgs.forEach(m => appendMessage('system', m));
+    // 腳本龍情境台詞：關鍵事件必說、過場55%、低血每局一次
+    if ((dragonArchetypeEl.value || '').split('-')[0] !== 'llm') {
+        const dAct = gs.dragon.action;
+        const mDmg = (preHp.a - gs.mageA.hp) + (preHp.b - gs.mageB.hp);
+        const dTook = preHp.d - gs.dragon.hp;
+        const dblShield = gs.mageA.action === 5 && gs.mageB.action === 5;
+        const outcome = gs.mageA.hp <= 0 && gs.mageB.hp <= 0 ? 'lose'
+                      : gs.dragon.hp <= 0 ? 'win' : null;
+        let ev = null;
+        if (outcome === 'lose') ev = 'win';
+        else if (outcome === 'win') ev = 'lose';
+        else if (dAct === 3 && dblShield && dTook > 0) ev = 'reflected';
+        else if (dAct === 3 && mDmg > 0) ev = 'fire';
+        else if (dAct === 3) ev = 'fizzle';
+        else if (dAct === 4 && mDmg > 0) ev = 'claw';
+        else if (!gs.dragonLowSpoken && gs.dragon.hp <= 8) { ev = 'lowHp'; gs.dragonLowSpoken = true; }
+        else if (dTook >= 4) ev = 'bigHit';
+        else if (dAct === 1 && gs.dragon.chargeTurns >= 2) ev = 'charged';
+        else if (dAct === 1) ev = 'inhale';
+        else if (dAct === 2) ev = 'clawUp';
+        const always = ['fire', 'fizzle', 'claw', 'reflected', 'bigHit', 'lowHp', 'win', 'lose'];
+        if (ev && (always.includes(ev) || Math.random() < 0.55)) dragonQuip(ev);
+    }
     gsUpdateStats();
 
     const over = gs.mageA.hp <= 0 && gs.mageB.hp <= 0 ? 'lose'

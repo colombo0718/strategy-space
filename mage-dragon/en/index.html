@@ -1188,6 +1188,44 @@ const AGENT_PERSONAS = {
 };
 
 
+// ── 腳本龍台詞庫（依情境觸發；stub=厭世訓練教具、mech=故障機器人）──
+const DRAGON_LINES = {
+  stub: {
+    start:    ["Training session #4,417. Try not to die this time.", "Ah, fresh students. My favorite flavor of kindling.", "I am contractually obligated to fight you."],
+    inhale:   ["*inhales* — this is the part where you panic.", "Deep breath in… you know what comes next.", "Inhaling. This is not a drill. Well, technically it is."],
+    charged:  ["Fully charged. Shields would be wise. Just saying.", "One more turn and you're toast. Literally.", "I did warn you. Twice, actually."],
+    fire:     ["ROAST. As per the curriculum.", "Crispy. Again.", "Lesson one: respect the wind-up."],
+    fizzle:   ["…nothing came out. Pretend you didn't see that.", "Cough. Dusty pipes. Moving on."],
+    clawUp:   ["*raises claw* — pop quiz.", "Claw up. This one's quicker."],
+    claw:     ["Swipe. Did you take notes?", "Claw strike. Textbook execution."],
+    reflected:["OW. That was MY fire. Rude.", "Reflected?! That's advanced coursework…", "Noted: students learned double shield. Unfortunate."],
+    bigHit:   ["Four damage?! Who taught you that?", "Synchronized casting. My least favorite subject.", "Double lightning. I felt that one."],
+    lowHp:    ["Half health. I'm starting to respect you two.", "Okay. The dummy is getting serious now."],
+    win:      ["Class dismissed. Better luck next semester.", "Training complete. Result: extra crispy."],
+    lose:     ["…I'll just lie down here. Good work, graduates.", "Defeated by students. How embarrassing."]
+  },
+  mech: {
+    start:    ["BOOT SEQUENCE COMPLETE. TARGETS: 2 MAGES.", "COMBAT PROTOCOL v3.7 LOADED. RANDOMNESS: 30%.", "SCANNING… SQUISHY. BOTH OF YOU."],
+    inhale:   ["INTAKE VALVE OPEN. HEAT RISING.", "CHARGING… 50%… bzzt.", "WARNING: FIRE SYSTEM PRIMED."],
+    charged:  ["CHARGE 100%. INCINERATION IMMINENT.", "HEAT LEVELS CRITICAL. YOUR PROBLEM, NOT MINE."],
+    fire:     ["FLAME VENT: OPEN.", "INCINERATE. INCINERATE.", "HEAT DELIVERED. HAVE A NICE DAY."],
+    fizzle:   ["IGNITION FAILURE. EMBARRASSING.", "ERROR 404: FIRE NOT FOUND."],
+    clawUp:   ["SERVO ARM: RAISED.", "MECHANICAL ARM PRIMED. bzzt."],
+    claw:     ["IMPACT DELIVERED.", "CLAW.EXE EXECUTED SUCCESSFULLY."],
+    reflected:["ERROR: FIRE RETURNED TO SENDER.", "REFLECTION DETECTED. RECALCULATING… OW.", "WARRANTY DOES NOT COVER THIS."],
+    bigHit:   ["DAMAGE REPORT: SIGNIFICANT.", "VOLTAGE OVERLOAD. WHO DESIGNED YOUR SPELLS?"],
+    lowHp:    ["STRUCTURAL INTEGRITY: 40%. FEAR ME ANYWAY.", "SYSTEM UNSTABLE. bzzt. STILL LETHAL."],
+    win:      ["TARGETS ELIMINATED. POWERING DOWN.", "VICTORY LOGGED. UPLOADING TO CLOUD."],
+    lose:     ["CRITICAL FAILURE. REMEMBER ME AS… bzzzzt.", "SHUTTING DOWN. YOU FOUGHT… ADEQUATELY."]
+  }
+};
+function dragonQuip(ev) {
+  const fam = (dragonArchetypeEl.value || 'stub-fire').split('-')[0];
+  const pool = DRAGON_LINES[fam]?.[ev];
+  if (!pool || !pool.length) return;
+  appendMessage('dragon', pool[Math.floor(Math.random() * pool.length)]);
+}
+
 const PROVIDER_ENDPOINTS = {
     groq:          'https://api.groq.com/openai/v1/chat/completions',
     openrouter:    'https://openrouter.ai/api/v1/chat/completions',
@@ -1539,6 +1577,7 @@ function gsStart() {
     document.getElementById('battle-log-body').innerHTML = '';
     document.querySelector('.message-card').innerHTML = '';
     appendMessage('system', '⚔️ The battle begins! A dragon looms before you!');
+    dragonQuip('start');
     gsRender();
     if (p2pRole === 'host') p2pSend({ type: 'game_start' });
     gsTurnStart();
@@ -1797,6 +1836,29 @@ function gsReveal() {
     const DR_CALLS = ['⭕ …', `👃 Inhale (${gs.dragon.chargeTurns}/2)`, '✋ Claw raised…', '🔥 FIRE BREATH!', '💥 CLAW STRIKE!'];
     appendMessage('dragon', DR_CALLS[gs.dragon.action]);
     msgs.forEach(m => appendMessage('system', m));
+    // 腳本龍情境台詞：關鍵事件必說、過場55%機率、每局低血只感嘆一次
+    if ((dragonArchetypeEl.value || '').split('-')[0] !== 'llm') {
+        const dAct = gs.dragon.action;
+        const mDmg = (preHp.a - gs.mageA.hp) + (preHp.b - gs.mageB.hp);
+        const dTook = preHp.d - gs.dragon.hp;
+        const dblShield = gs.mageA.action === 5 && gs.mageB.action === 5;
+        const outcome = gs.mageA.hp <= 0 && gs.mageB.hp <= 0 ? 'lose'
+                      : gs.dragon.hp <= 0 ? 'win' : null;
+        let ev = null;
+        if (outcome === 'lose') ev = 'win';
+        else if (outcome === 'win') ev = 'lose';
+        else if (dAct === 3 && dblShield && dTook > 0) ev = 'reflected';
+        else if (dAct === 3 && mDmg > 0) ev = 'fire';
+        else if (dAct === 3) ev = 'fizzle';
+        else if (dAct === 4 && mDmg > 0) ev = 'claw';
+        else if (!gs.dragonLowSpoken && gs.dragon.hp <= 8) { ev = 'lowHp'; gs.dragonLowSpoken = true; }
+        else if (dTook >= 4) ev = 'bigHit';
+        else if (dAct === 1 && gs.dragon.chargeTurns >= 2) ev = 'charged';
+        else if (dAct === 1) ev = 'inhale';
+        else if (dAct === 2) ev = 'clawUp';
+        const always = ['fire', 'fizzle', 'claw', 'reflected', 'bigHit', 'lowHp', 'win', 'lose'];
+        if (ev && (always.includes(ev) || Math.random() < 0.55)) dragonQuip(ev);
+    }
     gsUpdateStats();
 
     const over = gs.mageA.hp <= 0 && gs.mageB.hp <= 0 ? 'lose'
