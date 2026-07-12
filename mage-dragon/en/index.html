@@ -748,7 +748,7 @@ details.dashboard-card.locked > summary::before {
                 </div>
                 <div class="mage-row">
                     <span id="mageB-hp">❤️10</span>
-                    <span id="mageB">🧙</span>
+                    <span id="mageB">🧙‍♂️</span>
                     <span id="mageB-name" class="mage-name">Ally</span>
                     <span id="mageB-skill">👄❓</span>
                 </div>
@@ -1996,7 +1996,7 @@ This is pure chat — reply with exactly one short English sentence (tactics or 
 }
 
 function appendMessage(type, text) {
-    const avatars = { system: "📜:", dragon: "🐲:", ally: "🤖:", player: playerAvatar + ":", hint: "💡:" };
+    const avatars = { system: "📜:", dragon: "🐲:", ally: "🧙‍♂️:", player: playerAvatar + ":", hint: "💡:" };
     const messageCard = document.querySelector(".message-card");
     const div = document.createElement("div");
     div.className = `msg ${type}-msg`;
@@ -2209,7 +2209,7 @@ document.getElementById("join-game").addEventListener("click", () => {
 // 把 DOM 文字節點裡的 emoji 即時替換成 OpenMoji SVG(twemoji式)；MutationObserver 跟住動態重繪；載入失敗自動退回原字元。
 (function(){
   const URLB="https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji@15.1.0/color/svg/";
-  const OVERRIDE={"🛡️":"assets/shield_blue.svg","🛡":"assets/shield_blue.svg"};   // MS換色技法：護盾用官方藍對(#61B2E4/#1E50A0)的本地衍生版
+  const OVERRIDE={"🛡️":"assets/shield_blue.svg","🛡":"assets/shield_blue.svg","🧙‍♂️":"assets/mage_red.svg"};   // MS換色技法：護盾用官方藍對(#61B2E4/#1E50A0)的本地衍生版
   const code=e=>[...e].map(c=>c.codePointAt(0).toString(16).toUpperCase()).filter(h=>h!=="FE0F").join("-");
   const RE=/(\p{Extended_Pictographic}(?:️)?(?:‍\p{Extended_Pictographic}(?:️)?)*|[✅❓❌⭕⚠️❤])/gu;
   const SKIP=new Set(["SCRIPT","STYLE","TEXTAREA","INPUT","TITLE"]);
