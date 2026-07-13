@@ -1646,17 +1646,11 @@ function gsTurnStart() {
     } else if (bDead) {
         pending.mageB = 0;
     } else if (mageBModeEl.value === 'smart') {
-        appendMessage('hint', 'Your ally is thinking…');
-        callMageBLLM(bForced).then(result => {
-            pending.mageB = bForced ? 0 : result.action;
-            if (result.dialogue) appendMessage('ally', result.dialogue);
-            gsCheckReady();
-        }).catch(err => {
-            console.error('[MageB LLM] failed, fallback random:', err);
-            appendMessage('hint', '(ally AI unreachable — falling back to random)');
-            pending.mageB = bForced ? 0 : Math.floor(Math.random() * 4);
-            gsCheckReady();
-        });
+        // ★ 隊友「聽完你的話才出手」：不在回合開頭決策，改由玩家行動/喊話後觸發 askAlly()
+        //    （原本在此立刻呼叫 → 隊友決定時看不到你這回合說的話 → 永遠不配合）
+        if (bForced) { pending.mageB = 0; gsCheckReady(); }
+        else if (aDead || aForced || mageAModeEl.value === 'smart') askAlly(false);
+        // ↑ 玩家這回合不能出招(強制施放/倒下)或本身是AI → 沒有人類輸入會來、立刻問隊友（否則卡死）
     } else {
         setTimeout(() => {
             pending.mageB = bForced ? 0 : Math.floor(Math.random() * 4);
@@ -1671,6 +1665,28 @@ function gsTurnStart() {
     } else if (bDead) {
         gsCheckReady();
     }
+}
+
+// ── 隊友決策（聽完玩家的話才出手；玩家再喊話會重問一次）────────────────
+let allyAsking = false;
+function askAlly(isForced) {
+    if (allyAsking || !gs || gs.phase !== 'choosing') return;
+    if (gs.mageB.hp <= 0 || mageBModeEl.value !== 'smart') return;
+    allyAsking = true;
+    appendMessage('hint', 'Your ally is thinking…');
+    callMageBLLM(isForced).then(result => {
+        allyAsking = false;
+        if (!gs || gs.phase !== 'choosing') return;      // 已掀牌 → 丟棄
+        pending.mageB = isForced ? 0 : result.action;
+        if (result.dialogue) appendMessage('ally', result.dialogue);
+        gsCheckReady();
+    }).catch(err => {
+        allyAsking = false;
+        console.error('[MageB LLM] failed, fallback random:', err);
+        appendMessage('hint', '(ally AI unreachable — falling back to random)');
+        pending.mageB = isForced ? 0 : Math.floor(Math.random() * 4);
+        gsCheckReady();
+    });
 }
 
 // ── 確認 ✅ 狀態，全部就緒則掀牌 ─────────────────
@@ -1957,6 +1973,7 @@ function handlePlayerInput() {
         pending.mageA = input;
         appendMessage('player', `Pick: ${MAGE_STATES[input]}`);
         if (p2pRole === 'host') p2pSend({ type: 'chat', from: 'host', text: raw });
+        askAlly(false);          // ★ 你出招後隊友才決定（它看得到你這回合的招與話）
         gsCheckReady();
     } else if (isDigit && gs?.phase === 'choosing' && (!mageAIsManual || pending.mageA !== null)) {
         appendMessage('player', mageAIsManual ? '(committed — waiting for others)' : '(AI mode — use text to chat)');
@@ -1964,6 +1981,13 @@ function handlePlayerInput() {
         appendMessage('player', raw);
         if (p2pRole === 'host') p2pSend({ type: 'chat', from: 'host', text: raw });
         allyChatReply(raw);   // 純聊天通道：隊友即時回話、不佔回合不動作
+        // ★ 你喊話時隊友若已決定但還沒掀牌 → 帶著你的新話重新決策（它改得動）
+        if (gs && gs.phase === 'choosing' && pending.mageB !== null && gs.mageB.hp > 0
+            && mageBModeEl.value === 'smart' && !(gs.mageB.action >= 1 && gs.mageB.action <= 3)) {
+            pending.mageB = null;
+            document.getElementById('mageB-skill').textContent = '❓';
+            setTimeout(() => askAlly(false), 900);   // 等聊天回覆先進對話紀錄
+        }
     }
 }
 
