@@ -1281,8 +1281,19 @@ Mechanics:
 
 Dragon attacks:
   - Fire breath: needs 2 turns of inhaling, then 8 dmg (split, 4 each).
-  - Claw: needs 1 turn of wind-up, then 4 dmg.
-  - The dragon may cancel its wind-up to feint.`;
+  - Claw: needs 1 turn of wind-up, then 4 dmg (split, 2 each).
+  - The dragon may cancel its wind-up to feint.
+
+[Timing — read carefully, this decides every fight]
+  - The statuses you are shown are what each side did LAST turn. This turn all three of you choose
+    at the same time, then everything resolves together.
+  - Your chant lands NEXT turn, not this one. So you must chant one turn BEFORE the hit arrives.
+  - Dragon shows "inhaling (charge 1/2)"  → it finishes charging this turn and BREATHES FIRE NEXT TURN.
+    Chant Shield NOW — it will land exactly on the fire. (Both of you shielding = the 8 reflects back at the dragon.)
+  - Dragon shows "inhaling (charge 2/2)"  → the fire lands THIS turn. Chanting Shield now is TOO LATE;
+    it would only cover the following turn.
+  - Dragon shows "claw raised"            → the claw strikes NEXT turn.
+  - A shield chanted too early expires before the hit and is wasted.`;
 }
 
 function buildMageBUserPrompt(isForced) {
@@ -1376,7 +1387,11 @@ function buildMageASystemPrompt() {
 Actions: 0 = pass, 1 = chant Lightning, 2 = chant Shield, 3 = chant Heal.
 Chanting takes 1 turn; the spell casts automatically next turn.
 Lightning together = 4 dmg (alone 1). Shield together = reflect (alone halve). Heal together = 3 HP each (alone 2 HP to teammate).
-Dragon: fire breath = 2 turns inhale then 8 dmg; claw = 1 turn wind-up then 4 dmg; it may feint.${strategyNote}`;
+Dragon: fire breath = 2 turns inhale then 8 dmg (4 each); claw = 1 turn wind-up then 4 dmg (2 each); it may feint.
+
+[Timing] Statuses shown are LAST turn's. All three choose simultaneously this turn. Your chant lands NEXT turn.
+"inhaling (charge 1/2)" → fire lands NEXT turn: chant Shield NOW to block it (both shielding reflects 8 back).
+"inhaling (charge 2/2)" → fire lands THIS turn: too late to shield.${strategyNote}`;
 }
 
 function buildMageAUserPrompt(isForced) {
