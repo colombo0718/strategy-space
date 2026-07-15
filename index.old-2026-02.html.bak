@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>StrategySpace 戰略空間</title>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9520300344194785"
+     crossorigin="anonymous"></script>
+  <!-- icon / favicon -->
+  <link rel="icon" href="StrategySpace_emoji.png" />
+
+  <style>
+    :root{
+      --bg:#f0f0f0;
+      --card:#ffffff;
+      --border:#d9d9d9;
+      --text:#111;
+      --muted:#666;
+    }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Arial, "Noto Sans TC", sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .wrap{
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    /* brand row */
+    .brand{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    /* icon: no frame */
+    .logo{
+      width: 44px;
+      height: 44px;
+      display:block;
+      border: 0;
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    h1{
+      margin: 0;
+      font-size: 26px;
+      letter-spacing: .2px;
+    }
+
+    .section-title{
+      margin: 18px 0 10px;
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing: .3px;
+      text-transform: lowercase;
+    }
+
+    .list{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      padding: 14px 14px;
+      border-top: 1px solid var(--border);
+    }
+    .row:first-child{ border-top:0; }
+
+    .name{
+      min-width: 0;
+    }
+    .title{
+      font-size: 16px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .btn{
+      height: 34px;
+      padding: 0 14px;
+      border-radius: 8px;
+      border: 1px solid #bdbdbd;
+      background: #fff;
+      cursor: pointer;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .btn:active{ transform: translateY(1px); }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="brand">
+      <img class="logo" src="StrategySpace_emoji.png" alt="StrategySpace icon">
+      <h2>戰略空間 StrategySpace</h2>
+    </div>
+
+    <div class="section-title">Emoji</div>
+    <div class="list" id="emoji-list">
+
+      <div class="row">
+        <div class="name">
+          <div class="title">🦖 Dino</div>
+        </div>
+        <button class="btn" data-play="dino">Play</button>
+      </div>
+
+      <div class="row">
+        <div class="name">
+          <div class="title">🎰 Slot</div>
+        </div>
+        <button class="btn" data-play="slot">Play</button>
+      </div>
+
+      <div class="row">
+        <div class="name">
+          <div class="title">🏇 Horse</div>
+        </div>
+        <button class="btn" data-play="horse">Play</button>
+      </div>
+
+    </div>
+
+    <div class="section-title">Voxel</div>
+    <div class="list" id="voxel-list">
+      <div class="row">
+        <div class="name">
+          <div class="title">🎁 Santa Gifts</div>
+        </div>
+        <button class="btn" data-play="santa">Play</button>
+      </div>
+    </div>
+
+    <div class="section-title">Solid</div>
+    <div class="list" id="solid-list">
+      <div class="row">
+        <div class="name">
+          <div class="title">🏒 Puck</div>
+        </div>
+        <button class="btn" data-play="puck">Play</button>
+      </div>
+    </div>
+
+    <div class="section-title">Debug</div>
+    <div class="list" id="debug-list">
+      <div class="row">
+        <div class="name">
+          <div class="title">📡 GetPM (PostMessage Monitor)</div>
+        </div>
+        <button class="btn" data-play="getpm">Play</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const URLS = {
+      santa: "https://strategy-space.vercel.app/voxel/santa-gifts/index.html",
+      puck:  "https://strategy-space.vercel.app/solid/puck.html",
+      dino:  "https://strategy-space.vercel.app/emoji/dino.html",
+      slot:  "https://strategy-space.vercel.app/emoji/slot.html",
+      horse: "https://strategy-space.vercel.app/emoji/horse.html",
+      getpm: "https://strategy-space.vercel.app/develop/getPM.html"
+    };
+
+    function isInIframe(){
+      return window.parent !== window; // 你指定的最簡方案
+    }
+
+    function play(url){
+      if (isInIframe()) {
+        window.parent.postMessage({ type: "ss_open", url }, "*");
+      } else {
+        location.href = url;
+      }
+    }
+
+    document.querySelectorAll("button[data-play]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const key = btn.dataset.play;
+        const url = URLS[key];
+        if (url) play(url);
+      });
+    });
+  </script>
+</body>
+</html>
