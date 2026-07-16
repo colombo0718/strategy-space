@@ -18,12 +18,13 @@
     color:var(--txt); min-height:100vh; padding:0 20px 56px; position:relative;
   }
   /* 玄機界戰場：頂部 hero 橫幅、整張戰場全見、標題壓其上、下緣融入頁面 */
-  header{position:relative; text-align:center; padding:64px 20px 54px; margin:0 -20px 14px; min-height:460px;
-    display:flex; flex-direction:column; justify-content:center;
+  header{position:relative; text-align:center; padding:44px 20px 56px; margin:0 -20px 14px; min-height:460px;
+    display:flex; flex-direction:column; justify-content:flex-start;
     background:linear-gradient(to bottom, rgba(13,16,23,.58) 0%, rgba(13,16,23,.28) 40%, rgba(13,16,23,.72) 84%, var(--bg) 100%), url("covers/hall-bg.jpg?v=1") center 46%/cover no-repeat;}
   .brand{font-size:18px; letter-spacing:.32em; color:var(--gold); text-transform:uppercase; font-weight:700}
-  h1{font-size:40px; letter-spacing:6px; margin:6px 0 4px;
-     background:linear-gradient(120deg,#7ee0b0,#f0b84a); -webkit-background-clip:text; background-clip:text; color:transparent}
+  h1{font-size:48px; letter-spacing:9px; margin:0 0 6px;
+     background:linear-gradient(120deg,#7ee0b0,#f0b84a); -webkit-background-clip:text; background-clip:text; color:transparent;
+     text-shadow:0 2px 18px rgba(0,0,0,.5)}
   .hall{font-size:13px; letter-spacing:.3em; color:var(--dim); margin-bottom:10px}
   .sub{color:var(--dim); font-size:14.5px; line-height:1.75; max-width:580px; margin:0 auto}
   .sub b{color:var(--mint); font-weight:600}
@@ -68,11 +69,8 @@
 </head>
 <body>
 <header>
-  <div class="brand">Strategy Space</div>
   <h1>玄 機 萬 境</h1>
-  <div class="hall">LeafLune 遊戲大廳</div>
-  <p class="sub">在 RR 訓練好的 AI，上傳到此升格為靈將，進入各境對戰。<br>
-     每一款都是一堂課：<b>你不懂有 AI 教、你很懂就教 AI</b>。</p>
+  <div class="brand">Strategy Space</div>
 </header>
 
 <main>
