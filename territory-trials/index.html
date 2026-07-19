@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>領土保衛戰 · Territory Trials｜玄機萬境</title>
+<meta name="description" content="沒有壞人，只有活下去。狼群為活下去而獵、村落為守家園而戰——一款關於生存壓力與立場的灰度策略。玄機萬境 · LeafLune 出品，設計中。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐺</text></svg>">
+<style>
+  :root{
+    --bg:#0d1017; --card:#1a2130; --line:#28303f;
+    --txt:#e6ebf2; --dim:#8b96a8; --mint:#5ad19b; --gold:#f0b84a; --night:#6f8fd6;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{background:var(--bg); scroll-behavior:smooth}
+  body{
+    font-family:"Segoe UI","PingFang TC","Microsoft JhengHei",sans-serif;
+    color:var(--txt); min-height:100vh; line-height:1.7;
+  }
+  a{color:var(--mint); text-decoration:none}
+  .wrap{max-width:1000px; margin:0 auto; padding:0 20px}
+
+  /* Hero */
+  .hero{position:relative; max-width:1180px; margin:0 auto}
+  .hero .key{width:100%; display:block}
+  .hero-cap{text-align:center; padding:26px 20px 8px}
+  .chip{display:inline-block; font-size:12px; font-weight:700; letter-spacing:.14em;
+    color:var(--gold); border:1px solid #4a3d1e; background:rgba(240,184,74,.08);
+    border-radius:20px; padding:4px 14px; margin-bottom:16px}
+  .hero-cap h1{font-size:40px; letter-spacing:3px; line-height:1.25; margin:0 0 10px;
+    background:linear-gradient(120deg,#7ee0b0,#f0b84a); -webkit-background-clip:text;
+    background-clip:text; color:transparent}
+  .hero-cap .lead{color:var(--dim); font-size:17px; letter-spacing:1px}
+
+  /* Sections */
+  section{padding:44px 0; border-top:1px solid var(--line)}
+  section:first-of-type{border-top:none}
+  h2{font-size:24px; letter-spacing:1.5px; margin-bottom:16px; color:var(--txt)}
+  h2 .en{display:block; font-size:12px; letter-spacing:.28em; color:var(--gold);
+    text-transform:uppercase; font-weight:700; margin-bottom:6px}
+  p.body{color:#b8c1d0; font-size:15.5px; max-width:720px}
+  p.body + p.body{margin-top:12px}
+  .accent{color:var(--mint)}
+
+  /* 兩位主角 */
+  .duo{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:6px 0 20px}
+  .who{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 18px}
+  .who .face{font-size:38px; line-height:1}
+  .who h3{font-size:17px; margin:10px 0 6px}
+  .who p{color:#aeb8c8; font-size:14px}
+  .cycle{background:linear-gradient(100deg,#111a2e 0%,#1a1710 100%);
+    border:1px solid var(--line); border-radius:14px; padding:16px 18px; color:#c3ccdb; font-size:14.5px}
+  .cycle b{color:var(--night)} .cycle .day{color:var(--gold)}
+
+  /* 三種活法 */
+  .trio{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:8px 0 18px}
+  .meta{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px}
+  .meta .em{font-size:26px; letter-spacing:2px}
+  .meta h3{font-size:16px; margin:10px 0 6px; color:var(--gold)}
+  .meta p{color:#aeb8c8; font-size:13.5px}
+  .kicker{color:#cdd5e2; font-size:14.5px; max-width:720px; margin-top:4px}
+  .kicker b{color:var(--mint)}
+  .caveat{color:var(--dim); font-size:13px; margin-top:12px; font-style:italic}
+
+  /* dual edition */
+  .dual{display:flex; gap:12px; flex-wrap:wrap; margin-top:14px}
+  .edi{flex:1; min-width:220px; background:var(--card); border:1px solid var(--line);
+    border-radius:12px; padding:14px 16px; font-size:14px; color:#b8c1d0}
+  .edi b{color:var(--txt)} .edi .tt{color:var(--mint)} .edi .ed{color:#7ec8ff}
+
+  /* cross-sell */
+  .sp{background:linear-gradient(135deg,#04170c,#0d3d22); border:1px solid #1c5a37;
+    border-radius:16px; padding:22px; text-align:center}
+  .sp h2{color:#eafff4}
+  .sp p{color:#bfe6d2; font-size:15px; max-width:640px; margin:0 auto 16px}
+  .btn{display:inline-block; font-weight:700; font-size:15px; padding:11px 24px; border-radius:10px;
+    background:var(--mint); color:#06301d}
+  .btn:hover{filter:brightness(1.08)}
+
+  footer{border-top:1px solid var(--line); padding:28px 0 48px; text-align:center;
+    color:var(--dim); font-size:13px; line-height:2}
+  footer .nav a{margin:0 10px; color:var(--mint)}
+  footer .fine{margin-top:10px; font-size:12px}
+
+  @media (max-width:640px){
+    .hero-cap h1{font-size:27px; letter-spacing:1px}
+    .duo,.trio{grid-template-columns:1fr}
+    section{padding:34px 0}
+    h2{font-size:20px}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <img class="key" src="../covers/territory-trials.jpg" alt="領土保衛戰 Territory Trials — 狼王與村長">
+  <div class="hero-cap">
+    <span class="chip">構想中 · 設計中</span>
+    <h1>沒有壞人，只有活下去</h1>
+    <p class="lead">領土保衛戰 · Territory Trials　—　一片土地，容不下兩種活法。</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section>
+    <h2><span class="en">Rashomon</span>每一方，都以為自己是守護者</h2>
+    <p class="body">狼群為活下去而獵，村落為守家園而戰。你會輪流坐進兩邊的位子——當你以為看清了誰對誰錯，遊戲會讓你從對面再看一次。</p>
+    <p class="body">這裡沒有絕對的反派，只有<span class="accent">生存壓力下、立場不同</span>的人與獸。</p>
+  </section>
+
+  <section>
+    <h2><span class="en">The Two Leaders</span>狼王與村長</h2>
+    <div class="duo">
+      <div class="who">
+        <div class="face">🐺</div>
+        <h3>沉鷙狼王</h3>
+        <p>為族群存續而殺伐的頭狼。野外獵物枯竭時，牠勢必向村莊伸爪——不是兇殘，是餓。</p>
+      </div>
+      <div class="who">
+        <div class="face">🧑‍🌾</div>
+        <h3>老謀村長</h3>
+        <p>守土有方的長者。點起獵人與獵犬、護住牲口與族人；他保衛的，是自己的家園。</p>
+      </div>
+    </div>
+    <div class="cycle"><span class="day">白天</span>，狼群蟄伏休養、村莊耕作生息；<b>夜幕</b>落下，視野收窄，狼出獵殺。一日之間，攻守易位——這就是<b>晝伏夜出</b>。</div>
+  </section>
+
+  <section>
+    <h2><span class="en">Three Ways to Live</span>同一片土地，三種代謝</h2>
+    <div class="trio">
+      <div class="meta">
+        <div class="em">🐘🦌🐢</div>
+        <h3>依生 · 草食</h3>
+        <p>站在草木之間就能療傷。牠們要的，是棲地活著。</p>
+      </div>
+      <div class="meta">
+        <div class="em">🐺🐯🐻</div>
+        <h3>噬生 · 肉食</h3>
+        <p>唯有獵殺才能回血變強。飢餓，是牠們的引擎。</p>
+      </div>
+      <div class="meta">
+        <div class="em">🧑‍🌾🏹⛏️</div>
+        <h3>變現 · 人類</h3>
+        <p>萬物皆可標價。牠們要的，是把土地變成貨。</p>
+      </div>
+    </div>
+    <p class="kicker">草食要植物活著、肉食要獵物活著——<b>只有人類，能從「死」獲利</b>，把生命換成一個數字。</p>
+    <p class="caveat">首個要做的，是狼群 vs 村落的最小場景；三方競合，是這個世界的完整野心。</p>
+  </section>
+
+  <section>
+    <h2><span class="en">Learn by Playing</span>玩著玩著，就懂了</h2>
+    <p class="body">不說教。棲地怎麼在破壞中枯竭、稀缺怎麼把立場逼成衝突——你在求生裡自己撞見。這是一堂藏在策略裡的<span class="accent">生態與系統思考</span>課。</p>
+    <div class="dual">
+      <div class="edi"><b class="tt">大眾版《領土保衛戰》</b><br>中立灰度、賣生存張力。</div>
+      <div class="edi"><b class="ed">教育版《環境保衛戰》</b><br>扛環保大旗、進校園。</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sp">
+      <h2><span class="en">Play the Prototype</span>想先體驗它的地基？</h2>
+      <p>領土保衛戰的潛行與晝夜引擎，長自它的前身——《暗影協定》。忍者偷卷軸，就是狼叼牲口。那款，現在就能玩。</p>
+      <a class="btn" href="https://shadow-protocol-2rw.pages.dev/" target="_blank" rel="noopener">▶ 玩暗影協定 SP</a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="nav">
+    <a href="../">← 玄機萬境大廳</a>
+    <a href="https://reinforce-lab.leaflune.org" target="_blank" rel="noopener">訓練你的 AI ▸ RR</a>
+    <a href="https://shadow-protocol-2rw.pages.dev/" target="_blank" rel="noopener">前身 ▸ 暗影協定</a>
+  </div>
+  <div class="fine">構想中 · 敬請期待　·　LeafLune 出品　·　動物＝AI、人形＝人　·　圖示多取自 <a href="https://openmoji.org" target="_blank" rel="noopener">OpenMoji</a>（CC BY-SA 4.0）</div>
+</footer>
+
+</body>
+</html>
