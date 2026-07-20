@@ -9,7 +9,7 @@
   :root{
     --bg:#0d1017; --card:#1a2130; --line:#28303f;
     --txt:#e6ebf2; --dim:#8b96a8; --mint:#5ad19b; --gold:#f0b84a; --night:#6f8fd6;
-    --forest:#12241a; --forest2:#0f1f16; --stream:#12283e; --village:#241f14; --village2:#201b12;
+    --forest:#3c7047; --forest2:#356540; --stream:#3d7fb5; --village:#77643c; --village2:#6e5c36;
   }
   *{margin:0;padding:0;box-sizing:border-box}
   html{background:var(--bg)}
@@ -30,14 +30,14 @@
   .main{display:flex; gap:16px; max-width:1120px; margin:0 auto; padding:6px 20px 8px; align-items:flex-start}
   #map{display:grid; grid-template-columns:repeat(14,50px); grid-auto-rows:50px; gap:2px;
     background:#080a0f; padding:8px; border-radius:14px; border:1px solid var(--line); transition:filter .5s}
-  body.night #map{filter:brightness(.62) saturate(.8)}
+  body.night #map{filter:brightness(.45) saturate(.65) hue-rotate(-12deg)}
   .tile{position:relative; display:flex; align-items:center; justify-content:center;
     font-size:26px; border-radius:6px; cursor:pointer; user-select:none}
   .t-forest{background:var(--forest)} .t-forest.alt{background:var(--forest2)}
   .t-stream{background:var(--stream)}
   .t-village{background:var(--village)} .t-village.alt{background:var(--village2)}
-  .t-farm{background:#2b2410} .t-pen{background:#2b1d10} .t-den{background:#1c1520}
-  .tile .terr{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; opacity:.55; font-size:24px}
+  .t-farm{background:#8f7c39} .t-pen{background:#86643a} .t-den{background:#4a3757}
+  .tile .terr{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; opacity:.85; font-size:24px}
   .tile .unit{position:relative; z-index:2; font-size:27px; filter:drop-shadow(0 1px 2px #000)}
   .tile.sel{outline:2px solid var(--mint); outline-offset:-2px}
   .tile.reach{box-shadow:inset 0 0 0 2px rgba(90,209,155,.35)}
