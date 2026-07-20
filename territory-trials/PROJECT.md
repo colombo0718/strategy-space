@@ -39,9 +39,11 @@ territory-trials/
 ├── TODO.md             # 待辦/待釘（交接清單）
 ├── index.html          # SS 官網用概念頁（已上線）
 ├── 封面-cover-prompt.md # 封面 key art prompt
+├── demo.html           # 第一關「飢餓的冬天」概念模擬（狼群座位、可玩）
 └── notes/
     ├── 智力擂台-輾壓的放大器與天花板.md   # TT 作為 AI benchmark
-    └── 境誌飛輪-有聲繪本說故事引擎.md      # 說故事引擎（story Claude 主戰場）
+    ├── 境誌飛輪-有聲繪本說故事引擎.md      # 說故事引擎（story Claude 主戰場）
+    └── 說故事心法.md                       # 好故事解剖、成長弧公式、模板用法
 ```
 - 封面成品：`../covers/territory-trials.jpg`(Gemini 版·官網現用) ／ labs Qwen 版(`tt-cover-labs.png`)。
 - labs 生圖腳本：`gen_tt_cover.py`(本機 tools／labs Desktop/general-task-bot)。
