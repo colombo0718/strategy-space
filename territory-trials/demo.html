@@ -43,6 +43,12 @@
   .tile.reach{box-shadow:inset 0 0 0 2px rgba(90,209,155,.35)}
   .tile.target{outline:2px dashed var(--gold); outline-offset:-2px}
   .badge{position:absolute; top:1px; right:2px; font-size:12px; z-index:3}
+  img.om{width:1.15em; height:1.15em; vertical-align:-0.2em; user-select:none}
+  .tile .terr img.om{width:34px; height:34px}
+  .tile .unit img.om{width:38px; height:38px}
+  .tile .badge img.om{width:14px; height:14px}
+  .card h4 img.om{width:22px; height:22px; vertical-align:-0.3em}
+  .card .ord img.om{width:16px; height:16px}
   .hpdot{position:absolute; bottom:1px; left:3px; right:3px; height:3px; border-radius:2px; background:#333; z-index:3}
   .hpdot i{display:block; height:100%; border-radius:2px; background:var(--mint)}
 
@@ -124,13 +130,20 @@
 <div class="foot">
   <a href="index.html">← 回領土保衛戰</a>
   <a href="../">玄機萬境大廳</a>
-  　·　此為概念模擬（純前端、無存檔）——驗證機制感覺，非正式版本。
+  　·　此為概念模擬（純前端、無存檔）——驗證機制感覺，非正式版本。遊戲素材取自 <a href="https://openmoji.org" target="_blank" rel="noopener">OpenMoji</a>（CC BY-SA 4.0）。
 </div>
 
 <div class="overlay" id="modalWrap" style="display:none"><div class="modal" id="modalBody"></div></div>
 
 <script>
 'use strict';
+// 遊戲內美術素材一律 OpenMoji（CC BY-SA 4.0）——emoji 字元轉 codepoint 取 SVG
+const OM_CDN='https://cdn.jsdelivr.net/npm/openmoji@15.1.0/color/svg/';
+function om(ch,cls){
+  const cps=[...ch].map(c=>c.codePointAt(0)).filter(c=>c!==0xFE0F)
+    .map(c=>c.toString(16).toUpperCase());
+  return '<img class="om '+(cls||'')+'" src="'+OM_CDN+cps.join('-')+'.svg" alt="'+ch+'" draggable="false" onerror="this.outerHTML=this.alt">';
+}
 const W=14, H=9, PHASES=12;
 const key=(x,y)=>x+','+y;
 const TREES=new Set(['0,1','2,2','4,1','5,3','3,5','1,7','4,6','6,2','6,6','2,0','5,7','0,6']);
@@ -344,7 +357,7 @@ function orderText(w){
   if(o.type==='stay') return isDay()&&cheb(w,DEN)<=1?'🛌 窩邊蟄伏（回血）':'⏸ 原地待命';
   if(o.type==='move') return '👣 移動 →（'+o.x+','+o.y+'）';
   const t=findPrey(o.tid);
-  return t?('👄 獵殺 '+t.e+' '+t.name):'👣 前往獵物最後蹤跡';
+  return t?('👄 獵殺 '+om(t.e)+' '+t.name):'👣 前往獵物最後蹤跡';
 }
 
 function render(){
@@ -375,14 +388,14 @@ function render(){
     else if(FARMS.has(k)) terr='🌾';
     else if(x===DEN.x&&y===DEN.y) terr='🕳️';
     else if(isStream(x)) terr=(y%2?'💧':'');
-    if(terr) d.innerHTML+='<span class="terr">'+terr+'</span>';
+    if(terr) d.innerHTML+='<span class="terr">'+om(terr)+'</span>';
     const hit=unitAt(x,y);
     if(hit){
-      d.innerHTML+='<span class="unit">'+hit.u.e+'</span>';
+      d.innerHTML+='<span class="unit">'+om(hit.u.e)+'</span>';
       if(hit.kind==='wolf'){
         d.innerHTML+='<span class="hpdot"><i style="width:'+Math.max(0,hit.u.hp/hit.u.mhp*100)+'%"></i></span>';
-        if(hit.u.order&&hit.u.order.type!=='stay') d.innerHTML+='<span class="badge">👄</span>';
-        if(hit.u.king) d.innerHTML+='<span class="badge" style="left:2px;right:auto">👑</span>';
+        if(hit.u.order&&hit.u.order.type!=='stay') d.innerHTML+='<span class="badge">'+om('👄')+'</span>';
+        if(hit.u.king) d.innerHTML+='<span class="badge" style="left:2px;right:auto">'+om('👑')+'</span>';
         if(S.sel===hit.u.id) d.classList.add('sel');
       }
     }
@@ -399,7 +412,7 @@ function render(){
   for(const w of S.wolves){
     const c=document.createElement('div');
     c.className='card'+(S.sel===w.id?' sel':'')+(w.alive?'':' dead');
-    c.innerHTML='<h4>'+(w.king?'👑 ':'')+w.e+' '+w.name+(w.alive?'':' <small>（已倒下）</small>')
+    c.innerHTML='<h4>'+(w.king?om('👑')+' ':'')+om(w.e)+' '+w.name+(w.alive?'':' <small>（已倒下）</small>')
       +(w.alive&&w.sat>=8?' <small style="color:var(--gold)">飽食·力增</small>':'')
       +(w.alive&&w.sat<=0?' <small style="color:#e08585">飢餓·力減</small>':'')+'</h4>'
       +'<div class="bar hp"><i style="width:'+Math.max(0,w.hp/w.mhp*100)+'%"></i></div>'
