@@ -1,0 +1,95 @@
+{
+  "title": "飢餓的冬天",
+  "style_prefix": "epic fantasy oil painting in the style of classic 1980s fantasy game box art, thick visible brushstrokes, dramatic rim lighting, muted earthy palette, cinematic composition",
+  "negative": "text, letters, words, watermark, signature, caption, cartoon, emoji, flat vector art, chibi, cute, gore, blood, deformed, extra limbs, photo, photorealistic",
+  "width": 1344,
+  "height": 768,
+  "speed_factor": 1.1,
+  "ref_voice": "zh-TW-YunJheNeural",
+  "frames": [
+    {
+      "id": 1,
+      "seed": 201,
+      "prompt": "a small medieval farming village at night in falling snow, warm lantern-lit windows, seen from across a half-frozen stream, dark vast forest looming on the far horizon, ominous quiet, first snow of winter",
+      "narration": "這個故事，村裡人是這樣講的——那年冬天，雪才落第一場，狼就來了。"
+    },
+    {
+      "id": 2,
+      "seed": 202,
+      "prompt": "a broken wooden livestock pen at dawn after snowfall, shattered fence rails, deep wolf paw prints in the snow leading away toward the dark forest, villagers with lanterns gathering in the cold morning light",
+      "narration": "第一夜，牲欄破了，兩頭牛沒了。雪地上的爪印，一路延伸進黑森林。"
+    },
+    {
+      "id": 3,
+      "seed": 203,
+      "prompt": "villagers gathered in grief on a snowy field ridge around a fallen figure covered with a cloth, a worn straw hat lying in the snow beside them, lantern light in blue winter dusk, sorrowful mood",
+      "narration": "第三夜，倒下的是阿榆。全村最老實的莊稼人，一輩子沒向森林伸過手。"
+    },
+    {
+      "id": 4,
+      "seed": 204,
+      "prompt": "inside a wooden cottage at night, a mother holding a small child close by the shuttered window, a father barring the heavy door, firelight flickering on worried faces, snow drifting past the window crack",
+      "narration": "從那晚起，入夜沒有人敢出門。家家閂上門，火整夜不敢熄。"
+    },
+    {
+      "id": 5,
+      "seed": 205,
+      "prompt": "an old village elder in a hooded brown cloak standing on wooden steps handing hunting bows to a crowd of villagers, hunters with faces hidden in hood shadows, a sea of torches in the snowy night, grim determination",
+      "narration": "村長把獵弓一張張分下去。他說：牠們過了溪，就得知道，這裡是誰的家。"
+    },
+    {
+      "id": 6,
+      "seed": 206,
+      "prompt": "hunters with bows on a wooden palisade wall at night, arrows nocked toward the dark forest, torchlight and falling snow, and far away in the black treeline a pair of glowing amber eyes watching",
+      "narration": "守夜人說，那頭狼王看見弓，退了半步——然後，繞進了影子裡。害獸，他們這樣喊牠。"
+    },
+    {
+      "id": 7,
+      "seed": 207,
+      "prompt": "a snowy valley seen from high above at night, a winding half-frozen stream dividing the land, small warm village lights on one side far below, vast dark wild forest filling the other side, the composition facing the forest",
+      "narration": "這，是村莊的版本。現在，把這個冬天倒回去——從溪的另一頭，再講一次。"
+    },
+    {
+      "id": 8,
+      "seed": 208,
+      "prompt": "gaunt grey wolves sniffing at an empty rabbit burrow under snow-covered tree roots in a bare winter forest, thin cold light, ribs showing under fur, and half-buried in snow in the far background a rusted iron trap",
+      "narration": "入冬之前，森林先餓了。兔穴一個個空下去。狼不會問為什麼——牠們只是餓。"
+    },
+    {
+      "id": 9,
+      "seed": 209,
+      "prompt": "a wolf den beneath dark rocks in winter forest, a mother wolf curled around three small wolf pups, above on the ridge a large grey wolf with amber eyes and an old arrow scar on its left shoulder standing watch, gazing at distant village lights across the valley, night",
+      "narration": "窩裡，有三隻幼狼。那一夜，狼王在嶺上站到天亮。溪對岸的牛，肥得走不動路。"
+    },
+    {
+      "id": 10,
+      "seed": 210,
+      "prompt": "a pack of gaunt grey wolves crossing a half-frozen stream at night, led by a large grey wolf with amber eyes and an old arrow scar on its left shoulder, the pack moving inside the long moon-cast shadows of trees, falling snow, quiet tension",
+      "narration": "牠曾經也有兄弟，死在人的弓下。所以牠沿著影子走，也教整群狼，沿著影子走。"
+    },
+    {
+      "id": 11,
+      "seed": 211,
+      "prompt": "inside a dim wolf den in winter, a grey wolf lowering food to three hungry wolf pups pressing close, breath visible in the cold, snow at the den mouth, intimate warm-in-cold mood",
+      "narration": "村裡人看見的，是屠殺。窩裡的幼狼看見的，是能活過冬天的那一口肉。"
+    },
+    {
+      "id": 12,
+      "seed": 212,
+      "prompt": "a grey wolf lying still in falling snow with a single arrow in its flank, the rest of the wolf pack standing at the dark treeline looking back in silence, cold blue night, grief",
+      "narration": "第五夜，灰爪沒有回來。狼，少一隻，就真的少一隻了。"
+    },
+    {
+      "id": 13,
+      "seed": 213,
+      "prompt": "two mirrored scenes in one painting divided by a frozen stream: on the village side mourners around a fresh grave with a straw hat resting on a wooden marker, on the forest side a wolf pack gathered around a snow-covered mound, the same snow falling over both, elegiac symmetry",
+      "narration": "同一場雪，埋了阿榆，也埋了灰爪。兩邊，都在守護；兩邊，都在流血。"
+    },
+    {
+      "id": 14,
+      "seed": 214,
+      "prompt": "a large grey wolf with amber eyes and an old arrow scar facing an old hooded village elder holding a lantern across a frozen stream, night and moonlight on the wolf side, warm dawn light on the village side, snow falling between them, neither backing down, epic symmetrical confrontation",
+      "narration": "雪還在下。狼王與村長，隔著溪對望，誰都沒有退。這片土地，容不下兩種活法——如果，坐在他們位子上的，是你呢？"
+    }
+  ]
+}
