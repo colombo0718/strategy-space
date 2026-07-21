@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="vi">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>造句召喚師 · 卡牌一覽</title>
+<title>造句召喚師 · Xem bộ bài</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🃏</text></svg>">
 <script src="deck.js"></script>
 <style>
@@ -54,8 +54,8 @@
 </head>
 <body>
 <h1>SENTENCE SUMMONER</h1>
-<div style="color:#9fc3b6;font-size:14px;letter-spacing:3px;margin:-2px 0 6px">造句召喚師 · 卡牌一覽　<a href="index.html" style="color:#e7c873;text-decoration:none;font-size:12px;letter-spacing:0">← 回首頁</a></div>
-<div class="bar">English deck v1 ─ Nouns 32 ｜ Verbs 16 ｜ Adjectives 16　│　OpenMoji art　│　❤️HP 🗡️ATK 🛡️DEF 🦶SPD　│　color = part of speech</div>
+<div style="color:#9fc3b6;font-size:14px;letter-spacing:3px;margin:-2px 0 6px">造句召喚師 · Xem bộ bài　<a href="index.html" style="color:#e7c873;text-decoration:none;font-size:12px;letter-spacing:0">← Về trang chủ</a></div>
+<div class="bar">Bộ bài tiếng Trung v1 ─ Danh từ 32 ｜ Động từ 16 ｜ Tính từ 16　│　Hình OpenMoji　│　❤️HP 🗡️ATK 🛡️DEF 🦶SPD　│　màu = từ loại</div>
 <div id="root"></div>
 <script>
 const D = window.SS_DECK, root = document.getElementById("root");
@@ -87,18 +87,18 @@ function section(t, items, kind){
   const g=document.createElement("div"); g.className="grid";
   items.forEach(c=>g.appendChild(makeCard(c,kind))); root.appendChild(g);
 }
-section("Nouns · 32 (animals, green)", D.nouns, "noun");
-section("Verbs · 16 (moves, red)", D.verbs, "verb");
-section("Adjectives · 16 (states, gold)", D.adjs, "adj");
+section("Danh từ · 32 (động vật, xanh lá)", D.nouns, "noun");
+section("Động từ · 16 (hành động, đỏ)", D.verbs, "verb");
+section("Tính từ · 16 (trạng thái, vàng)", D.adjs, "adj");
 
-const hs=document.createElement("h2"); hs.textContent="Stacking demo (4 columns align — add straight down)"; root.appendChild(hs);
+const hs=document.createElement("h2"); hs.textContent="Minh họa chồng bài (4 cột thẳng hàng — cộng dồn xuống dưới)"; root.appendChild(hs);
 const wrap=document.createElement("div"); wrap.className="grid";
 const stack=document.createElement("div"); stack.className="stack";
 [ makeCard(D.adjs[1],"adj"), makeCard(D.adjs[0],"adj"), makeCard(D.verbs[0],"verb"), makeCard(D.nouns[3],"noun") ]
   .forEach((el,i)=>{ el.style.top=(i*34)+"px"; el.style.zIndex=i; stack.appendChild(el); });
 wrap.appendChild(stack); root.appendChild(wrap);
 
-const hb=document.createElement("h2"); hb.textContent="Card back"; root.appendChild(hb);
+const hb=document.createElement("h2"); hb.textContent="Mặt sau lá bài"; root.appendChild(hb);
 const gb=document.createElement("div"); gb.className="grid";
 const b=document.createElement("div"); b.className="back";
 b.innerHTML=`<div class="seal"><div class="t">SENTENCE<br>SUMMONER</div></div><div class="sub"><img src="../openmoji/1F343.svg"> 言出法隨 <img src="../openmoji/1F319.svg"></div>`;
