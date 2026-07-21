@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>造句召喚師 · 卡牌一覽</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🃏</text></svg>">
+<script src="deck.js"></script>
+<style>
+  body{ margin:0; background:#2a2622; color:#eee; font-family:"Segoe UI","Noto Sans TC",sans-serif; padding:22px; }
+  h1{ font-size:20px; color:#e7c873; letter-spacing:2px; margin:0 0 2px; }
+  .bar{ color:#9fc3b6; font-size:13px; margin-bottom:16px; }
+  h2{ font-size:15px; color:#e7c873; margin:22px 0 10px; letter-spacing:1px; }
+  .grid{ display:flex; flex-wrap:wrap; gap:10px; }
+
+  .card{ width:150px; height:208px; border-radius:11px; position:relative; overflow:hidden;
+    background:#fffaf0; border:2px solid var(--c); display:flex; flex-direction:column; box-shadow:0 3px 8px rgba(0,0,0,.3); }
+  .noun{ --c:#3a7d44; --soft:#e8f3e9; }
+  .verb{ --c:#b3402f; --soft:#f7e7e3; }
+  .adj { --c:#c2922c; --soft:#f7efda; }
+
+  /* 四維固定四欄（❤️🗡️🛡️🦶），跨卡縱向對齊 */
+  .strip{ height:30px; background:var(--c); display:grid; grid-template-columns:repeat(4,1fr); align-items:center; }
+  .cell{ display:flex; align-items:center; justify-content:center; gap:2px; color:#fff; font-size:13px; font-weight:800; }
+  .cell img{ width:15px; height:15px; }
+
+  .mid{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;
+        background:radial-gradient(circle at 50% 42%, var(--soft), #fffaf0 80%); }
+  .mid img{ width:74px; height:74px; filter:drop-shadow(0 3px 4px rgba(0,0,0,.18)); }
+  .name{ text-align:center; }
+  .word{ font-size:21px; font-weight:800; color:#3a2f1f; letter-spacing:.5px; line-height:1.1; }
+  .gloss{ font-size:12px; color:#8a7a5e; }
+  .starbar{ text-align:center; padding:2px 0 7px; }
+  .stars{ font-size:12px; letter-spacing:2px; line-height:1; }
+  .sf{ color:#e8a81b; } .se{ color:#d9cdb4; }
+  /* LeafLune 浮水印：右下 logo + 左下文字 */
+  .wm-logo{ position:absolute; bottom:5px; right:6px; width:16px; height:16px; opacity:.55; }
+  .wm-text{ position:absolute; bottom:6px; left:7px; font-size:7px; font-weight:700; letter-spacing:.4px; color:rgba(58,47,31,.4); }
+
+  .back{ width:150px; height:208px; border-radius:11px; border:2px solid #c9a227; overflow:hidden;
+    background:repeating-linear-gradient(45deg, rgba(255,255,255,.045) 0 8px, transparent 8px 16px), radial-gradient(circle at 50% 40%, #2f62b0 0%, #1a3c78 48%, #0e2148 100%);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; box-shadow:0 3px 8px rgba(0,0,0,.35); }
+  .back .moon{ position:absolute; top:14px; font-size:22px; filter:drop-shadow(0 0 6px rgba(231,200,115,.55)); }
+  .seal{ width:98px; height:98px; border-radius:50%; border:2px solid #c9a227; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.06); box-shadow:0 0 0 4px rgba(201,162,39,.22), inset 0 0 18px rgba(0,0,0,.35); text-align:center; }
+  .seal .t{ font-size:15px; font-weight:900; color:#e7c873; line-height:1.15; letter-spacing:1px; text-shadow:0 1px 2px #0008; }
+  .back .sub{ position:absolute; bottom:12px; width:100%; text-align:center; color:#bcd6ff; font-size:12px; letter-spacing:2px; }
+  .back .moon img{ width:28px; height:28px; display:block; }
+  .back .sub img{ width:15px; height:15px; vertical-align:-3px; }
+
+  .stack{ position:relative; width:150px; height:330px; }
+  .stack .card{ position:absolute; left:0; }
+</style>
+</head>
+<body>
+<h1>SENTENCE SUMMONER</h1>
+<div style="color:#9fc3b6;font-size:14px;letter-spacing:3px;margin:-2px 0 6px">造句召喚師 · 卡牌一覽　<a href="index.html" style="color:#e7c873;text-decoration:none;font-size:12px;letter-spacing:0">← 回首頁</a></div>
+<div class="bar">English deck v1 ─ Nouns 32 ｜ Verbs 16 ｜ Adjectives 16　│　OpenMoji art　│　❤️HP 🗡️ATK 🛡️DEF 🦶SPD　│　color = part of speech</div>
+<div id="root"></div>
+<script>
+const D = window.SS_DECK, root = document.getElementById("root");
+const ORDER = ["❤️","🗡️","🛡️","🦶"];
+function omCode(em){ return Array.from(em).map(c=>c.codePointAt(0)).filter(cp=>cp!==0xFE0F).map(cp=>cp.toString(16).toUpperCase()).join("-"); }
+function om(em){ return `<img src="../openmoji/${omCode(em)}.svg" alt="">`; }
+function strip(kind, c){
+  const vals = {}; const put=(ic,v)=>{ vals[omCode(ic)]=v; };
+  if(kind==="noun"){ put("❤️",c.hp); put("🗡️",c.atk); put("🛡️",c.def); put("🦶",c.spd); }
+  else for(const [ic,v] of c.eff) put(ic,(v>=0?"+":"−")+Math.abs(v));
+  return ORDER.map(ic=>{ const k=omCode(ic);
+    return (k in vals) ? `<span class="cell">${om(ic)}<b>${vals[k]}</b></span>` : `<span class="cell"></span>`; }).join("");
+}
+function starOf(c){ const t=c.hp+c.atk+c.def+c.spd; return t>=18?3:t>=13?2:1; }
+function makeCard(c, kind){
+  const d=document.createElement("div"); d.className="card "+kind; d.dataset.id=c.id;
+  let starbar="";
+  if(kind==="noun"){ const n=c.star;
+    starbar=`<div class="starbar"><span class="stars"><span class="sf">${"★".repeat(n)}</span><span class="se">${"☆".repeat(3-n)}</span></span></div>`; }
+  d.innerHTML = `<div class="strip">${strip(kind,c)}</div>
+    <div class="mid">${om(c.e)}<div class="name"><div class="word">${c.w}</div><div class="gloss">${c.zh}</div></div></div>
+    ${starbar}
+    <img class="wm-logo" src="../leaflune-logo.png" alt="">
+    <span class="wm-text">LeafLune</span>`;
+  return d;
+}
+function section(t, items, kind){
+  const h=document.createElement("h2"); h.textContent=t; root.appendChild(h);
+  const g=document.createElement("div"); g.className="grid";
+  items.forEach(c=>g.appendChild(makeCard(c,kind))); root.appendChild(g);
+}
+section("Nouns · 32 (animals, green)", D.nouns, "noun");
+section("Verbs · 16 (moves, red)", D.verbs, "verb");
+section("Adjectives · 16 (states, gold)", D.adjs, "adj");
+
+const hs=document.createElement("h2"); hs.textContent="Stacking demo (4 columns align — add straight down)"; root.appendChild(hs);
+const wrap=document.createElement("div"); wrap.className="grid";
+const stack=document.createElement("div"); stack.className="stack";
+[ makeCard(D.adjs[1],"adj"), makeCard(D.adjs[0],"adj"), makeCard(D.verbs[0],"verb"), makeCard(D.nouns[3],"noun") ]
+  .forEach((el,i)=>{ el.style.top=(i*34)+"px"; el.style.zIndex=i; stack.appendChild(el); });
+wrap.appendChild(stack); root.appendChild(wrap);
+
+const hb=document.createElement("h2"); hb.textContent="Card back"; root.appendChild(hb);
+const gb=document.createElement("div"); gb.className="grid";
+const b=document.createElement("div"); b.className="back";
+b.innerHTML=`<div class="seal"><div class="t">SENTENCE<br>SUMMONER</div></div><div class="sub"><img src="../openmoji/1F343.svg"> 言出法隨 <img src="../openmoji/1F319.svg"></div>`;
+gb.appendChild(b); root.appendChild(gb);
+</script>
+</body>
+</html>
