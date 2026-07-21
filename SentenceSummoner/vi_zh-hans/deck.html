@@ -30,6 +30,7 @@
   .name{ text-align:center; }
   .word{ font-size:21px; font-weight:800; color:#3a2f1f; letter-spacing:.5px; line-height:1.1; }
   .gloss{ font-size:12px; color:#8a7a5e; }
+  .pron{ font-size:13px; color:#b0842c; font-weight:700; line-height:1.1; margin:1px 0; }
   .starbar{ text-align:center; padding:2px 0 7px; }
   .stars{ font-size:12px; letter-spacing:2px; line-height:1; }
   .sf{ color:#e8a81b; } .se{ color:#d9cdb4; }
@@ -75,7 +76,7 @@ function makeCard(c, kind){
   if(kind==="noun"){ const n=c.star;
     starbar=`<div class="starbar"><span class="stars"><span class="sf">${"★".repeat(n)}</span><span class="se">${"☆".repeat(3-n)}</span></span></div>`; }
   d.innerHTML = `<div class="strip">${strip(kind,c)}</div>
-    <div class="mid">${om(c.e)}<div class="name"><div class="word">${c.w}</div><div class="gloss">${c.zh}</div></div></div>
+    <div class="mid">${om(c.e)}<div class="name"><div class="word">${c.w}</div>${c.p?`<div class="pron">${c.p}</div>`:""}<div class="gloss">${c.zh}</div></div></div>
     ${starbar}
     <img class="wm-logo" src="../leaflune-logo.png" alt="">
     <span class="wm-text">LeafLune</span>`;
