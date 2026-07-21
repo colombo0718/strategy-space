@@ -1,0 +1,45 @@
+{
+  "title": "雪落之前",
+  "style_prefix": "epic fantasy oil painting in the style of classic 1980s fantasy game box art, thick visible brushstrokes, dramatic rim lighting, muted earthy palette, cinematic composition",
+  "negative": "text, letters, words, watermark, signature, caption, cartoon, emoji, flat vector art, chibi, cute, gore, blood, deformed, extra limbs, photo, photorealistic",
+  "width": 1344,
+  "height": 768,
+  "frames": [
+    {
+      "id": 1,
+      "seed": 101,
+      "prompt": "autumn forest valley at golden hour seen from a high ridge, a winding stream dividing a dense wild forest from a small medieval farming village of wooden houses, red and gold falling leaves, thin chimney smoke in the distance",
+      "narration": "在還沒有名字的年代，森林與村莊之間，只隔著一條溪。"
+    },
+    {
+      "id": 2,
+      "seed": 102,
+      "prompt": "an empty rabbit burrow beneath gnarled tree roots in a bleak late-autumn forest, scattered dry leaves, thin cold light through bare branches, desolate and silent mood",
+      "narration": "那年秋天，獵物一天比一天少。兔穴空了，連風都是餓的。"
+    },
+    {
+      "id": 3,
+      "seed": 103,
+      "prompt": "a lone grey wolf with amber eyes standing at the edge of a forest stream at dusk, long tree shadows stretching across the ground, the wolf moving inside the shadow band, moody twilight, quiet tension",
+      "narration": "黃昏時，狼王第一次走到溪邊。牠沿著影子走，像一縷不肯散的煙。"
+    },
+    {
+      "id": 4,
+      "seed": 104,
+      "prompt": "view from inside a dark forest through branches: across a stream a small farming village at dusk, warm chimney smoke, a wooden livestock pen with fat cattle, warm lantern-lit windows",
+      "narration": "對岸，炊煙升起。牲欄裡的牛，肥得走不動路。"
+    },
+    {
+      "id": 5,
+      "seed": 105,
+      "prompt": "an old village elder in a hooded cloak holding a lantern, standing on a field ridge at nightfall, looking toward the dark forest across the stream, weathered worried face lit warmly by lantern glow",
+      "narration": "村長提著燈，站在田埂上，望向森林這頭。他知道——雪落之後，會有什麼渡溪而來。"
+    },
+    {
+      "id": 6,
+      "seed": 106,
+      "prompt": "first snow falling over a stream at night, dark wild forest on one side and a warm lit village on the other, both reflected in the calm water, quiet, epic and ominous winter mood",
+      "narration": "雪，落下來了。今年冬天，這條溪，會結冰。"
+    }
+  ]
+}
