@@ -33,10 +33,12 @@ for i, f in enumerate(spec["frames"]):
     zin = i % 2 == 0  # 奇偶幀交替推近/拉遠
     z = (f"1+0.08*on/{frames-1}") if zin else (f"1.08-0.08*on/{frames-1}")
     seg = f"seg_{f['id']:02d}.mp4"
+    fade = f"fade=t=in:st=0:d=0.5,fade=t=out:st={dur-0.5:.3f}:d=0.5"
+    # 4 倍超取樣再 zoompan：把整數捨入誤差壓到次像素、消除鏡頭抖動
     run(["ffmpeg", "-y", "-loop", "1", "-framerate", str(FPS), "-t", f"{dur:.3f}", "-i", img,
          "-i", wav, "-filter_complex",
-         f"[0:v]scale={W*2}:{H*2},zoompan=z='{z}':d={frames}"
-         f":x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s={W}x{H}:fps={FPS},format=yuv420p[v];"
+         f"[0:v]scale={W*4}:{H*4}:flags=lanczos,zoompan=z='{z}':d={frames}"
+         f":x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s={W}x{H}:fps={FPS},{fade},format=yuv420p[v];"
          f"[1:a]apad[a]",
          "-map", "[v]", "-map", "[a]", "-t", f"{dur:.3f}",
          "-c:v", "libx264", "-preset", "medium", "-crf", "18",

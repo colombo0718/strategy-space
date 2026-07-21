@@ -16,6 +16,7 @@ def tts(text: str, out: Path):
         "prompt_text": REF_TEXT,
         "prompt_lang": "zh",
         "text_split_method": "cut5",
+        "speed_factor": 1.1,
         "batch_size": 1,
         "media_type": "wav",
         "streaming_mode": "false",
