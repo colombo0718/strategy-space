@@ -1,7 +1,7 @@
 from playwright.sync_api import sync_playwright
 import pathlib, os
-url = pathlib.Path(r'D:/strategy-space/SentenceSummoner/zh-hant_en/deck.html').as_uri()
-outdir = r'D:\strategy-space\SentenceSummoner\zh-hant_en\cards'
+url = pathlib.Path(r'D:/strategy-space/SentenceSummoner/zh-hant_vi/deck.html').as_uri()
+outdir = r'D:\strategy-space\SentenceSummoner\zh-hant_vi\cards'
 os.makedirs(outdir, exist_ok=True)
 with sync_playwright() as pw:
     b = pw.chromium.launch()
