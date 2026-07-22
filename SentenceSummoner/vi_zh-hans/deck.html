@@ -72,9 +72,11 @@ function strip(kind, c){
 function starOf(c){ const t=c.hp+c.atk+c.def+c.spd; return t>=18?3:t>=13?2:1; }
 function makeCard(c, kind){
   const d=document.createElement("div"); d.className="card "+kind; d.dataset.id=c.id;
-  let starbar="";
+  // starbar 永遠佔位(用 visibility:hidden 藏掉非名詞卡)，讓 .mid 可用高度三種卡型一致、插圖+文字置中點對齊
+  let starbar;
   if(kind==="noun"){ const n=c.star;
     starbar=`<div class="starbar"><span class="stars"><span class="sf">${"★".repeat(n)}</span><span class="se">${"☆".repeat(3-n)}</span></span></div>`; }
+  else{ starbar=`<div class="starbar" style="visibility:hidden"><span class="stars"><span class="sf">★</span><span class="se">☆☆</span></span></div>`; }
   d.innerHTML = `<div class="strip">${strip(kind,c)}</div>
     <div class="mid">${om(c.e)}<div class="name"><div class="word">${c.w}</div>${c.p?`<div class="pron">${c.p}</div>`:""}<div class="gloss">${c.zh}</div></div></div>
     ${starbar}
