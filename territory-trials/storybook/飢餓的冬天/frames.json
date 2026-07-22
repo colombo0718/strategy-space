@@ -58,13 +58,13 @@
     {
       "id": 9,
       "seed": 209,
-      "prompt": "a wolf den beneath dark rocks in winter forest, a mother wolf curled around three small wolf pups, above on the ridge a large grey wolf with amber eyes and an old arrow scar on its left shoulder standing watch, gazing at distant village lights across the valley, night",
+      "prompt": "a wolf den beneath dark rocks in winter forest, a mother wolf curled around three small wolf pups, above on the ridge a large grey wolf with amber eyes and a jagged old claw scar on its left shoulder standing watch, gazing at distant village lights across the valley, night",
       "narration": "窩裡，有三隻幼狼。那一夜，狼王在嶺上站到天亮。溪對岸的牛，肥得走不動路。"
     },
     {
       "id": 10,
       "seed": 210,
-      "prompt": "a pack of gaunt grey wolves crossing a half-frozen stream at night, led by a large grey wolf with amber eyes and an old arrow scar on its left shoulder, the pack moving inside the long moon-cast shadows of trees, falling snow, quiet tension",
+      "prompt": "a pack of gaunt grey wolves crossing a half-frozen stream at night, led by a large grey wolf with amber eyes and a jagged old claw scar on its left shoulder, the pack moving inside the long moon-cast shadows of trees, falling snow, quiet tension",
       "narration": "牠曾經也有兄弟，死在人的弓下。所以牠沿著影子走，也教整群狼，沿著影子走。"
     },
     {
@@ -82,13 +82,13 @@
     {
       "id": 13,
       "seed": 213,
-      "prompt": "two mirrored scenes in one painting divided by a frozen stream: on the village side mourners around a fresh grave with a straw hat resting on a wooden marker, on the forest side a wolf pack gathered around a snow-covered mound, the same snow falling over both, elegiac symmetry",
+      "prompt": "two mirrored scenes in one painting divided by a frozen stream: on the village side mourners around a fresh grave with a straw hat resting on a plain unmarked wooden marker, on the forest side a wolf pack gathered around a bare snow-covered mound with nothing man-made on it only paw prints, the same snow falling over both, elegiac symmetry",
       "narration": "同一場雪，埋了阿榆，也埋了灰爪。兩邊，都在守護；兩邊，都在流血。"
     },
     {
       "id": 14,
       "seed": 214,
-      "prompt": "a large grey wolf with amber eyes and an old arrow scar facing an old hooded village elder holding a lantern across a frozen stream, night and moonlight on the wolf side, warm dawn light on the village side, snow falling between them, neither backing down, epic symmetrical confrontation",
+      "prompt": "a large grey wolf with amber eyes and a jagged old claw scar on its shoulder facing an old hooded village elder holding a lantern across a frozen stream, night and moonlight on the wolf side, warm dawn light on the village side, snow falling between them, neither backing down, epic symmetrical confrontation",
       "narration": "雪還在下。狼王與村長，隔著溪對望，誰都沒有退。這片土地，容不下兩種活法——如果，坐在他們位子上的，是你呢？"
     }
   ]
