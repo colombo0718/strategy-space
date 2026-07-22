@@ -95,6 +95,7 @@ D:\war-writ\              WW 軍令（多 agent 治理沙箱）
 D:\mage-dragon\           MD 法師鬥惡龍（承諾機制研究）
 D:\shadow-protocol\       SP 暗影協定（潛行 + 資安教育）
 D:\neko-numen\            NN 貍奴洞天
+D:\game-geek\             GG 通用遊戲控制器（2026-07-22 colombo 交接、跨遊戲法器，不掛仙俠敘事、維持中性科技命名）
 D:\matrix-manager\meetings\   跨閣會議紀錄
 D:\matrix-manager\UNIVERSE.md LL 宇宙當前狀態
 ```
