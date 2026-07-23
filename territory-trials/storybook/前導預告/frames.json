@@ -1,0 +1,82 @@
+{
+  "title": "領土保衛戰 前導預告",
+  "style_prefix": "epic fantasy oil painting in the style of classic 1980s fantasy game box art, thick visible brushstrokes, dramatic rim lighting, muted earthy palette, cinematic composition",
+  "negative": "text, letters, words, watermark, signature, caption, cartoon, emoji, flat vector art, chibi, cute, gore, blood, deformed, extra limbs, photo, photorealistic",
+  "width": 1344,
+  "height": 768,
+  "speed_factor": 1.1,
+  "lang": "zh",
+  "characters": {
+    "wolf_king": "a large lean grey wolf with piercing amber eyes and a jagged old claw scar on its left shoulder, calm and intelligent, never monstrous",
+    "elder": "an old village elder with a long white beard in a hooded brown cloak holding an iron lantern, weathered kind face"
+  },
+  "frames": [
+    {
+      "id": 1,
+      "seed": 301,
+      "reuse": "飢餓的冬天/frame_01",
+      "prompt": "a small medieval farming village at night in falling snow, warm lantern-lit windows, seen from across a half-frozen stream, dark vast forest looming on the far horizon, ominous quiet, first snow of winter",
+      "narration": "在灰溪谷，冬天總是來得特別早。而那一年，比冬天先到的——是狼。"
+    },
+    {
+      "id": 2,
+      "seed": 302,
+      "prompt": "pitch black forest edge at night in falling snow, seven pairs of glowing amber eyes floating in the darkness between the trees at different heights, nothing else visible, dread and stillness",
+      "narration": "更夫說，他數過黑暗裡的眼睛。七對。"
+    },
+    {
+      "id": 3,
+      "seed": 303,
+      "prompt": "a monstrous exaggerated wolf shadow cast huge across snowy village rooftops and a cottage wall by flickering firelight, folklore nightmare style, the shadow far larger than any real wolf, frightened mother pulling a child away from a window",
+      "narration": "孩子們說，牠比馬還大。母親們說——別再說了。"
+    },
+    {
+      "id": 4,
+      "seed": 304,
+      "reuse": "飢餓的冬天/frame_02",
+      "prompt": "a broken wooden livestock pen at dawn after snowfall, shattered fence rails, deep wolf paw prints in the snow leading away toward the dark forest, villagers with lanterns gathering in the cold morning light",
+      "narration": "只有雪地上的爪印，是真的。一路，通進黑森林。"
+    },
+    {
+      "id": 5,
+      "seed": 305,
+      "reuse": "飢餓的冬天/frame_05",
+      "prompt": "an old village elder in a hooded brown cloak standing on wooden steps handing hunting bows to a crowd of villagers, hunters with faces hidden in hood shadows, a sea of torches in the snowy night, grim determination",
+      "narration": "分弓那天，全村上下，沒有人問過一個問題。"
+    },
+    {
+      "id": 6,
+      "seed": 306,
+      "reuse": "飢餓的冬天/frame_08",
+      "prompt": "gaunt grey wolves sniffing at an empty rabbit burrow under snow-covered tree roots in a bare winter forest, thin cold light, ribs showing under fur, and half-buried in snow in the far background a rusted iron trap",
+      "narration": "狼——為什麼要過溪？"
+    },
+    {
+      "id": 7,
+      "seed": 307,
+      "reuse": "飢餓的冬天/frame_09",
+      "prompt": "a wolf den beneath dark rocks in winter forest, a mother wolf curled around three small wolf pups, above on the ridge a large grey wolf with amber eyes and a jagged old claw scar on its left shoulder standing watch, gazing at distant village lights across the valley, night",
+      "narration": "溪的另一頭，窩裡有三隻幼狼。而森林，已經空了。"
+    },
+    {
+      "id": 8,
+      "seed": 308,
+      "prompt": "close low-angle shot of {wolf_king} stepping onto the ice of a half-frozen stream at night, one forepaw testing the ice, breath freezing in the moonlight, long tree shadows across the frozen water, falling snow, quiet resolve",
+      "narration": "雪落之夜，狼王渡溪。"
+    },
+    {
+      "id": 9,
+      "seed": 309,
+      "reuse": "飢餓的冬天/frame_14",
+      "prompt": "a large grey wolf with amber eyes and a jagged old claw scar on its shoulder facing an old hooded village elder holding a lantern across a frozen stream, night and moonlight on the wolf side, warm dawn light on the village side, snow falling between them, neither backing down, epic symmetrical confrontation",
+      "narration": "兩個守護者。一條溪。這片土地，容不下兩種活法。"
+    },
+    {
+      "id": 10,
+      "seed": 310,
+      "reuse": "雪落之前/frame_06",
+      "prompt": "first snow falling over a stream at night, dark wild forest on one side and a warm lit village on the other, both reflected in the calm water, quiet, epic and ominous winter mood",
+      "narration": "沒有壞人，只有活下去。《領土保衛戰》——故事，即將開始。"
+    }
+  ]
+}
