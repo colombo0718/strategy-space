@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Sentence Summoner · 造句召喚師</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🃏</text></svg>">
+<style>
+  :root{ --gold:#e7c873; --ink:#3a2f1f; --bg:#221e1b; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{ background:radial-gradient(1000px 560px at 50% -10%, #34291f 0%, var(--bg) 62%); color:#eee;
+    min-height:100vh; font-family:"Segoe UI","Noto Sans TC",sans-serif; display:flex; flex-direction:column;
+    align-items:center; padding:26px 16px 44px; }
+  .hero{ position:relative; height:200px; width:340px; margin-top:4px }
+  .hero img{ position:absolute; width:114px; height:158px; border-radius:9px; box-shadow:0 8px 20px rgba(0,0,0,.5);
+    left:50%; top:0; transform-origin:bottom center; transition:.25s }
+  .hero img:nth-child(1){ transform:translateX(-50%) rotate(-16deg) translateY(6px) }
+  .hero img:nth-child(2){ transform:translateX(-50%) rotate(0deg) }
+  .hero img:nth-child(3){ transform:translateX(-50%) rotate(16deg) translateY(6px) }
+  .hero:hover img:nth-child(1){ transform:translateX(-92%) rotate(-20deg) }
+  .hero:hover img:nth-child(3){ transform:translateX(-8%) rotate(20deg) }
+
+  h1{ color:var(--gold); letter-spacing:5px; font-size:34px; text-shadow:0 0 20px rgba(231,200,115,.4); margin-top:8px; text-align:center }
+  .zh{ font-size:22px; letter-spacing:8px; color:#f0e6cf; margin-top:2px }
+  .tag{ color:#9fc3b6; font-size:15.5px; margin-top:14px; text-align:center; line-height:1.7; max-width:540px }
+  .tag b{ color:var(--gold) }
+
+  /* 主入口：教學（推薦） */
+  .start{ margin-top:24px; text-decoration:none; border-radius:14px; padding:16px 40px; font-size:20px; font-weight:900; letter-spacing:1px;
+    background:linear-gradient(135deg,#c9a44a,#e7c873); color:#3a2f1f; box-shadow:0 6px 20px rgba(231,200,115,.4); display:flex; align-items:center; gap:10px; transition:.14s }
+  .start:hover{ transform:translateY(-2px); box-shadow:0 9px 26px rgba(231,200,115,.55) }
+  .start .rec{ font-size:12px; background:#3a2f1f; color:var(--gold); border-radius:20px; padding:3px 9px; letter-spacing:0 }
+
+  .btns{ display:flex; gap:12px; margin-top:14px; flex-wrap:wrap; justify-content:center }
+  a.btn{ text-decoration:none; border-radius:12px; padding:11px 22px; font-size:15.5px; font-weight:800; letter-spacing:.5px;
+    display:flex; align-items:center; gap:7px; transition:.14s; background:#2c2723; color:#e7c873; border:1px solid #5a4d38 }
+  a.btn:hover{ border-color:var(--gold); transform:translateY(-1px) }
+  .modehint{ margin-top:12px; color:#8a938c; font-size:12.5px; text-align:center; line-height:1.7 }
+  .modehint b{ color:#b9c9bf }
+
+  .how{ margin-top:34px; background:rgba(44,39,35,.6); border:1px solid #443c33; border-radius:14px; padding:18px 22px; max-width:640px; width:100% }
+  .how h2{ color:var(--gold); font-size:15px; letter-spacing:2px; margin-bottom:14px; text-align:center }
+  .steps{ display:flex; gap:12px; flex-wrap:wrap; justify-content:center }
+  .step{ flex:1; min-width:150px; background:#211d1a; border:1px solid #3a332c; border-radius:10px; padding:13px 14px; text-align:center }
+  .step .n{ display:inline-block; width:24px; height:24px; line-height:24px; border-radius:50%; background:var(--gold); color:#3a2f1f; font-weight:900; margin-bottom:8px }
+  .step .t{ font-size:13.5px; color:#e9dfce; line-height:1.55 } .step .t b{ color:var(--gold) }
+  .egg{ margin-top:14px; text-align:center; font-size:15px; color:#8ce069; font-weight:700; letter-spacing:1px }
+  .egg .g{ color:#9fc3b6; font-weight:400 } .egg .r{ color:#e58b7d }
+
+  /* 戰鬥特色 */
+  .feats{ margin-top:26px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center; max-width:640px }
+  .feat{ background:#211d1a; border:1px solid #3a332c; border-radius:11px; padding:12px 14px; width:150px; text-align:center }
+  .feat .e{ font-size:24px } .feat .t{ color:var(--gold); font-weight:800; font-size:13.5px; margin-top:5px }
+  .feat .d{ color:#a99; font-size:11.5px; margin-top:3px; line-height:1.5 }
+
+  .foot{ margin-top:32px; color:#7c7264; font-size:12px; text-align:center; line-height:1.9 }
+  .foot .om{ color:#9f8f77 }
+  .foot a{ color:#9f8f77 }
+</style>
+</head>
+<body>
+  <div class="hero">
+    <img src="cards/A01.png" alt=""><img src="cards/A05.png" alt=""><img src="cards/A04.png" alt="">
+  </div>
+  <h1>SENTENCE&nbsp;SUMMONER</h1>
+  <div class="zh">造 句 召 喚 師</div>
+  <div class="tag">⌨️ <b>Type a Chinese sentence to summon monsters into battle.</b><br>Write a <b>noun</b> to summon it, build an <b>SVO sentence</b> to attack — play the game while practicing pronunciation, sentence-building, and parts of speech.</div>
+
+  <a class="start" href="play.html?mode=training">🥊 Start Training <span class="rec">For beginners</span></a>
+
+  <div class="btns">
+    <a class="btn" href="play.html?mode=battle">⚔️ Battle Mode</a>
+    <a class="btn" href="deck.html">🃏 View Deck</a>
+    <a class="btn" style="opacity:.45;cursor:default" title="Teaching mode isn't available for this language version yet">📖 Teaching Mode (coming soon)</a>
+  </div>
+  <div class="modehint"><b>Training</b> = play vs. AI with hands face-up　·　<b>Battle</b> = play with hands hidden　·　Teaching mode isn't available for this version yet</div>
+
+  <div class="how">
+    <h2>How to Play</h2>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><div class="t"><b>Summon</b>：play a <b>noun</b> from your hand<br>「<b>猫</b>」→ Cat takes the field</div></div>
+      <div class="step"><div class="n">2</div><div class="t"><b>Attack</b>：your monster＋verb＋opponent<br>「<b>猫咬龙</b>」</div></div>
+      <div class="step"><div class="n">3</div><div class="t"><b>Adjectives</b>：buff yourself / weaken the opponent<br>「<b>老虎强壮</b>」「<b>龙生病</b>」</div></div>
+    </div>
+    <div class="egg">🎤 <span class="g">Goal：bring the opposing Summoner's HP to 0！</span></div>
+  </div>
+
+  <div class="feats">
+    <div class="feat"><div class="e">🛡️</div><div class="t">Break armor</div><div class="d">Armor refills each turn, but focus fire can break it</div></div>
+    <div class="feat"><div class="e">🎲</div><div class="t">Speed dodging</div><div class="d">Fast monsters roll dice to dodge attacks</div></div>
+    <div class="feat"><div class="e">✨</div><div class="t">Adjectives</div><div class="d">Positive ones buff, negative ones curse and drain HP</div></div>
+    <div class="feat"><div class="e">🗣️</div><div class="t">Word order matters</div><div class="d">猫咬狗 ≠ 狗咬猫</div></div>
+  </div>
+
+  <div class="foot">
+    Chinese version · learn while you play<span class="om"> pronunciation × sentence building × parts of speech</span><br>
+    LeafLune · kids-ai-lab　｜　Art by <a href="https://openmoji.org" target="_blank" rel="noopener">OpenMoji</a>
+  </div>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Sentence Summoner · 造句召喚師 · Choose your language</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🃏</text></svg>">
+<style>
+  :root{ --gold:#e7c873; --ink:#3a2f1f; --bg:#221e1b; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{ background:radial-gradient(1000px 560px at 50% -10%, #34291f 0%, var(--bg) 62%); color:#eee;
+    min-height:100vh; font-family:"Segoe UI","Noto Sans TC",sans-serif; display:flex; flex-direction:column;
+    align-items:center; padding:40px 16px 60px; }
+
+  .hero{ position:relative; height:200px; width:340px; margin-top:4px }
+  .hero img{ position:absolute; width:114px; height:158px; border-radius:9px; box-shadow:0 8px 20px rgba(0,0,0,.5);
+    left:50%; top:0; transform-origin:bottom center; transition:.25s }
+  .hero img:nth-child(1){ transform:translateX(-50%) rotate(-16deg) translateY(6px) }
+  .hero img:nth-child(2){ transform:translateX(-50%) rotate(0deg) }
+  .hero img:nth-child(3){ transform:translateX(-50%) rotate(16deg) translateY(6px) }
+  .hero:hover img:nth-child(1){ transform:translateX(-92%) rotate(-20deg) }
+  .hero:hover img:nth-child(3){ transform:translateX(-8%) rotate(20deg) }
+
+  h1{ color:var(--gold); letter-spacing:5px; font-size:34px; text-shadow:0 0 20px rgba(231,200,115,.4); margin-top:8px; text-align:center }
+  .zh{ font-size:22px; letter-spacing:8px; color:#f0e6cf; margin-top:2px }
+  .tag{ color:#9fc3b6; font-size:15.5px; margin-top:14px; text-align:center; line-height:1.7; max-width:560px }
+  .tag b{ color:var(--gold) }
+
+  .picker{ margin-top:38px; width:100%; max-width:640px }
+  .picker h2{ color:var(--gold); font-size:15px; letter-spacing:2px; margin-bottom:16px; text-align:center }
+  .langs{ display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; }
+  a.lang{ text-decoration:none; display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:#211d1a; border:1px solid #3a332c; border-radius:14px; padding:18px 20px; transition:.14s; }
+  a.lang:hover{ border-color:var(--gold); transform:translateY(-2px); box-shadow:0 8px 22px rgba(0,0,0,.35); }
+  .lang .pair{ display:flex; align-items:center; gap:10px; font-size:17px; font-weight:800; color:#f0e6cf; }
+  .lang .pair .arrow{ color:var(--gold); font-weight:400; font-size:15px; }
+  .lang .sub{ font-size:11.5px; color:#8a938c; margin-top:4px; }
+  .lang .go{ color:var(--gold); font-size:20px; }
+
+  .foot{ margin-top:44px; color:#7c7264; font-size:12px; text-align:center; line-height:1.9 }
+  .foot a{ color:#9f8f77 }
+</style>
+</head>
+<body>
+  <div class="hero">
+    <img src="zh-hant_en/cards/A01.png" alt=""><img src="zh-hant_en/cards/A05.png" alt=""><img src="zh-hant_en/cards/A04.png" alt="">
+  </div>
+  <h1>SENTENCE&nbsp;SUMMONER</h1>
+  <div class="zh">造 句 召 喚 師</div>
+  <div class="tag">⌨️ <b>Type a grammatically correct sentence to summon monsters and battle.</b><br>Choose your native language and the language you're learning to get started.</div>
+
+  <div class="picker">
+    <h2>SELECT YOUR LANGUAGE PAIR</h2>
+    <div class="langs">
+      <a class="lang" href="zh-hant_en/index.html">
+        <div>
+          <div class="pair">繁體中文 <span class="arrow">→</span> English</div>
+          <div class="sub">Native speakers of Chinese learning English</div>
+        </div>
+        <div class="go">▶</div>
+      </a>
+      <a class="lang" href="zh-hant_vi/index.html">
+        <div>
+          <div class="pair">繁體中文 <span class="arrow">→</span> Tiếng Việt</div>
+          <div class="sub">Native speakers of Chinese learning Vietnamese</div>
+        </div>
+        <div class="go">▶</div>
+      </a>
+      <a class="lang" href="vi_zh-hans/index.html">
+        <div>
+          <div class="pair">Tiếng Việt <span class="arrow">→</span> 简体中文</div>
+          <div class="sub">Native speakers of Vietnamese learning Chinese</div>
+        </div>
+        <div class="go">▶</div>
+      </a>
+      <a class="lang" href="en_zh-hans/index.html">
+        <div>
+          <div class="pair">English <span class="arrow">→</span> 简体中文</div>
+          <div class="sub">Native speakers of English learning Chinese</div>
+        </div>
+        <div class="go">▶</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="foot">
+    LeafLune · kids-ai-lab　｜　Art by <a href="https://openmoji.org" target="_blank" rel="noopener">OpenMoji</a>
+  </div>
+</body>
+</html>
