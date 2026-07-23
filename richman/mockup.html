@@ -3,20 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>大富翁 · 遊戲畫面模擬</title>
+<title>Finance Fantasy · 單人試玩</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   body{font-family:"Segoe UI","Microsoft JhengHei",sans-serif;background:#dfe8d8;color:#2f3b33;padding:14px;display:flex;gap:14px;justify-content:center;align-items:flex-start;min-height:100vh}
-  /* ── 場景：外圈地皮環 + 內圈道路環 + 中央園區 ── */
   #board{display:grid;gap:0;background:#cfdcc4;padding:8px;border-radius:16px;flex:none;
     grid-template-columns:78px repeat(11,50px) 78px;
     grid-template-rows:78px repeat(11,50px) 78px}
-  /* 地皮（建築在路旁） */
   .lot{background:#e7efe0;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;border:2px solid transparent;border-radius:8px;margin:1px}
+  .lot.mortgaged{opacity:.55;border-style:dashed !important}
   .lot .strip{position:absolute;left:0;right:0;height:7px}
   .lot.h .strip{top:0}   .lot.hb .strip{bottom:0}
-  .lot.vl .strip{left:auto;right:0;top:0;bottom:0;height:auto;width:7px}   /* 左排地皮:色帶貼右緣(靠路) */
-  .lot.vr .strip{right:auto;left:0;top:0;bottom:0;height:auto;width:7px}   /* 右排地皮:色帶貼左緣(靠路) */
+  .lot.vl .strip{left:auto;right:0;top:0;bottom:0;height:auto;width:7px}
+  .lot.vr .strip{right:auto;left:0;top:0;bottom:0;height:auto;width:7px}
   .lot img.b{width:34px;height:34px}
   .lot .nm{font-size:8.5px;color:#4a564c;line-height:1.1;text-align:center}
   .lot .pr{font-size:8px;color:#96a69a}
@@ -26,7 +25,6 @@
   .boost{position:absolute;bottom:1px;right:2px;font-size:7.5px;color:#d0662a;font-weight:700;background:#fff8ee;border-radius:4px;padding:0 2px}
   .lot.big img.b{width:52px;height:52px}
   .lot.big .nm{font-size:10px;font-weight:700}
-  /* 道路（棋子走在上面） */
   .road{background:#b8b2a4;position:relative;margin:0;display:flex;align-items:center;justify-content:center}
   .road::after{content:"";position:absolute;inset:0;border:1px dashed rgba(255,255,255,.45);border-radius:2px;pointer-events:none;margin:3px}
   .road .mark{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:.85}
@@ -35,24 +33,23 @@
   .road.plaza{background:#a8a294}
   .road.plaza .mark img{width:30px;height:30px}
   .tokens{position:absolute;z-index:5;bottom:2px;left:50%;transform:translateX(-50%);display:flex}
-  .tokens img{width:26px;height:26px;margin:0 -5px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
-  /* 中央園區 */
-  #center{grid-column:3/12;grid-row:3/12;background:#e9f1e1;border-radius:12px;margin:4px;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;overflow:hidden}
-  #center h1{font-size:32px;letter-spacing:9px;color:#3c5a3f}
-  #center .sub{font-size:12px;color:#7a8a7e;letter-spacing:3px}
+  .tokens img{width:24px;height:24px;margin:0 -6px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
+  #center{grid-column:3/12;grid-row:3/12;background:#e9f1e1;border-radius:12px;margin:4px;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;overflow:hidden}
+  #center h1{font-size:26px;letter-spacing:6px;color:#3c5a3f}
+  #center .sub{font-size:11px;color:#7a8a7e;letter-spacing:2px}
   #dice{display:flex;gap:10px}
   .die{width:42px;height:42px;background:#fff;border:2px solid #3c5a3f;border-radius:10px;font-size:24px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#3c5a3f}
-  #card{background:#fffdf4;border:1px dashed #c9a24b;border-radius:10px;padding:7px 12px;font-size:11.5px;color:#6a5a2a;display:flex;gap:8px;align-items:center;max-width:380px}
-  #card img{width:26px;height:26px}
+  #card{background:#fffdf4;border:1px dashed #c9a24b;border-radius:10px;padding:7px 12px;font-size:11px;color:#6a5a2a;display:flex;gap:8px;align-items:center;max-width:380px;min-height:20px}
+  #card img{width:24px;height:24px}
   .deco{position:absolute;opacity:.9}
   .deco img{width:34px;height:34px}
-  /* ── 右側 UI（同前版） ── */
-  #ui{width:330px;display:flex;flex-direction:column;gap:10px;flex:none}
+  #ui{width:340px;display:flex;flex-direction:column;gap:10px;flex:none}
   .panel{background:#fff;border:1px solid #dfe6da;border-radius:12px;padding:12px}
   .turn{font-size:13px;font-weight:700;color:#3c5a3f;display:flex;justify-content:space-between;align-items:center}
   .turn .rd{font-size:11px;color:#9aa89e;font-weight:400}
   .pl{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:9px;margin-top:6px;border:2px solid transparent}
   .pl.active{background:#f0f7ea;border-color:#7cb56b}
+  .pl.bankrupt{opacity:.4}
   .pl img{width:30px;height:30px}
   .pl .info{flex:1;min-width:0}
   .pl .nm{font-size:13px;font-weight:600}
@@ -60,82 +57,164 @@
   .pl .sts{font-size:11px;color:#7a8a7e}
   .pl .cash{font-size:14px;font-weight:700;color:#3c5a3f}
   .pl .dot{width:9px;height:9px;border-radius:50%;flex:none}
-  .land{display:flex;gap:10px;align-items:center}
-  .land img{width:42px;height:42px}
-  .land .t{font-size:13px;line-height:1.5}
+  .land{display:flex;gap:10px;align-items:center;font-size:12.5px;line-height:1.5}
+  .land .sub{color:#9aa89e;font-size:11px}
   .btns{display:flex;gap:8px;margin-top:10px}
   .btn{flex:1;border:none;border-radius:10px;padding:11px 0;font-size:14px;font-weight:700;cursor:pointer}
+  .btn:disabled{opacity:.4;cursor:default}
   .buy{background:#4a7a5a;color:#fff}
   .pass{background:#eef1ec;color:#6a766c}
-  .roll{background:#c9d6bf;color:#5a6a5c;width:100%;border:none;border-radius:10px;padding:10px 0;font-size:13px;margin-top:8px}
+  .roll{background:#c9d6bf;color:#5a6a5c;width:100%;border:none;border-radius:10px;padding:10px 0;font-size:13px;margin-top:8px;cursor:pointer;font-weight:700}
+  .roll:disabled{opacity:.4;cursor:default}
   .bub{display:flex;gap:8px;margin-top:8px;font-size:12px;line-height:1.55}
-  .bub img{width:26px;height:26px;flex:none}
+  .bub img{width:24px;height:24px;flex:none}
   .bub .txt{background:#f5f8f2;border-radius:10px;padding:7px 10px}
   .bub.coach .txt{background:#fff6df;border:1px solid #ecd9a0}
-  .log{font-size:11px;color:#8a9a8e;line-height:1.8;margin-top:4px;border-top:1px solid #eef1ec;padding-top:6px}
-  .note{font-size:11px;color:#9aa89e;text-align:center}
+  #log{font-size:11px;color:#8a9a8e;line-height:1.75;margin-top:4px;border-top:1px solid #eef1ec;padding-top:6px;max-height:110px;overflow-y:auto;display:flex;flex-direction:column-reverse}
+  .ctrlRow{display:flex;gap:8px;align-items:center;font-size:11px;color:#7a8a7e;justify-content:space-between}
+  .ctrlRow label{display:flex;gap:4px;align-items:center;cursor:pointer}
+  .ctrlRow button{border:none;background:#eef1ec;color:#6a766c;border-radius:8px;padding:5px 9px;font-size:11px;cursor:pointer}
+  #endOverlay{position:fixed;inset:0;background:rgba(20,26,20,.72);display:none;align-items:center;justify-content:center;z-index:50}
+  #endCard{background:#fff;border-radius:16px;padding:26px 28px;max-width:420px;width:92%}
+  #endCard h2{color:#3c5a3f;font-size:20px;margin-bottom:4px}
+  #endCard .sub{font-size:12px;color:#8a9a8e;margin-bottom:14px}
+  table.rank{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.rank th{text-align:left;color:#9aa89e;font-weight:600;font-size:11px;padding:4px 6px;border-bottom:1px solid #eef1ec}
+  table.rank td{padding:6px;border-bottom:1px solid #f4f7f2}
+  table.rank tr.win td{font-weight:700;color:#3c5a3f;background:#f0f7ea}
+  #endCard button{margin-top:16px;width:100%;background:#4a7a5a;color:#fff;border:none;border-radius:10px;padding:11px 0;font-size:14px;font-weight:700;cursor:pointer}
 </style>
 </head>
 <body>
 <div id="board"></div>
 <div id="ui">
   <div class="panel">
-    <div class="turn"><span>🎲 第 12 回合 · 輪到你</span><span class="rd">家庭場 · 4 人局</span></div>
-    <div class="pl active"><span class="dot" style="background:#4a7ad6"></span><img data-e="🧑"><div class="info"><div class="nm">你</div><div class="sts">地產 2 · 橘組差1塊成套</div></div><div class="cash">$8,350</div></div>
-    <div class="pl"><span class="dot" style="background:#e0842a"></span><img data-e="🦊"><div class="info"><div class="nm">阿狐<span class="tag">AI·槓桿型</span></div><div class="sts">地產 5 · 抵押 2 · 🏬逛百貨中</div></div><div class="cash">$1,180</div></div>
-    <div class="pl"><span class="dot" style="background:#5c9e31"></span><img data-e="🐶"><div class="info"><div class="nm">旺財<span class="tag">AI·穩健型</span></div><div class="sts">地產 3 · 紅組成套 ⭐</div></div><div class="cash">$6,820</div></div>
-    <div class="pl"><span class="dot" style="background:#8a6a4a"></span><img data-e="🐻"><div class="info"><div class="nm">大熊<span class="tag">AI·囤錢型</span></div><div class="sts">地產 0 · 現金最多</div></div><div class="cash">$12,400</div></div>
+    <div class="turn"><span id="turnLabel">🎲 準備開始</span><span class="rd">家庭場 · 4 人局</span></div>
+    <div id="players"></div>
+  </div>
+  <div class="panel" id="actionPanel">
+    <div class="land" id="landInfo">點「擲骰子」開始這局。</div>
+    <div class="btns" id="decisionBtns" style="display:none">
+      <button class="btn buy" id="buyBtn">💰 買下</button>
+      <button class="btn pass" id="passBtn">先不買</button>
+    </div>
+    <button class="roll" id="rollBtn" disabled>🎲 擲骰子</button>
   </div>
   <div class="panel">
-    <div class="land"><img data-e="🌉"><div class="t">你來到 <b>觀景橋道</b>（橘組 · 無主）<br><span style="color:#9aa89e;font-size:11px">地價 $2,000 · 租金 $160 · 🔥商圈+30%</span></div></div>
-    <div class="btns"><button class="btn buy">💰 買下 $2,000</button><button class="btn pass">先不買</button></div>
-    <button class="roll">🎲 擲骰子（已擲出 5＋3）</button>
+    <div id="bubbles"></div>
+    <div id="log"></div>
   </div>
   <div class="panel">
-    <div class="bub coach"><img data-e="🧠"><div class="txt"><b>財商教練</b>：這是橘組最後一塊！湊滿成套租金翻倍——而且橘組緊鄰百貨商圈、是全盤被踩率最高的地段。</div></div>
-    <div class="bub"><img data-e="🦊"><div class="txt">你不買的話……嘿嘿，下一圈它就是我的了。</div></div>
-    <div class="log">🐶 旺財 付給 你 租金 $160（大橋北路）<br>🦊 阿狐 踩到「週年慶」→ 被送進百貨公司<br>🐻 大熊 經過便利店，擲骰 6——進去花了 $50</div>
+    <div class="ctrlRow">
+      <label><input type="checkbox" id="fastMode"> 加速 AI 回合</label>
+      <button id="restartBtn">🔄 重新開始</button>
+    </div>
   </div>
-  <div class="note">靜態畫面模擬 v2（數位場景式）· OpenMoji（CC BY-SA 4.0）</div>
 </div>
+
+<div id="endOverlay">
+  <div id="endCard">
+    <h2 id="endTitle">遊戲結束</h2>
+    <div class="sub" id="endSub"></div>
+    <table class="rank">
+      <thead><tr><th>名次</th><th>玩家</th><th>淨資產</th><th>現金</th><th>地產</th><th>拿鐵因子</th></tr></thead>
+      <tbody id="rankBody"></tbody>
+    </table>
+    <button id="playAgainBtn">再玩一局</button>
+  </div>
+</div>
+
 <script>
 const CODE = e => [...e].map(c=>c.codePointAt(0).toString(16).toUpperCase()).filter(h=>h!=="FE0F").join("-");
 const URLB = "https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji@15.1.0/color/svg/";
 const IMG = e => URLB+CODE(e)+".svg";
 const G = {棕:"#a57939",藍:"#61b2e4",粉:"#ffa7c0",橘:"#f4aa41",紅:"#ea5a47",黃:"#fcea2b",綠:"#5c9e31",紫:"#b399c8"};
-// 40 格資料：[emoji(地段風味), 名, 價, 色組] 特殊格 type 標記
-const T = [
- {t:"go",  e:"🏁", nm:"起點 GO"},
- {e:"🗻",nm:"玉山道",pr:"$600",g:"棕"},{t:"fate",e:"🎁",nm:"命運"},{e:"🗻",nm:"合歡山路",pr:"$600",g:"棕"},{t:"tax",e:"💰",nm:"所得稅"},
- {t:"shop",e:"🏪",nm:"便利店·北門",pr:"$2000"},
- {e:"🏖️",nm:"白沙灣大街",pr:"$1000",g:"藍"},{t:"chance",e:"❓",nm:"機會"},{e:"🏖️",nm:"墾丁大街",pr:"$1000",g:"藍"},{e:"🏖️",nm:"福隆海岸",pr:"$1200",g:"藍"},
- {t:"mall",e:"🏬",nm:"百貨公司"},
- {e:"🎡",nm:"樂園一街",pr:"$1400",g:"粉"},{t:"util",e:"💡",nm:"電力公司",pr:"$1500"},{e:"🎡",nm:"樂園二街",pr:"$1400",g:"粉"},{e:"🎡",nm:"摩天輪大道",pr:"$1600",g:"粉"},
- {t:"shop",e:"🏪",nm:"便利店·東門",pr:"$2000"},
- {e:"🌉",nm:"大橋北路",pr:"$1800",g:"橘"},{t:"fate",e:"🎁",nm:"命運"},{e:"🌉",nm:"大橋南路",pr:"$1800",g:"橘"},{e:"🌉",nm:"觀景橋道",pr:"$2000",g:"橘"},
- {t:"park",e:"🅿️",nm:"免費停車"},
- {e:"🗼",nm:"燈塔紅街",pr:"$2200",g:"紅"},{t:"chance",e:"❓",nm:"機會"},{e:"🗼",nm:"塔前路",pr:"$2200",g:"紅"},{e:"🗼",nm:"觀星大道",pr:"$2400",g:"紅"},
- {t:"shop",e:"🏪",nm:"便利店·南門",pr:"$2000"},
- {e:"⛲",nm:"噴泉一路",pr:"$2600",g:"黃"},{e:"⛲",nm:"噴泉二路",pr:"$2600",g:"黃"},{t:"util",e:"🚰",nm:"自來水廠",pr:"$1500"},{e:"⛲",nm:"廣場大道",pr:"$2800",g:"黃"},
- {t:"sale",e:"🛍️",nm:"週年慶"},
- {e:"🌳",nm:"公園東路",pr:"$3000",g:"綠"},{e:"🌳",nm:"公園西路",pr:"$3000",g:"綠"},{t:"fate",e:"🎁",nm:"命運"},{e:"🌳",nm:"林蔭大道",pr:"$3200",g:"綠"},
- {t:"shop",e:"🏪",nm:"便利店·西門",pr:"$2000"},
- {t:"chance",e:"❓",nm:"機會"},{e:"🏯",nm:"古城巷",pr:"$3500",g:"紫"},{t:"tax",e:"💰",nm:"奢侈稅"},{e:"🏯",nm:"王城大道",pr:"$4000",g:"紫"},
-];
-// 盤面故事：擁有者(邊框色)、建築等級(1🏠 2🏡 3🏘️ 4🏨)、棋子、商圈加成
-const OWN   = {6:"#e0842a",8:"#e0842a",9:"#e0842a",11:"#e0842a", 16:"#4a7ad6",18:"#4a7ad6", 21:"#5c9e31",23:"#5c9e31",24:"#5c9e31"};
-const LEVEL = {6:1, 8:1, 9:2, 16:2, 18:1, 21:1, 23:1, 24:3};
 const LVL_E = {1:"🏠",2:"🏡",3:"🏘️",4:"🏨"};
-const TOKEN = {19:["🧑"], 10:["🦊"], 24:["🐶"], 2:["🐻"]};
+
+const BOARD = [
+ {t:"go",  e:"🏁", nm:"起點 GO"},
+ {e:"🗻",nm:"玉山道",pr:600,g:"棕"},{t:"fate",e:"🎁",nm:"命運"},{e:"🗻",nm:"合歡山路",pr:600,g:"棕"},{t:"tax",e:"💰",nm:"所得稅",amt:500},
+ {t:"shop",e:"🏪",nm:"便利店·北門"},
+ {e:"🏖️",nm:"白沙灣大街",pr:1000,g:"藍"},{t:"chance",e:"❓",nm:"機會"},{e:"🏖️",nm:"墾丁大街",pr:1000,g:"藍"},{e:"🏖️",nm:"福隆海岸",pr:1200,g:"藍"},
+ {t:"mall",e:"🏬",nm:"百貨公司"},
+ {e:"🎡",nm:"樂園一街",pr:1400,g:"粉"},{t:"util",e:"💡",nm:"電力公司",pr:1500},{e:"🎡",nm:"樂園二街",pr:1400,g:"粉"},{e:"🎡",nm:"摩天輪大道",pr:1600,g:"粉"},
+ {t:"shop",e:"🏪",nm:"便利店·東門"},
+ {e:"🌉",nm:"大橋北路",pr:1800,g:"橘"},{t:"fate",e:"🎁",nm:"命運"},{e:"🌉",nm:"大橋南路",pr:1800,g:"橘"},{e:"🌉",nm:"觀景橋道",pr:2000,g:"橘"},
+ {t:"park",e:"🅿️",nm:"免費停車"},
+ {e:"🗼",nm:"燈塔紅街",pr:2200,g:"紅"},{t:"chance",e:"❓",nm:"機會"},{e:"🗼",nm:"塔前路",pr:2200,g:"紅"},{e:"🗼",nm:"觀星大道",pr:2400,g:"紅"},
+ {t:"shop",e:"🏪",nm:"便利店·南門"},
+ {e:"⛲",nm:"噴泉一路",pr:2600,g:"黃"},{e:"⛲",nm:"噴泉二路",pr:2600,g:"黃"},{t:"util",e:"🚰",nm:"自來水廠",pr:1500},{e:"⛲",nm:"廣場大道",pr:2800,g:"黃"},
+ {t:"sale",e:"🛍️",nm:"週年慶"},
+ {e:"🌳",nm:"公園東路",pr:3000,g:"綠"},{e:"🌳",nm:"公園西路",pr:3000,g:"綠"},{t:"fate",e:"🎁",nm:"命運"},{e:"🌳",nm:"林蔭大道",pr:3200,g:"綠"},
+ {t:"shop",e:"🏪",nm:"便利店·西門"},
+ {t:"chance",e:"❓",nm:"機會"},{e:"🏯",nm:"古城巷",pr:3500,g:"紫"},{t:"tax",e:"💰",nm:"奢侈稅",amt:750},{e:"🏯",nm:"王城大道",pr:4000,g:"紫"},
+];
+const GROUPS = {棕:[1,3],藍:[6,8,9],粉:[11,13,14],橘:[16,18,19],紅:[21,23,24],黃:[26,27,29],綠:[31,32,34],紫:[37,39]};
 const BOOST = new Set([9,11,16,18,19]);
-// 道路環在 rows/cols 2..12；GO 右下(12,12)、逆時針
+const UTILS = [12,28];
+const PASSGO = 2000, START_CASH = 15000, SPARE = 3000, MAX_TURNS = 160;
+
+const CHANCE = [
+ {text:"路口發傳單優惠，收到 $200", effect:p=>{p.cash+=200;}},
+ {text:"捷運卡加值，付 $100", effect:p=>{p.cash-=100;}},
+ {text:"路過老家，房東調漲租金，付 $300", effect:p=>{p.cash-=300;}},
+ {text:"銀行存款利息入帳，收到 $250", effect:p=>{p.cash+=250;}},
+ {text:"免費停車券，直接前進到「免費停車」", effect:p=>{p.position=20;}},
+ {text:"巷口拉麵店試吃，付 $80", effect:p=>{p.cash-=80;}},
+];
+const FATE = [
+ {text:"被票選最佳鄰居，每人送你 $100", effect:p=>{state.players.forEach(o=>{ if(o!==p&&!o.bankrupt){ o.cash-=100; p.cash+=100; } });}},
+ {text:"路邊違停，被開罰單 $150", effect:p=>{p.cash-=150;}},
+ {text:"生日禮金，收到 $500", effect:p=>{p.cash+=500;}},
+ {text:"捐款做公益，付 $200", effect:p=>{p.cash-=200;}},
+ {text:"撿到 VIP 快速通道卡，下次逛百貨可直接離開", effect:p=>{p.mallPass=true;}},
+ {text:"投資小賺一筆，收到 $350", effect:p=>{p.cash+=350;}},
+];
+const DIALOG = {
+ bear:{buy:["這塊還算穩，買了。","嗯……勉強負擔得起，買。"],pass:["太貴了，我不冒險。","現金為王，先不買。"],collectRent:["謝謝惠顧，我先收著。"]},
+ fox:{buy:["買了！下一步就是蓋旅館。","梭哈，這塊我要定了。"],pass:["這輪先跳過，下一塊更香。"],collectRent:["哈，租金到手，繼續衝！"]},
+ dog:{buy:["湊套組的關鍵一塊，買。","穩紮穩打，這塊值得投資。"],pass:["不成套，先觀望。"],collectRent:["穩穩收租，這才是正道。"]},
+};
+
+let state = mkState();
+function mkState(){
+  return {
+    players:[
+      {id:0,type:"human",name:"你",emoji:"🧑",color:"#4a7ad6",pers:null,cash:START_CASH,position:0,shopping:false,stuckTurns:0,mallPass:false,bankrupt:false,latte:0},
+      {id:1,type:"ai",name:"阿狐",emoji:"🦊",color:"#e0842a",pers:"fox",cash:START_CASH,position:0,shopping:false,stuckTurns:0,mallPass:false,bankrupt:false,latte:0},
+      {id:2,type:"ai",name:"旺財",emoji:"🐶",color:"#5c9e31",pers:"dog",cash:START_CASH,position:0,shopping:false,stuckTurns:0,mallPass:false,bankrupt:false,latte:0},
+      {id:3,type:"ai",name:"大熊",emoji:"🐻",color:"#8a6a4a",pers:"bear",cash:START_CASH,position:0,shopping:false,stuckTurns:0,mallPass:false,bankrupt:false,latte:0},
+    ],
+    owners:{}, mortgaged:{}, levels:{}, turnIdx:0, turnCount:0, ended:false, lattePointed:false,
+  };
+}
+
+const bd = document.getElementById("board");
+const els = {
+  turnLabel: document.getElementById("turnLabel"),
+  players: document.getElementById("players"),
+  landInfo: document.getElementById("landInfo"),
+  decisionBtns: document.getElementById("decisionBtns"),
+  buyBtn: document.getElementById("buyBtn"),
+  passBtn: document.getElementById("passBtn"),
+  rollBtn: document.getElementById("rollBtn"),
+  bubbles: document.getElementById("bubbles"),
+  log: document.getElementById("log"),
+  fastMode: document.getElementById("fastMode"),
+  restartBtn: document.getElementById("restartBtn"),
+  endOverlay: document.getElementById("endOverlay"),
+  endTitle: document.getElementById("endTitle"),
+  endSub: document.getElementById("endSub"),
+  rankBody: document.getElementById("rankBody"),
+  playAgainBtn: document.getElementById("playAgainBtn"),
+};
+
 function roadPos(i){
   if(i<=10)  return [12, 12-i];
   if(i<=20)  return [12-(i-10), 2];
   if(i<=30)  return [2, 2+(i-20)];
   return [2+(i-30), 12];
 }
-// 地皮貼在道路外側
 function lotPos(i){
   const [r,c]=roadPos(i);
   if(i===0)  return [13,13]; if(i===10) return [13,1];
@@ -145,51 +224,338 @@ function lotPos(i){
   if(i<30)   return [1,c];
   return [r,13];
 }
-const bd=document.getElementById("board");
-T.forEach((t,i)=>{
-  const [rr,rc]=roadPos(i), corner=(i%10===0);
-  // —— 道路格：棋子走的地方；特殊格＝路面標記 ——
-  const rd=document.createElement("div");
-  rd.className="road"+(corner?" plaza":"");
-  rd.style.gridRow=rr; rd.style.gridColumn=rc;
-  let rh="";
-  if(t.t){ // 特殊格畫在路面上
-    const label={go:"GO",mall:"百貨入口",park:"P 停車",sale:"週年慶",chance:"機會",fate:"命運",tax:"繳稅",shop:"便利店",util:""}[t.t]??"";
-    rh+=`<div class="mark"><img src="${IMG(t.e)}">${label?`<div class="t">${label}</div>`:""}</div>`;
+
+function ownedIdx(pid){ return Object.keys(state.owners).filter(k=>state.owners[k]===pid).map(Number); }
+function ownsFullGroup(pid, idx){ const g=BOARD[idx].g; if(!g) return false; return GROUPS[g].every(i=>state.owners[i]===pid); }
+function mortgageValue(idx){ return Math.round(BOARD[idx].pr*0.5); }
+function redeemCost(idx){ return Math.round(BOARD[idx].pr*0.55); }
+function buildCost(idx){ return Math.round(BOARD[idx].pr*0.5); }
+function rentOf(idx, diceSum){
+  const b=BOARD[idx];
+  if(b.t==="util"){ const ownedBoth = UTILS.every(i=>state.owners[i]===state.owners[idx]); return diceSum*(ownedBoth?10:4); }
+  const base = Math.round(b.pr*0.08);
+  const lvl = state.levels[idx]||0;
+  let rent;
+  if(lvl>0){ const mult=[1,4,7,10,14][lvl]; rent = base*mult; }
+  else { rent = ownsFullGroup(state.owners[idx], idx) ? base*2 : base; }
+  if(BOOST.has(idx)) rent = Math.round(rent*1.3);
+  return rent;
+}
+function netWorth(p){
+  return p.cash + ownedIdx(p.id).reduce((s,i)=> s + (state.mortgaged[i]?mortgageValue(i):BOARD[i].pr) + (state.levels[i]||0)*buildCost(i), 0);
+}
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function fast(){ return els.fastMode.checked; }
+function rollDice(){ return [1+Math.floor(Math.random()*6), 1+Math.floor(Math.random()*6)]; }
+
+function log(msg){
+  const div=document.createElement("div"); div.textContent=msg;
+  els.log.prepend(div);
+  while(els.log.children.length>40) els.log.removeChild(els.log.lastChild);
+}
+function bubble(emoji, text, coach){
+  els.bubbles.innerHTML = `<div class="bub${coach?" coach":""}"><img src="${IMG(emoji)}"><div class="txt">${coach?"<b>財商教練</b>：":""}${text}</div></div>`;
+}
+function coach(msg){ bubble("🧠", msg, true); log("🧠 教練："+msg); }
+function aiSay(p, event){
+  const lines = DIALOG[p.pers]?.[event]; if(!lines) return;
+  bubble(p.emoji, lines[Math.floor(Math.random()*lines.length)], false);
+}
+
+function render(){
+  renderBoard();
+  renderPlayers();
+}
+function renderBoard(){
+  bd.innerHTML="";
+  const OWN={}, LEVEL={}, TOKEN={};
+  Object.keys(state.owners).forEach(k=>{ OWN[k]=state.players[state.owners[k]].color; });
+  Object.keys(state.levels).forEach(k=>{ LEVEL[k]=state.levels[k]; });
+  state.players.forEach(p=>{ if(p.bankrupt) return; (TOKEN[p.position] ??= []).push(p.emoji); });
+
+  BOARD.forEach((t,i)=>{
+    const [rr,rc]=roadPos(i), corner=(i%10===0);
+    const rd=document.createElement("div");
+    rd.className="road"+(corner?" plaza":"");
+    rd.style.gridRow=rr; rd.style.gridColumn=rc;
+    let rh="";
+    if(t.t){
+      const label={go:"GO",mall:"百貨入口",park:"P 停車",sale:"週年慶",chance:"機會",fate:"命運",tax:"繳稅",shop:"便利店",util:""}[t.t]??"";
+      rh+=`<div class="mark"><img src="${IMG(t.e)}">${label?`<div class="t">${label}</div>`:""}</div>`;
+    }
+    if(TOKEN[i]) rh+=`<div class="tokens">${TOKEN[i].map(x=>'<img src="'+IMG(x)+'">').join("")}</div>`;
+    rd.innerHTML=rh; bd.appendChild(rd);
+
+    const isLot = t.g || ["shop","util","mall"].includes(t.t);
+    if(!isLot) return;
+    const [lr,lc]=lotPos(i);
+    const lot=document.createElement("div");
+    let stripSide="h";
+    if(lr===1) stripSide="hb"; else if(lc===1) stripSide="vl"; else if(lc===13) stripSide="vr";
+    lot.className="lot "+stripSide+(t.t==="mall"?" big":"")+(state.mortgaged[i]?" mortgaged":"");
+    lot.style.gridRow=lr; lot.style.gridColumn=lc;
+    if(OWN[i]) lot.style.borderColor=OWN[i];
+    const lvl=LEVEL[i];
+    const bimg = t.g ? (lvl?LVL_E[lvl]:t.e) : t.e;
+    let lh="";
+    if(t.g) lh+=`<div class="strip" style="background:${G[t.g]}"></div>`;
+    lh+=`<img class="b" src="${IMG(bimg)}"><div class="nm">${t.nm}</div>${t.pr?`<div class="pr">$${t.pr}</div>`:""}`;
+    if(t.g&&lvl) lh+=`<div class="lvl"><img src="${IMG(t.e)}"></div>`;
+    if(BOOST.has(i)) lh+=`<div class="boost">🔥+30%</div>`;
+    if(!lvl&&t.g) lot.classList.add("empty");
+    lot.innerHTML=lh; bd.appendChild(lot);
+  });
+
+  const ct=document.createElement("div"); ct.id="center";
+  ct.innerHTML=`<h1>Finance Fantasy</h1><div class="sub">財 商 教 育 版 · 名 稱 未 定</div>
+    <div id="dice">${state.lastDice? state.lastDice.map(d=>`<div class="die">${d}</div>`).join("") : `<div class="die">–</div><div class="die">–</div>`}</div>
+    <div id="card">${state.lastCard?`<img src="${IMG(state.lastCardType==="chance"?"❓":"🎁")}"><div><b>${state.lastCardType==="chance"?"機會":"命運"}</b>：${state.lastCard}</div>`:""}</div>
+    <div class="deco" style="top:8%;left:7%"><img src="${IMG("🌳")}"></div>
+    <div class="deco" style="top:10%;right:8%"><img src="${IMG("🗻")}"></div>
+    <div class="deco" style="bottom:9%;left:10%"><img src="${IMG("⛲")}"></div>
+    <div class="deco" style="bottom:8%;right:7%"><img src="${IMG("🎡")}"></div>`;
+  bd.appendChild(ct);
+}
+function statusText(p){
+  if(p.bankrupt) return "已破產出局";
+  const owned=ownedIdx(p.id);
+  let s = `地產 ${owned.length}`;
+  const mortCount = owned.filter(i=>state.mortgaged[i]).length;
+  if(mortCount) s+= ` · 抵押 ${mortCount}`;
+  if(p.shopping) s+= ` · 🏬逛百貨中(${p.stuckTurns}/3)`;
+  return s;
+}
+function renderPlayers(){
+  els.players.innerHTML = state.players.map((p,i)=>`
+    <div class="pl${i===state.turnIdx&&!state.ended?" active":""}${p.bankrupt?" bankrupt":""}">
+      <span class="dot" style="background:${p.color}"></span>
+      <img src="${IMG(p.emoji)}">
+      <div class="info">
+        <div class="nm">${p.name}${p.type==="ai"?`<span class="tag">AI・${ {bear:"囤錢型",fox:"槓桿型",dog:"穩健型"}[p.pers] }</span>`:""}</div>
+        <div class="sts">${statusText(p)}</div>
+      </div>
+      <div class="cash">$${p.cash.toLocaleString()}</div>
+    </div>`).join("");
+  const rd = Math.floor(state.turnCount/4)+1;
+  els.turnLabel.textContent = state.ended ? "🏁 遊戲結束" : `🎲 第 ${rd} 回合 · 輪到 ${state.players[state.turnIdx].name}`;
+}
+
+function waitHumanRoll(){
+  return new Promise(resolve=>{
+    els.rollBtn.disabled=false;
+    els.landInfo.textContent="輪到你了，擲骰子吧。";
+    els.rollBtn.onclick=()=>{ els.rollBtn.disabled=true; els.rollBtn.onclick=null; resolve(); };
+  });
+}
+function askHumanBuy(idx, price){
+  return new Promise(resolve=>{
+    const b=BOARD[idx];
+    const rentNow = b.g||b.t==="util" ? rentOf(idx, 7) : 0;
+    els.landInfo.innerHTML = `你來到 <b>${b.nm}</b>${b.g?`（${b.g}組 · 無主）`:b.t==="util"?"（公用事業 · 無主）":""}<br><span class="sub">地價 $${price} · 參考租金 約$${rentNow}${BOOST.has(idx)?" · 🔥商圈+30%":""}</span>`;
+    els.decisionBtns.style.display="flex";
+    els.buyBtn.textContent=`💰 買下 $${price}`;
+    els.buyBtn.disabled=false; els.passBtn.disabled=false;
+    els.buyBtn.onclick=()=>{ cleanup(); resolve(true); };
+    els.passBtn.onclick=()=>{ cleanup(); resolve(false); };
+    function cleanup(){ els.decisionBtns.style.display="none"; els.buyBtn.onclick=null; els.passBtn.onclick=null; }
+  });
+}
+
+function decideBuy(p, idx){
+  const b=BOARD[idx]; const price=b.pr;
+  if(price>p.cash) return false;
+  if(p.pers==="bear") return price<=p.cash*0.25;
+  if(p.pers==="fox") return price<=p.cash*0.9;
+  if(p.pers==="dog"){
+    if(b.g && GROUPS[b.g].some(i=>state.owners[i]===p.id)) return price<=p.cash*0.7;
+    return price<=p.cash*0.4;
   }
-  if(TOKEN[i]) rh+=`<div class="tokens">${TOKEN[i].map(x=>'<img src="'+IMG(x)+'">').join("")}</div>`;
-  rd.innerHTML=rh; bd.appendChild(rd);
-  // —— 地皮格：建築蓋在路旁（地產/便利店/公用/百貨才有） ——
-  const isLot = t.g || ["shop","util","mall"].includes(t.t);
-  if(!isLot) return;
-  const [lr,lc]=lotPos(i);
-  const lot=document.createElement("div");
-  let stripSide="h";                       // 色帶一律貼「靠路那一側」
-  if(lr===1) stripSide="hb"; else if(lc===1) stripSide="vl"; else if(lc===13) stripSide="vr";
-  lot.className="lot "+stripSide+(t.t==="mall"?" big":"");
-  lot.style.gridRow=lr; lot.style.gridColumn=lc;
-  if(OWN[i]) lot.style.borderColor=OWN[i];
-  const lvl=LEVEL[i];
-  const bimg = t.g ? (lvl?LVL_E[lvl]:t.e) : t.e;   // 有主→顯示建築等級；無主→地段風味
-  let lh="";
-  if(t.g) lh+=`<div class="strip" style="background:${G[t.g]}"></div>`;
-  lh+=`<img class="b" src="${IMG(bimg)}"><div class="nm">${t.nm}</div>${t.pr?`<div class="pr">${t.pr}</div>`:""}`;
-  if(t.g&&lvl) lh+=`<div class="lvl"><img src="${IMG(t.e)}"></div>`;   // 角落小圖=地段風味
-  if(BOOST.has(i)) lh+=`<div class="boost">🔥+30%</div>`;
-  if(!lvl&&t.g) lot.classList.add("empty");
-  lot.innerHTML=lh; bd.appendChild(lot);
-});
-// 中央園區
-const ct=document.createElement("div"); ct.id="center";
-ct.innerHTML=`<h1>大富翁</h1><div class="sub">財 商 教 育 版 · 名 稱 未 定</div>
-  <div id="dice"><div class="die">5</div><div class="die">3</div></div>
-  <div id="card"><img src="${IMG("🎁")}"><div><b>命運</b>：便利店集點活動——本圈經過便利店消費半價！</div></div>
-  <div class="deco" style="top:8%;left:7%"><img src="${IMG("🌳")}"></div>
-  <div class="deco" style="top:10%;right:8%"><img src="${IMG("🗻")}"></div>
-  <div class="deco" style="bottom:9%;left:10%"><img src="${IMG("⛲")}"></div>
-  <div class="deco" style="bottom:8%;right:7%"><img src="${IMG("🎡")}"></div>`;
-bd.appendChild(ct);
-document.querySelectorAll("img[data-e]").forEach(im=>im.src=IMG(im.dataset.e));
+  return false;
+}
+
+function maybeShopSpend(p, idx){
+  const roll = 1+Math.floor(Math.random()*6);
+  if(roll<=2){
+    const amt = 50+Math.floor(Math.random()*101);
+    p.cash-=amt; p.latte=(p.latte||0)+amt;
+    log(`${p.name} 經過${BOARD[idx].nm}，花了 $${amt}`);
+    if(!state.lattePointed && p.type==="human"){
+      state.lattePointed=true;
+      coach("小額消費累積起來很可觀——這就是「拿鐵因子」，局後會幫你算總花費。");
+    }
+  }
+}
+function triggerShopping(p){
+  if(p.mallPass){ p.mallPass=false; log(`${p.name} 踩到「週年慶」，用 VIP 快速通道卡直接放行`); return; }
+  p.position=10; p.shopping=true; p.stuckTurns=0;
+  log(`${p.name} 踩到「週年慶」→ 被送進百貨公司強制消費`);
+}
+function applyCard(p, type){
+  const list = type==="chance"?CHANCE:FATE;
+  const card = list[Math.floor(Math.random()*list.length)];
+  state.lastCard=card.text; state.lastCardType=type;
+  log(`${p.name} 抽到${type==="chance"?"機會":"命運"}：${card.text}`);
+  card.effect(p);
+}
+
+async function resolveProperty(p, idx, diceSum){
+  const owner = state.owners[idx];
+  const price = BOARD[idx].pr;
+  if(owner===undefined){
+    let buy;
+    if(p.type==="human"){ buy = await askHumanBuy(idx, price); }
+    else { await sleep(fast()?120:500); buy = decideBuy(p, idx); aiSay(p, buy?"buy":"pass"); }
+    if(buy){
+      p.cash-=price; state.owners[idx]=p.id;
+      log(`${p.name} 買下 ${BOARD[idx].nm} $${price}`);
+      if(p.type==="human"){
+        if(BOARD[idx].g && ownsFullGroup(p.id, idx)) coach(`恭喜湊滿${BOARD[idx].g}組！沒蓋房前租金已經 x2，之後閒錢會自動幫你加蓋。`);
+        else if(p.cash<1500) coach(`買完手上只剩 $${p.cash.toLocaleString()}，小心流動性風險——萬一踩到別人的地，可能得抵押求生。`);
+      }
+    } else {
+      log(`${p.name} 沒有買 ${BOARD[idx].nm}`);
+    }
+  } else if(owner!==p.id && !state.mortgaged[idx]){
+    const rent = rentOf(idx, diceSum);
+    const op = state.players[owner];
+    p.cash-=rent; op.cash+=rent;
+    log(`${p.name} 付給 ${op.name} 租金 $${rent}（${BOARD[idx].nm}）`);
+    if(p.type==="human" && rent>=500) coach(`這筆租金 $${rent} 不小，對手可能快湊成套了，之後小心別踩雷。`);
+    aiSay(op, "collectRent");
+  }
+}
+
+async function resolveTile(p, idx, diceSum){
+  const b=BOARD[idx];
+  if(b.g || b.t==="util"){ await resolveProperty(p, idx, diceSum); return; }
+  if(b.t==="tax"){ p.cash-=b.amt; log(`${p.name} 繳${b.nm} $${b.amt}`); return; }
+  if(b.t==="chance"){ applyCard(p,"chance"); return; }
+  if(b.t==="fate"){ applyCard(p,"fate"); return; }
+  if(b.t==="sale"){ triggerShopping(p); return; }
+  if(b.t==="shop"){ maybeShopSpend(p, idx); return; }
+}
+async function movePlayer(p, steps){
+  const old=p.position; let raw=old+steps; let passed=false;
+  for(let s=1;s<=steps;s++){ const idx=(old+s)%40; if(BOARD[idx].t==="shop") maybeShopSpend(p, idx); }
+  if(raw>=40){ passed=true; raw-=40; }
+  p.position=raw;
+  if(passed){ p.cash+=PASSGO; log(`${p.name} 經過 GO，收到 $${PASSGO}`); }
+  await resolveTile(p, raw, steps);
+}
+
+function autoManageAssets(p){
+  if(p.bankrupt) return;
+  while(p.cash<0){
+    const owned = ownedIdx(p.id).filter(i=>!state.mortgaged[i]);
+    if(!owned.length) break;
+    owned.sort((a,b)=>BOARD[a].pr-BOARD[b].pr);
+    const idx=owned[0];
+    state.mortgaged[idx]=true; p.cash+=mortgageValue(idx);
+    log(`${p.name} 資金不足，自動抵押 ${BOARD[idx].nm}（+$${mortgageValue(idx)}）`);
+  }
+  if(p.cash<0) return;
+  while(p.cash>SPARE){
+    const mort = ownedIdx(p.id).filter(i=>state.mortgaged[i]);
+    if(!mort.length) break;
+    mort.sort((a,b)=>redeemCost(a)-redeemCost(b));
+    const idx=mort[0]; const cost=redeemCost(idx);
+    if(p.cash-cost<SPARE) break;
+    state.mortgaged[idx]=false; p.cash-=cost;
+    log(`${p.name} 資金充裕，贖回 ${BOARD[idx].nm}（-$${cost}）`);
+  }
+  while(p.cash>SPARE){
+    const buildable = ownedIdx(p.id).filter(i=>BOARD[i].g && !state.mortgaged[i] && ownsFullGroup(p.id,i) && (state.levels[i]||0)<4);
+    if(!buildable.length) break;
+    buildable.sort((a,b)=>BOARD[b].pr-BOARD[a].pr);
+    const idx=buildable[0]; const cost=buildCost(idx);
+    if(p.cash-cost<SPARE) break;
+    state.levels[idx]=(state.levels[idx]||0)+1; p.cash-=cost;
+    log(`${p.name} 資金充裕，自動加蓋 ${BOARD[idx].nm} → Lv${state.levels[idx]}`);
+  }
+}
+function checkBankrupt(p){
+  if(p.cash<0 && !p.bankrupt){
+    p.bankrupt=true;
+    ownedIdx(p.id).forEach(i=>{ delete state.owners[i]; delete state.levels[i]; delete state.mortgaged[i]; });
+    log(`💥 ${p.name} 資金無法回正，宣告破產出局`);
+  }
+}
+function countActive(){ return state.players.filter(p=>!p.bankrupt).length; }
+function advanceTurn(){
+  do{ state.turnIdx=(state.turnIdx+1)%4; } while(state.players[state.turnIdx].bankrupt && countActive()>0);
+}
+
+async function handleNormalTurn(p){
+  if(p.type==="human") await waitHumanRoll(); else await sleep(fast()?120:600);
+  const [d1,d2]=rollDice(); const diceSum=d1+d2;
+  state.lastDice=[d1,d2]; state.lastCard=null;
+  log(`${p.name} 擲出 ${d1}+${d2} = ${diceSum}`);
+  renderBoard();
+  await movePlayer(p, diceSum);
+}
+async function handleShoppingTurn(p){
+  if(p.type==="human") await waitHumanRoll(); else await sleep(fast()?120:600);
+  const [d1,d2]=rollDice(); state.lastDice=[d1,d2];
+  log(`${p.name}（逛百貨中）擲出 ${d1}+${d2}`);
+  renderBoard();
+  if(d1===d2){
+    p.shopping=false; p.stuckTurns=0;
+    log(`${p.name} 擲出雙數，結帳離開！`);
+    await movePlayer(p, d1+d2);
+  } else {
+    p.stuckTurns++;
+    if(p.stuckTurns>=3){
+      p.cash-=50; p.shopping=false; p.stuckTurns=0;
+      log(`${p.name} 排隊 3 輪，直接結帳付 $50 離開`);
+      await movePlayer(p, d1+d2);
+    } else {
+      log(`${p.name} 還在百貨公司排隊結帳（第 ${p.stuckTurns}/3 輪）`);
+    }
+  }
+}
+
+async function playTurn(){
+  if(state.ended) return;
+  const p = state.players[state.turnIdx];
+  if(p.bankrupt){ advanceTurn(); scheduleNext(); return; }
+  render();
+  els.landInfo.textContent = `${p.name} 的回合……`;
+  if(p.shopping) await handleShoppingTurn(p); else await handleNormalTurn(p);
+  autoManageAssets(p);
+  checkBankrupt(p);
+  render();
+  els.landInfo.textContent = "等待下一回合……";
+  state.turnCount++;
+  if(countActive()<=1){ endGame("bankrupt"); return; }
+  if(state.turnCount>=MAX_TURNS){ endGame("turnlimit"); return; }
+  advanceTurn();
+  scheduleNext();
+}
+function scheduleNext(){ setTimeout(playTurn, state.players[state.turnIdx].type==="human"?0:(fast()?100:500)); }
+
+function endGame(reason){
+  state.ended=true;
+  const ranked = [...state.players].sort((a,b)=>netWorth(b)-netWorth(a));
+  els.endTitle.textContent = reason==="bankrupt" ? "🏆 遊戲結束——只剩一位玩家還在場上！" : "🏁 遊戲結束——回合數已到，依淨資產排名！";
+  els.endSub.textContent = "淨資產 = 現金 + 地產市值（含建築）− 抵押折損";
+  els.rankBody.innerHTML = ranked.map((p,i)=>`
+    <tr class="${i===0?"win":""}">
+      <td>${i===0?"👑":i+1}</td>
+      <td>${p.name}</td>
+      <td>$${netWorth(p).toLocaleString()}</td>
+      <td>$${p.cash.toLocaleString()}</td>
+      <td>${ownedIdx(p.id).length}</td>
+      <td>$${(p.latte||0).toLocaleString()}</td>
+    </tr>`).join("");
+  els.endOverlay.style.display="flex";
+}
+
+els.restartBtn.onclick = ()=> location.reload();
+els.playAgainBtn.onclick = ()=> location.reload();
+
+state = mkState();
+render();
+scheduleNext();
 </script>
 </body>
 </html>
