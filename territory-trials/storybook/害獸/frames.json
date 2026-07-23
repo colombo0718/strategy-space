@@ -1,0 +1,105 @@
+{
+  "title": "害獸 Vermin",
+  "style_prefix": "epic fantasy oil painting in the style of classic 1980s fantasy game box art, thick visible brushstrokes, dramatic rim lighting, muted earthy palette, cinematic composition",
+  "negative": "text, letters, words, watermark, signature, caption, cartoon, emoji, flat vector art, chibi, cute, gore, blood, deformed, extra limbs, photo, photorealistic",
+  "width": 1344,
+  "height": 768,
+  "speed_factor": 1.1,
+  "lang": "zh",
+  "characters": {
+    "red_fox": "a lean red fox mother with thick winter fur, a torn right ear and quick amber eyes",
+    "hunter": "a grizzled middle-aged trapper with a short iron-grey beard, weathered calm face, fur-lined hood down, a longbow on his back"
+  },
+  "frames": [
+    {
+      "id": 1,
+      "seed": 401,
+      "prompt": "{red_fox} standing thin and alert in a bare late-autumn forest, fallen leaves dusted with the first snow, empty and cold, hungry posture",
+      "narration": "溪谷的秋天結束得很快。田鼠入了洞，漿果落了雪——對一隻紅狐來說，冬天不是季節，是一道算術題。"
+    },
+    {
+      "id": 2,
+      "seed": 402,
+      "prompt": "{red_fox} digging at a frozen field ridge at dusk, frost on her forepaws, breath visible, empty furrows stretching away, bleak fading light",
+      "narration": "紅尾在凍硬的田埂上，挖了一下午。什麼也沒有。牠舔了舔爪上的霜，聽見自己肚子的聲音。"
+    },
+    {
+      "id": 3,
+      "seed": 403,
+      "prompt": "{red_fox} slipping through the gap of an old wooden chicken coop door at night, warm light leaking through the slats onto the snow, a hen in her jaws, fresh paw prints trailing behind in the moonlit snow",
+      "narration": "那天夜裡，牠第一次翻進雞舍。木閂很舊，門縫裡透著暖。牠只叼走了一隻——然後，在雪地上，留下了一路腳印。"
+    },
+    {
+      "id": 4,
+      "seed": 404,
+      "prompt": "{hunter} sitting by a stone fireplace at night, a closed worn leather ledger and a few copper coins on the table beside him, rope snares, willow traps and a spare longbow hung neatly on the wall, only medieval hunting tools, calm professional stillness",
+      "narration": "村裡的獵戶翻開他的帳本。狼幾匹、鼬幾隻、賞錢幾文——他做事乾淨，從不多殺。人們說，他是溪谷最好的獵人。"
+    },
+    {
+      "id": 5,
+      "seed": 405,
+      "prompt": "{hunter} crouched beside fox paw prints in the snow in front of a chicken coop at cold morning light, studying them closely, villagers gathered behind him at a distance",
+      "narration": "隔天清晨，獵戶蹲在雞舍前，看了那行腳印很久。從那個早上起，紅尾有了新的名字——害獸。"
+    },
+    {
+      "id": 6,
+      "seed": 406,
+      "prompt": "a fox den beneath frozen tree roots, four small fox kits curled together inside, {red_fox} with a shortened tail returning through deep snow with a hen in her jaws, night, tired triumph",
+      "narration": "雪，越下越深。而窩裡，還有一窩小嘴等著。紅尾第二次進村——這一次，牠差點沒能回來。"
+    },
+    {
+      "id": 7,
+      "seed": 407,
+      "prompt": "{hunter} methodically setting a snare line in fresh snow at the field edge, a small scent bottle in his gloved hand, a live hen tethered at the center of the cleared ground, tools laid out in order, craftsmanlike focus, dusk",
+      "narration": "獵戶不生氣。他只是換了更細的鏈子、更軟的雪，還有一點八角的氣味——那是狐狸最難拒絕的東西。他把最後一隻母雞，拴在陷阱中央。"
+    },
+    {
+      "id": 8,
+      "seed": 408,
+      "prompt": "inside the warm dim fox den, four fox kits sleeping curled in a tight pile, soft breathing, snow falling silently outside the den mouth, peaceful",
+      "narration": "窩裡很暖。小狐們擠成一團，等著母親回來。這個冬天到目前為止，牠們還沒有餓過一夜。"
+    },
+    {
+      "id": 9,
+      "seed": 409,
+      "prompt": "{red_fox} with a shortened tail circling at a wary distance around a tethered hen in open snow at night, iron snare chain half-buried, falling snow thickening, taut suspense, her paw prints forming a wide circle",
+      "narration": "紅尾在陷阱外圍，繞了三圈。牠聞得出鐵的味道——牠學過。可是八角香的底下，是母雞的體溫。牠又繞了一圈。雪，開始下了。"
+    },
+    {
+      "id": 10,
+      "seed": 410,
+      "prompt": "a snapped snare in the snow at night, {red_fox} with a shortened tail caught by one hind leg, frozen mid-motion, the forest dark and utterly still around her, distant and restrained composition",
+      "narration": "彈簧響的時候，整座森林，都安靜了一瞬。"
+    },
+    {
+      "id": 11,
+      "seed": 411,
+      "prompt": "pale blue dawn light, a lean red fox mother with thick clean winter fur lying exhausted on the snow, one leg held by an iron snare chain staked low to the ground, unhurt, deep scratch marks in the snow around her, small fox kits pressed silently against her side, quiet and sorrowful",
+      "narration": "牠拖著鏈子，挖了一夜的雪。天亮之前，小狐們循著氣味找來了，圍在母親身邊——不出聲。"
+    },
+    {
+      "id": 12,
+      "seed": 412,
+      "prompt": "{hunter} standing motionless a few steps away in morning light, looking down at a snared short-tailed red fox with four kits pressed against her, his longbow slung across his back and unused, no weapon in his hands, only a worn leather ledger held loosely, long shadows on the snow, hushed stillness",
+      "narration": "獵戶踏著晨光來收陷阱。弓在背上，帳本在懷裡。他站住了。帳本上有狼、有鼬、有山豬——沒有一欄，寫著這個。"
+    },
+    {
+      "id": 13,
+      "seed": 413,
+      "prompt": "close shot of weathered hands opening an iron snare in the snow, {red_fox} limping away toward the treeline with her four kits, neither looking back, cold clean morning",
+      "narration": "他蹲下來，打開了鐵夾。沒有說話。紅尾，也沒有回頭。"
+    },
+    {
+      "id": 14,
+      "seed": 414,
+      "prompt": "{hunter} walking home alone across a wide snowy field with the ledger under his arm, small against the winter landscape, low pale sun, contemplative solitude",
+      "narration": "那天，他在帳本上記了天氣，跟一隻跑掉的母雞。少掉的那一筆賞錢，他沒有解釋。"
+    },
+    {
+      "id": 15,
+      "seed": 415,
+      "prompt": "early spring thaw in the valley, distant silhouettes of a short-tailed fox and four grown kits crossing a ridge line, {hunter} at his workbench in the foreground sharpening an arrow, pausing to glance up, life going on",
+      "narration": "春天回來的時候，溪谷裡有人說，見過一隻紅狐，帶著一窩長大的小狐，翻過了北嶺。獵戶聽了，只是點點頭——繼續磨他的箭。"
+    }
+  ]
+}
