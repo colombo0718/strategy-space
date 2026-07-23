@@ -7,7 +7,7 @@
   "speed_factor": 1.1,
   "lang": "zh",
   "characters": {
-    "red_fox": "a lean red fox mother with thick winter fur, a torn right ear and quick amber eyes",
+    "red_fox": "a lean red fox mother with thick winter fur, and quick amber eyes",
     "hunter": "a grizzled middle-aged trapper with a short iron-grey beard, weathered calm face, fur-lined hood down, a longbow on his back"
   },
   "frames": [
@@ -26,32 +26,32 @@
     {
       "id": 3,
       "seed": 403,
-      "prompt": "{red_fox} slipping through the gap of an old wooden chicken coop door at night, warm light leaking through the slats onto the snow, a hen in her jaws, fresh paw prints trailing behind in the moonlit snow",
+      "prompt": "{red_fox} slipping through the gap of an old wooden chicken coop door at night, warm light leaking through the slats onto the snow, a chicken in her jaws, fresh paw prints trailing behind in the moonlit snow",
       "narration": "那天夜裡，牠第一次翻進雞舍。木閂很舊，門縫裡透著暖。牠只叼走了一隻——然後，在雪地上，留下了一路腳印。"
     },
     {
       "id": 4,
       "seed": 404,
       "prompt": "{hunter} sitting by a stone fireplace at night, a closed worn leather ledger and a few copper coins on the table beside him, rope snares, willow traps and a spare longbow hung neatly on the wall, only medieval hunting tools, calm professional stillness",
-      "narration": "村裡的獵戶翻開他的帳本。狼幾匹、鼬幾隻、賞錢幾文——他做事乾淨，從不多殺。人們說，他是溪谷最好的獵人。"
+      "narration": "村裡獵戶的帳本，記得乾乾淨淨——狼幾匹、鼬幾隻、賞錢幾文——他做事乾淨，從不多殺。人們說，他是溪谷最好的獵人。"
     },
     {
       "id": 5,
-      "seed": 405,
-      "prompt": "{hunter} crouched beside fox paw prints in the snow in front of a chicken coop at cold morning light, studying them closely, villagers gathered behind him at a distance",
+      "seed": 425,
+      "prompt": "{hunter} crouched alone beside a line of fox paw prints in the snow in front of a chicken coop at cold morning light, studying them closely, villagers gathered far behind him, no fox anywhere in the scene",
       "narration": "隔天清晨，獵戶蹲在雞舍前，看了那行腳印很久。從那個早上起，紅尾有了新的名字——害獸。"
     },
     {
       "id": 6,
       "seed": 406,
-      "prompt": "a fox den beneath frozen tree roots, four small fox kits curled together inside, {red_fox} with a shortened tail returning through deep snow with a hen in her jaws, night, tired triumph",
+      "prompt": "a fox den beneath frozen tree roots, a few small fox kits curled together inside, {red_fox} returning through deep snow with a chicken in her jaws, night, tired triumph",
       "narration": "雪，越下越深。而窩裡，還有一窩小嘴等著。紅尾第二次進村——這一次，牠差點沒能回來。"
     },
     {
       "id": 7,
       "seed": 407,
-      "prompt": "{hunter} methodically setting a snare line in fresh snow at the field edge, a small scent bottle in his gloved hand, a live hen tethered at the center of the cleared ground, tools laid out in order, craftsmanlike focus, dusk",
-      "narration": "獵戶不生氣。他只是換了更細的鏈子、更軟的雪，還有一點八角的氣味——那是狐狸最難拒絕的東西。他把最後一隻母雞，拴在陷阱中央。"
+      "prompt": "{hunter} methodically setting a snare line in fresh snow at the field edge, a small scent bottle in his gloved hand, a live chicken tethered at the center of the cleared ground, tools laid out in order, craftsmanlike focus, dusk",
+      "narration": "獵戶不生氣。他只是換了更細的鏈子、更軟的雪，還有一點八角的氣味——那是狐狸最難拒絕的東西。他把僅剩的一隻雞，拴在陷阱中央。"
     },
     {
       "id": 8,
@@ -61,14 +61,14 @@
     },
     {
       "id": 9,
-      "seed": 409,
-      "prompt": "{red_fox} with a shortened tail circling at a wary distance around a tethered hen in open snow at night, iron snare chain half-buried, falling snow thickening, taut suspense, her paw prints forming a wide circle",
-      "narration": "紅尾在陷阱外圍，繞了三圈。牠聞得出鐵的味道——牠學過。可是八角香的底下，是母雞的體溫。牠又繞了一圈。雪，開始下了。"
+      "seed": 426,
+      "prompt": "{red_fox} pacing a wide wary circle in falling snow at night around a small chicken tied by a thin rope to a low wooden stake in open ground, her paw prints forming a ring in the snow, taut stillness, nothing else near",
+      "narration": "紅尾在陷阱外圍，繞了三圈。牠聞得出鐵的味道——牠學過。可是八角香的底下，是那隻雞的體溫。牠又繞了一圈。雪，開始下了。"
     },
     {
       "id": 10,
-      "seed": 410,
-      "prompt": "a snapped snare in the snow at night, {red_fox} with a shortened tail caught by one hind leg, frozen mid-motion, the forest dark and utterly still around her, distant and restrained composition",
+      "seed": 427,
+      "prompt": "night, {red_fox} frozen mid-motion in deep snow, one hind paw held in a small iron leg-hold snare staked to the ground, her body twisted back looking at her trapped leg, falling snow, the forest dark and utterly still, restrained wide shot, clean fur",
       "narration": "彈簧響的時候，整座森林，都安靜了一瞬。"
     },
     {
@@ -80,7 +80,7 @@
     {
       "id": 12,
       "seed": 412,
-      "prompt": "{hunter} standing motionless a few steps away in morning light, looking down at a snared short-tailed red fox with four kits pressed against her, his longbow slung across his back and unused, no weapon in his hands, only a worn leather ledger held loosely, long shadows on the snow, hushed stillness",
+      "prompt": "{hunter} standing motionless a few steps away in morning light, looking down at a snared red fox with four kits pressed against her, his longbow slung across his back and unused, no weapon in his hands, only a worn leather ledger held loosely, long shadows on the snow, hushed stillness",
       "narration": "獵戶踏著晨光來收陷阱。弓在背上，帳本在懷裡。他站住了。帳本上有狼、有鼬、有山豬——沒有一欄，寫著這個。"
     },
     {
@@ -97,8 +97,8 @@
     },
     {
       "id": 15,
-      "seed": 415,
-      "prompt": "early spring thaw in the valley, distant silhouettes of a short-tailed fox and four grown kits crossing a ridge line, {hunter} at his workbench in the foreground sharpening an arrow, pausing to glance up, life going on",
+      "seed": 428,
+      "prompt": "early spring thaw, distant small silhouettes of a fox family crossing a bare empty ridge line under open sky, no buildings and no structures anywhere, {hunter} at his outdoor workbench in the foreground sharpening an arrow, pausing to glance up, life going on",
       "narration": "春天回來的時候，溪谷裡有人說，見過一隻紅狐，帶著一窩長大的小狐，翻過了北嶺。獵戶聽了，只是點點頭——繼續磨他的箭。"
     }
   ]
