@@ -1,0 +1,105 @@
+{
+  "title": "Vermin",
+  "style_prefix": "epic fantasy oil painting in the style of classic 1980s fantasy game box art, thick visible brushstrokes, dramatic rim lighting, muted earthy palette, cinematic composition",
+  "negative": "text, letters, words, watermark, signature, caption, cartoon, emoji, flat vector art, chibi, cute, gore, blood, deformed, extra limbs, photo, photorealistic",
+  "width": 1344,
+  "height": 768,
+  "speed_factor": 1.05,
+  "lang": "en",
+  "characters": {
+    "red_fox": "a lean red fox mother with thick clean winter fur and quick amber eyes",
+    "hunter": "a grizzled middle-aged trapper with a short iron-grey beard, weathered calm face, fur-lined hood down, a longbow on his back"
+  },
+  "frames": [
+    {
+      "id": 1,
+      "seed": 401,
+      "prompt": "{red_fox} standing thin and alert in a bare late-autumn forest, fallen leaves dusted with the first snow, empty and cold, hungry posture",
+      "narration": "Autumn ends quickly in the valley. The field mice go deep, and the last berries fall to the snow. For a red fox, winter is not a season — it is arithmetic."
+    },
+    {
+      "id": 2,
+      "seed": 402,
+      "prompt": "{red_fox} digging at a frozen field ridge at dusk, frost on her forepaws, breath visible, empty furrows stretching away, bleak fading light",
+      "narration": "Redtail dug at the frozen field all afternoon. Nothing. She licked the frost from her paws, and listened to her own hunger."
+    },
+    {
+      "id": 3,
+      "seed": 403,
+      "prompt": "{red_fox} slipping through the gap of an old wooden chicken coop door at night, warm light leaking through the slats onto the snow, a chicken in her jaws, fresh paw prints trailing behind in the moonlit snow",
+      "narration": "That night, she slipped into the coop for the first time. The latch was old; warmth leaked through the crack of the door. She took only one — and left, printed in the snow, a long line of tracks."
+    },
+    {
+      "id": 4,
+      "seed": 404,
+      "prompt": "{hunter} sitting by a stone fireplace at night, a closed worn leather ledger and a few copper coins on the table beside him, rope snares, willow traps and a spare longbow hung neatly on the wall, only medieval hunting tools, calm professional stillness",
+      "narration": "The village trapper kept a clean ledger — so many wolves, so many stoats, so many coins of bounty. He worked clean, and never killed more than he must. People said he was the best hunter in the valley."
+    },
+    {
+      "id": 5,
+      "seed": 425,
+      "prompt": "{hunter} crouched alone beside a line of fox paw prints in the snow in front of a chicken coop at cold morning light, studying them closely, villagers gathered far behind him, no fox anywhere in the scene",
+      "narration": "At dawn he crouched before the coop, and studied that line of tracks for a long time. From that morning on, Redtail had a new name — vermin."
+    },
+    {
+      "id": 6,
+      "seed": 406,
+      "prompt": "a fox den beneath frozen tree roots, small fox kits curled together inside, {red_fox} returning through deep snow with a chicken in her jaws, night, tired triumph",
+      "narration": "The snow fell deeper. And in the den, small mouths were waiting. Redtail went to the village a second time — and that time, she almost did not come back."
+    },
+    {
+      "id": 7,
+      "seed": 407,
+      "prompt": "{hunter} methodically setting a snare line in fresh snow at the field edge, a small scent bottle in his gloved hand, a live chicken tethered at the center of the cleared ground, tools laid out in order, craftsmanlike focus, dusk",
+      "narration": "The trapper was not angry. He only chose a finer chain, softer snow, and a trace of star anise — the one smell a fox can hardly refuse. Then he tied his last chicken at the centre of the trap."
+    },
+    {
+      "id": 8,
+      "seed": 408,
+      "prompt": "inside the warm dim fox den in winter, a pile of fox kits sleeping curled in a tight pile, soft breathing, snow falling silently outside the den mouth, peaceful",
+      "narration": "The den was warm. The kits pressed together, waiting for their mother. So far this winter, they had not gone hungry for a single night."
+    },
+    {
+      "id": 9,
+      "seed": 426,
+      "prompt": "{red_fox} pacing a wide wary circle in falling snow at night around a small chicken tied by a thin rope to a low wooden stake in open ground, her paw prints forming a ring in the snow, taut stillness, nothing else near",
+      "narration": "Redtail circled the trap three times. She knew the smell of iron — she had learned it. But under the anise lay the warmth of a living bird. She circled once more. And the snow began to fall."
+    },
+    {
+      "id": 10,
+      "seed": 427,
+      "prompt": "night, {red_fox} frozen mid-motion in deep snow, one paw held in a small iron leg-hold snare staked to the ground, her body twisted back looking at her trapped leg, falling snow, the forest dark and utterly still, restrained wide shot, clean fur",
+      "narration": "When the spring snapped shut, the whole forest went silent for a heartbeat."
+    },
+    {
+      "id": 11,
+      "seed": 411,
+      "prompt": "pale blue dawn light, a lean red fox mother with thick clean winter fur lying exhausted on the snow, one leg held by an iron snare chain staked low to the ground, unhurt, deep scratch marks in the snow around her, small fox kits pressed silently against her side, quiet and sorrowful",
+      "narration": "She dug at the snow all night, dragging the chain. Before dawn, the kits found her by scent, and pressed against their mother — without a sound."
+    },
+    {
+      "id": 12,
+      "seed": 412,
+      "prompt": "{hunter} standing motionless a few steps away in morning light, looking down at a snared red fox with her kits pressed against her, his longbow slung across his back and unused, no weapon in his hands, only a worn leather ledger held loosely, long shadows on the snow, hushed stillness",
+      "narration": "The trapper came with the morning light to collect his catch. Bow on his back, ledger against his chest. He stopped. In the ledger were wolves, stoats, wild boar — but there was no column for this."
+    },
+    {
+      "id": 13,
+      "seed": 413,
+      "prompt": "close shot of weathered hands opening an iron snare in the snow, {red_fox} limping away toward the treeline with her kits, neither looking back, cold clean morning",
+      "narration": "He knelt, and opened the iron jaws. He said nothing. Redtail did not look back."
+    },
+    {
+      "id": 14,
+      "seed": 414,
+      "prompt": "{hunter} walking home alone across a wide snowy field with the ledger under his arm, small against the winter landscape, low pale sun, contemplative solitude",
+      "narration": "That day, he wrote down the weather, and one chicken that got away. The missing bounty, he never explained."
+    },
+    {
+      "id": 15,
+      "seed": 428,
+      "prompt": "early spring thaw, distant small silhouettes of a fox family crossing a bare empty ridge line under open sky, no buildings and no structures anywhere, {hunter} at his outdoor workbench in the foreground sharpening an arrow, pausing to glance up, life going on",
+      "narration": "When spring returned, some in the valley said they had seen a red fox crossing the north ridge, with a litter of grown kits behind her. The trapper heard it, nodded once — and went on sharpening his arrows."
+    }
+  ]
+}
