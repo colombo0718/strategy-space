@@ -50,8 +50,8 @@ const JUMP_FORCE    = -13;
 const MOVE_SPEED    = 4.5;
 const ELF_SIZE      = 64;
 
-const ATTACK_DURATION = 180; // ms，揮劍一次的動畫時長
-const SWORD_ARC_HALF  = 1.0; // 弧度，揮劍扇形半寬（約115度全寬）
+const ATTACK_DURATION = 180; // ms，短劍刺出收回一次的動畫時長
+const THRUST_OUT_FRAC = 0.35; // 動畫前 35% 時間快速刺出、剩下 65% 收回
 
 // OpenMoji 原始素材畫面本身不是朝右擺（0度基準），套用旋轉前要先校正回「朝右」的基準角度
 // 校正值來自實際比對素材圖：弓箭圖案原始朝向約左上45度（順時針轉45度校正回朝右）
@@ -262,12 +262,15 @@ function drawElf() {
 
   if (elf.attack) {
     const t = clamp((performance.now() - elf.attack.start) / ATTACK_DURATION, 0, 1);
-    const swordAngle = lerp(elf.attack.center - SWORD_ARC_HALF, elf.attack.center + SWORD_ARC_HALF, t);
-    // 握劍點要跟著 swordAngle（動畫中的角度）掃、不能用 elf.attack.center（固定值）算，
-    // 不然畫的位置整段動畫都釘在同一點，變成圖片原地自轉而不是繞人物揮出扇形
-    const pivotX = elfScreenX() + Math.cos(swordAngle) * WEAPON_REACH_SWORD;
-    const pivotY = elf.y - 34 + Math.sin(swordAngle) * WEAPON_REACH_SWORD;
-    drawEmoji(ctx, '🗡️', pivotX, pivotY, 40, { rotate: swordAngle + SWORD_ROTATE_OFFSET, dy: 12 });
+    // 方向鎖死在按下攻擊瞬間的專注方向（elf.attack.center），動畫中不再轉動；
+    // 動的是「離身體多遠」——前 35% 快速刺出到最遠、剩下 65% 收回，直線刺出收回、不掃扇形
+    const reachT = t < THRUST_OUT_FRAC
+      ? t / THRUST_OUT_FRAC
+      : 1 - (t - THRUST_OUT_FRAC) / (1 - THRUST_OUT_FRAC);
+    const reach = lerp(14, WEAPON_REACH_SWORD, reachT);
+    const pivotX = elfScreenX() + Math.cos(elf.attack.center) * reach;
+    const pivotY = elf.y - 34 + Math.sin(elf.attack.center) * reach;
+    drawEmoji(ctx, '🗡️', pivotX, pivotY, 40, { rotate: elf.attack.center + SWORD_ROTATE_OFFSET, dy: 12 });
   }
 
   if (bow.isDrawing) {
