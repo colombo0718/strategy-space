@@ -29,7 +29,7 @@
 <div id="hud">速度倍率 —　｜　最近攻擊傷害倍率 —</div>
 <div id="hint">
   A / D 移動　W 跳躍　　滑鼠移動＝瞄準方向（弓劍共用）<br>
-  1 揮劍（扇形範圍以瞄準方向為中心展開）　　2 弓箭——移動中點按＝快速點放；站定按住＝拉弓蓄力（此時鎖移動，瞄準仍跟滑鼠）<br>
+  1 短劍刺出收回（方向鎖在按下瞬間的瞄準方向）　　2 弓箭——移動中點按＝快速點放；站定按住＝拉弓蓄力（此時鎖移動，瞄準仍跟滑鼠）<br>
   <span style="opacity:.7">面向與移動方向對齊＝速度/傷害加成；背向＝減益（永遠有基礎值，不會歸零或負值）</span><br>
   <span style="opacity:.7">目前僅控制系統原型，尚無 boss／血量／勝負——<a href="../" style="color:#cbb8d8">◂ 關於本作</a>　<a href="../../" style="color:#cbb8d8">◂ 回玄機萬境大廳</a></span>
 </div>
@@ -40,7 +40,8 @@ const canvas = document.getElementById('gameCanvas');
 const ctx    = canvas.getContext('2d');
 const hud    = document.getElementById('hud');
 const W = 800, H = 450;
-const GROUND_Y = 380;
+const GROUND_WORLD_Y = 380; // 地面世界座標（垂直），跳躍時人物離這個基準線的距離
+const ELF_SCREEN_Y   = 300; // 人物永遠釘死的螢幕Y座標（鏡頭水平+垂直都鎖角色）
 
 // ════════════════════════════════
 //  參數（先求可玩，數值都是佔位、之後靠試玩微調）
@@ -78,10 +79,11 @@ const lerp  = (a, b, t) => a + (b - a) * t;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 // ════════════════════════════════
-//  精靈狀態（worldX＝世界座標，可無限延伸；螢幕永遠畫在正中央）
+//  精靈狀態（worldX/worldY＝世界座標，可無限延伸；螢幕座標永遠釘死在畫面中心一點，
+//  水平垂直都鎖角色——世界相對角色捲動，不是角色在畫面裡移動）
 // ════════════════════════════════
 const elf = {
-  worldX: 0, y: GROUND_Y, vx: 0, vy: 0,
+  worldX: 0, worldY: GROUND_WORLD_Y, vx: 0, vy: 0,
   onGround: true,
   facing: 1,   // 人物圖案左右面向，由左右按鍵決定（不是瞄準方向），靜止時沿用上次的值
   attack: null,   // { center: 弧度, start: performance.now() }
@@ -97,8 +99,9 @@ let arrows = []; // 箭矢座標一律存世界座標，畫的時候才轉螢幕
 let speedMult = 1, lastDamageMult = 1;
 
 function worldToScreenX(wx) { return wx - elf.worldX + W / 2; }
+function worldToScreenY(wy) { return wy - elf.worldY + ELF_SCREEN_Y; }
 function elfScreenX() { return W / 2; }
-function elfScreenY() { return elf.y - 30; } // 瞄準基準點，約胸口高度
+function elfScreenY() { return ELF_SCREEN_Y - 30; } // 瞄準基準點，約胸口高度，永遠固定（人物釘死在螢幕上）
 
 // ════════════════════════════════
 //  滑鼠瞄準
@@ -116,9 +119,9 @@ function aimAngle() {
 
 function fireArrow(angle, speed, range) {
   const originWorldX = elf.worldX + Math.cos(angle) * 18;
-  const originY = elf.y - 30 + Math.sin(angle) * 18;
+  const originWorldY = elf.worldY - 30 + Math.sin(angle) * 18;
   arrows.push({
-    worldX: originWorldX, y: originY,
+    worldX: originWorldX, worldY: originWorldY,
     vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
     traveled: 0, maxRange: range,
   });
@@ -203,11 +206,11 @@ function update() {
     }
   }
 
-  // 重力＋位移（世界座標）
+  // 重力＋位移（世界座標，水平垂直都是——鏡頭鎖角色，世界跟著相對捲動）
   elf.vy += GRAVITY;
   elf.worldX += elf.vx;
-  elf.y += elf.vy;
-  if (elf.y >= GROUND_Y) { elf.y = GROUND_Y; elf.vy = 0; elf.onGround = true; }
+  elf.worldY += elf.vy;
+  if (elf.worldY >= GROUND_WORLD_Y) { elf.worldY = GROUND_WORLD_Y; elf.vy = 0; elf.onGround = true; }
 
   // 黏滯移動方向：只在真的有位移時更新，靜止時凍結上一刻的值（避免零向量 undefined）
   if (Math.abs(elf.vx) > 0.01 || Math.abs(elf.vy) > 0.01) {
@@ -220,11 +223,11 @@ function update() {
   // 箭矢（世界座標位移）
   arrows.forEach(a => {
     const step = Math.hypot(a.vx, a.vy);
-    a.worldX += a.vx; a.y += a.vy; a.traveled += step;
+    a.worldX += a.vx; a.worldY += a.vy; a.traveled += step;
   });
   arrows = arrows.filter(a => {
-    const sx = worldToScreenX(a.worldX);
-    return a.traveled < a.maxRange && sx > -20 && sx < W + 20 && a.y > -20 && a.y < H + 20;
+    const sx = worldToScreenX(a.worldX), sy = worldToScreenY(a.worldY);
+    return a.traveled < a.maxRange && sx > -20 && sx < W + 20 && sy > -20 && sy < H + 20;
   });
 
   for (const k in justDown) delete justDown[k];
@@ -236,29 +239,33 @@ function update() {
 //  繪製
 // ════════════════════════════════
 function drawScene() {
-  const grad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
-  grad.addColorStop(0, '#2a1f3d'); grad.addColorStop(1, '#4a3363');
-  ctx.fillStyle = grad; ctx.fillRect(0, 0, W, GROUND_Y);
+  const groundSY = worldToScreenY(GROUND_WORLD_Y); // 地面的螢幕Y——跳躍時這條線會跟著相對移動、人物螢幕位置不變
 
-  const gGrad = ctx.createLinearGradient(0, GROUND_Y, 0, H);
+  const grad = ctx.createLinearGradient(0, 0, 0, groundSY);
+  grad.addColorStop(0, '#2a1f3d'); grad.addColorStop(1, '#4a3363');
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, W, Math.max(groundSY, 0));
+
+  const gGrad = ctx.createLinearGradient(0, groundSY, 0, H);
   gGrad.addColorStop(0, '#3d2e1a'); gGrad.addColorStop(1, '#241a0f');
-  ctx.fillStyle = gGrad; ctx.fillRect(0, GROUND_Y, W, H - GROUND_Y);
+  ctx.fillStyle = gGrad; ctx.fillRect(0, groundSY, W, H - groundSY);
   ctx.strokeStyle = '#6a4a2a'; ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.moveTo(0, GROUND_Y); ctx.lineTo(W, GROUND_Y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, groundSY); ctx.lineTo(W, groundSY); ctx.stroke();
 
   // 地面刻度：世界座標捲動視覺化，證明鏡頭真的鎖在角色身上、是世界在動
   ctx.strokeStyle = '#8a6a3a55'; ctx.lineWidth = 2;
   const startTick = Math.floor((elf.worldX - W / 2) / TICK_SPACING) * TICK_SPACING;
   for (let wx = startTick; wx < elf.worldX + W / 2 + TICK_SPACING; wx += TICK_SPACING) {
     const sx = worldToScreenX(wx);
-    ctx.beginPath(); ctx.moveTo(sx, GROUND_Y); ctx.lineTo(sx, GROUND_Y + 14); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(sx, groundSY); ctx.lineTo(sx, groundSY + 14); ctx.stroke();
   }
 }
 
 function drawElf() {
   const angle = aimAngle();
   const facingLeft = elf.facing < 0;
-  drawEmoji(ctx, '🧝', elfScreenX(), elf.y - ELF_SIZE / 2, ELF_SIZE, { flip: facingLeft });
+  // 人物永遠畫在螢幕固定點（水平垂直都鎖），不會因為跳躍而在畫面裡上下移動——
+  // 是地面／世界相對它移動，鏡頭「永遠對準他」
+  drawEmoji(ctx, '🧝', elfScreenX(), ELF_SCREEN_Y - ELF_SIZE / 2, ELF_SIZE, { flip: facingLeft });
 
   if (elf.attack) {
     const t = clamp((performance.now() - elf.attack.start) / ATTACK_DURATION, 0, 1);
@@ -269,19 +276,14 @@ function drawElf() {
       : 1 - (t - THRUST_OUT_FRAC) / (1 - THRUST_OUT_FRAC);
     const reach = lerp(14, WEAPON_REACH_SWORD, reachT);
     const pivotX = elfScreenX() + Math.cos(elf.attack.center) * reach;
-    const pivotY = elf.y - 34 + Math.sin(elf.attack.center) * reach;
+    const pivotY = (ELF_SCREEN_Y - 34) + Math.sin(elf.attack.center) * reach;
     drawEmoji(ctx, '🗡️', pivotX, pivotY, 50, { rotate: elf.attack.center + SWORD_ROTATE_OFFSET, dy: 12 });
   }
 
   if (bow.isDrawing) {
     // 弓箭已有完整360度連續旋轉、本身就能指向任何方向，不能再加 flip——
     // flip(scale(-1,1)) 是在旋轉後的座標系裡鏡射，跟 rotate 疊加會算出錯的角度
-    drawEmoji(ctx, '🏹', elfScreenX() + Math.cos(angle) * WEAPON_REACH_BOW, elf.y - 32 + Math.sin(angle) * WEAPON_REACH_BOW, 44, { rotate: angle + BOW_ROTATE_OFFSET });
-    // 蓄力條
-    const heldMs = clamp(performance.now() - bow.drawStart, 0, BOW_MAX_CHARGE_MS);
-    const t = heldMs / BOW_MAX_CHARGE_MS;
-    ctx.fillStyle = '#000a'; ctx.fillRect(elfScreenX() - 24, elf.y - 62, 48, 6);
-    ctx.fillStyle = '#ffd24a'; ctx.fillRect(elfScreenX() - 24, elf.y - 62, 48 * t, 6);
+    drawEmoji(ctx, '🏹', elfScreenX() + Math.cos(angle) * WEAPON_REACH_BOW, (ELF_SCREEN_Y - 32) + Math.sin(angle) * WEAPON_REACH_BOW, 44, { rotate: angle + BOW_ROTATE_OFFSET });
   }
 
   // 瞄準線（細，輔助測試用）
@@ -291,12 +293,23 @@ function drawElf() {
   ctx.stroke();
 }
 
+// 蓄力條：固定畫在畫布左上角的HUD位置，跟人物/武器完全脫鉤——
+// 原本釘在頭頂正上方，弓箭朝上瞄準時圖案會疊到擋住，改成固定角落就不會再被任何瞄準角度擋到
+function drawChargeBar() {
+  if (!bow.isDrawing) return;
+  const heldMs = clamp(performance.now() - bow.drawStart, 0, BOW_MAX_CHARGE_MS);
+  const t = heldMs / BOW_MAX_CHARGE_MS;
+  ctx.fillStyle = '#cbb8d8'; ctx.font = '12px sans-serif'; ctx.fillText('蓄力', 16, 26);
+  ctx.fillStyle = '#000a'; ctx.fillRect(16, 32, 100, 10);
+  ctx.fillStyle = '#ffd24a'; ctx.fillRect(16, 32, 100 * t, 10);
+}
+
 function drawArrows() {
   arrows.forEach(a => {
-    const sx = worldToScreenX(a.worldX);
+    const sx = worldToScreenX(a.worldX), sy = worldToScreenY(a.worldY);
     const angle = Math.atan2(a.vy, a.vx);
     ctx.save();
-    ctx.translate(sx, a.y); ctx.rotate(angle);
+    ctx.translate(sx, sy); ctx.rotate(angle);
     ctx.strokeStyle = '#e8d9a0'; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(-10, 0); ctx.lineTo(10, 0); ctx.stroke();
     ctx.fillStyle = '#e8d9a0';
@@ -311,6 +324,7 @@ function gameLoop() {
   drawScene();
   drawArrows();
   drawElf();
+  drawChargeBar();
   requestAnimationFrame(gameLoop);
 }
 
