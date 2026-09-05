@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>精靈餘燼 elf-embers（MVP）</title>
+<title>精靈餘燼 elf-embers（控制系統 MVP v2）</title>
 <link rel="icon" href="assets/openmoji/1F9DD.svg">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -18,16 +18,19 @@
     color: #eee;
   }
   h1 { font-size: 1.3rem; letter-spacing: 0.08em; }
-  #gameCanvas { border: 3px solid #6a4a8a; border-radius: 8px; box-shadow: 0 6px 24px #00000055; background: #000; }
+  #gameCanvas { border: 3px solid #6a4a8a; border-radius: 8px; box-shadow: 0 6px 24px #00000055; background: #000; cursor: crosshair; }
   #hint { font-size: 0.85rem; color: #cbb8d8; text-align: center; max-width: 800px; line-height: 1.6; }
+  #hud { font-size: 0.8rem; color: #ffd24a; text-align: center; font-family: 'Consolas', monospace; }
 </style>
 </head>
 <body>
-<h1>🧝 精靈餘燼 elf-embers（控制系統 MVP）</h1>
+<h1>🧝 精靈餘燼 elf-embers（控制系統 MVP v2 — 滑鼠瞄準）</h1>
 <canvas id="gameCanvas" width="800" height="450"></canvas>
+<div id="hud">速度倍率 —　｜　最近攻擊傷害倍率 —</div>
 <div id="hint">
-  A / D 移動　W 跳躍　　1 揮劍（依當下狀態自動判斷側斬/上砍/下斬）<br>
-  2 弓箭——移動中點按＝水平快速點放；站定按住＝拉弓蓄力（此時 A/D/W 改為調整瞄準角度），放開即發射<br>
+  A / D 移動　W 跳躍　　滑鼠移動＝瞄準方向（弓劍共用）<br>
+  1 揮劍（扇形範圍以瞄準方向為中心展開）　　2 弓箭——移動中點按＝快速點放；站定按住＝拉弓蓄力（此時鎖移動，瞄準仍跟滑鼠）<br>
+  <span style="opacity:.7">面向與移動方向對齊＝速度/傷害加成；背向＝減益（永遠有基礎值，不會歸零或負值）</span><br>
   <span style="opacity:.7">目前僅控制系統原型，尚無 boss／血量／勝負——<a href="../" style="color:#cbb8d8">◂ 關於本作</a>　<a href="../../" style="color:#cbb8d8">◂ 回玄機萬境大廳</a></span>
 </div>
 
@@ -35,6 +38,7 @@
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx    = canvas.getContext('2d');
+const hud    = document.getElementById('hud');
 const W = 800, H = 450;
 const GROUND_Y = 380;
 
@@ -47,6 +51,7 @@ const MOVE_SPEED    = 4.5;
 const ELF_SIZE      = 64;
 
 const ATTACK_DURATION = 180; // ms，揮劍一次的動畫時長
+const SWORD_ARC_HALF  = 1.0; // 弧度，揮劍扇形半寬（約115度全寬）
 
 const BOW_MIN_CHARGE_MS = 120;  // 低於此視為未真正蓄力（放開直接算最低威力）
 const BOW_MAX_CHARGE_MS = 900;  // 蓄力封頂
@@ -54,36 +59,70 @@ const QUICK_SHOT_SPEED  = 9,   QUICK_SHOT_RANGE  = 260; // 移動中點放：弱
 const CHARGED_MIN_SPEED = 10,  CHARGED_MAX_SPEED = 16;  // 站定蓄力：依蓄力量在區間內插值
 const CHARGED_MIN_RANGE = 320, CHARGED_MAX_RANGE = 720;
 
+// 面向/移動對齊 → 速度、傷害的加減波動振幅（1±k，永遠正值、永遠有基礎在）
+const K_SPEED = 0.3;
+const K_DAMAGE = 0.3;
+
+const TICK_SPACING = 60; // 地面刻度間距（世界座標），純視覺、讓鏡頭鎖定看得出世界在捲動
+
 const lerp  = (a, b, t) => a + (b - a) * t;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 // ════════════════════════════════
-//  精靈狀態
+//  精靈狀態（worldX＝世界座標，可無限延伸；螢幕永遠畫在正中央）
 // ════════════════════════════════
 const elf = {
-  x: W / 2, y: GROUND_Y, vx: 0, vy: 0,
-  facing: 1, onGround: true,
-  attack: null,   // { type:'side'|'up'|'down', start: performance.now() }
+  worldX: 0, y: GROUND_Y, vx: 0, vy: 0,
+  onGround: true,
+  attack: null,   // { center: 弧度, start: performance.now() }
 };
+
+// 黏滯移動方向向量（沒有輸入時凍結在最後一次非零方向，不歸零，供 cos 對齊計算用）
+const moveDir = { x: 1, y: 0 };
 
 const bow = { isDrawing: false, drawStart: 0 };
 
-let arrows = [];
+let arrows = []; // 箭矢座標一律存世界座標，畫的時候才轉螢幕座標
+
+let speedMult = 1, lastDamageMult = 1;
+
+function worldToScreenX(wx) { return wx - elf.worldX + W / 2; }
+function elfScreenX() { return W / 2; }
+function elfScreenY() { return elf.y - 30; } // 瞄準基準點，約胸口高度
+
+// ════════════════════════════════
+//  滑鼠瞄準
+// ════════════════════════════════
+const mouse = { x: W / 2, y: H / 2 };
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  mouse.x = e.clientX - rect.left - canvas.clientLeft;
+  mouse.y = e.clientY - rect.top - canvas.clientTop;
+});
+
+function aimAngle() {
+  return Math.atan2(mouse.y - elfScreenY(), mouse.x - elfScreenX());
+}
 
 function fireArrow(angle, speed, range) {
-  const originX = elf.x + elf.facing * 18, originY = elf.y - 30;
+  const originWorldX = elf.worldX + Math.cos(angle) * 18;
+  const originY = elf.y - 30 + Math.sin(angle) * 18;
   arrows.push({
-    x: originX, y: originY,
+    worldX: originWorldX, y: originY,
     vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
     traveled: 0, maxRange: range,
   });
 }
 
-function bowAimAngle() {
-  if (keys['w'] || keys['W']) return -Math.PI / 2;               // 上鍵：正上方
-  if (keys['a'] || keys['A']) return Math.PI;                    // 左鍵：水平朝左
-  if (keys['d'] || keys['D']) return 0;                          // 右鍵：水平朝右
-  return elf.facing > 0 ? -Math.PI / 4 : -Math.PI * 3 / 4;        // 預設：面朝方向 45°
+// ════════════════════════════════
+//  對齊倍率：1 + k×cos(向量A · 向量B)，永遠正值、永遠有基礎在
+// ════════════════════════════════
+function alignMultiplier(angleA, dirBx, dirBy, k) {
+  const len = Math.hypot(dirBx, dirBy) || 1;
+  const bx = dirBx / len, by = dirBy / len;
+  const ax = Math.cos(angleA), ay = Math.sin(angleA);
+  const cosTheta = ax * bx + ay * by;
+  return 1 + k * cosTheta;
 }
 
 // ════════════════════════════════
@@ -102,19 +141,19 @@ window.addEventListener('blur', () => { for (const k in keys) keys[k] = false; }
 //  更新
 // ════════════════════════════════
 function handleAttackInput() {
+  const angle = aimAngle();
+
   if (justDown['1'] && !elf.attack && !bow.isDrawing) {
-    let type;
-    if (!elf.onGround && elf.vy < 0)      type = 'up';
-    else if (!elf.onGround && elf.vy > 0) type = 'down';
-    else                                  type = 'side';
-    elf.attack = { type, start: performance.now() };
+    lastDamageMult = alignMultiplier(angle, moveDir.x, moveDir.y, K_DAMAGE);
+    elf.attack = { center: angle, start: performance.now() };
   }
 
   if (justDown['2'] && !bow.isDrawing) {
     const movingDir = (keys['a'] || keys['A']) ? -1 : (keys['d'] || keys['D']) ? 1 : 0;
     if (movingDir !== 0) {
-      // 移動中點按 → 立刻水平點放，不蓄力、不鎖移動
-      fireArrow(movingDir > 0 ? 0 : Math.PI, QUICK_SHOT_SPEED, QUICK_SHOT_RANGE);
+      // 移動中點按 → 立刻沿瞄準方向水平點放，不蓄力、不鎖移動
+      lastDamageMult = alignMultiplier(angle, moveDir.x, moveDir.y, K_DAMAGE);
+      fireArrow(angle, QUICK_SHOT_SPEED, QUICK_SHOT_RANGE);
     } else {
       bow.isDrawing = true;
       bow.drawStart = performance.now();
@@ -123,45 +162,63 @@ function handleAttackInput() {
   if (!keys['2'] && bow.isDrawing) {
     const heldMs = performance.now() - bow.drawStart;
     const t = clamp((heldMs - BOW_MIN_CHARGE_MS) / (BOW_MAX_CHARGE_MS - BOW_MIN_CHARGE_MS), 0, 1);
-    fireArrow(bowAimAngle(), lerp(CHARGED_MIN_SPEED, CHARGED_MAX_SPEED, t), lerp(CHARGED_MIN_RANGE, CHARGED_MAX_RANGE, t));
+    lastDamageMult = alignMultiplier(angle, moveDir.x, moveDir.y, K_DAMAGE);
+    fireArrow(angle, lerp(CHARGED_MIN_SPEED, CHARGED_MAX_SPEED, t), lerp(CHARGED_MIN_RANGE, CHARGED_MAX_RANGE, t));
     bow.isDrawing = false;
   }
 }
 
 function update() {
   handleAttackInput();
+  const angle = aimAngle();
 
-  // 拉弓期間：方向鍵語意換成瞄準，移動鎖死
+  // 拉弓期間：移動鎖死，瞄準仍跟滑鼠
   if (bow.isDrawing) {
     elf.vx = 0;
   } else {
-    if (keys['a'] || keys['A']) { elf.vx = -MOVE_SPEED; elf.facing = -1; }
-    else if (keys['d'] || keys['D']) { elf.vx = MOVE_SPEED; elf.facing = 1; }
-    else elf.vx = 0;
+    let inputX = 0;
+    if (keys['a'] || keys['A']) inputX = -1;
+    else if (keys['d'] || keys['D']) inputX = 1;
+
+    if (inputX !== 0) {
+      speedMult = alignMultiplier(angle, inputX, 0, K_SPEED);
+      elf.vx = MOVE_SPEED * speedMult * inputX;
+    } else {
+      elf.vx = 0;
+    }
 
     if (justDown['w'] || justDown['W']) {
       if (elf.onGround) { elf.vy = JUMP_FORCE; elf.onGround = false; }
     }
   }
 
-  // 重力＋位移
+  // 重力＋位移（世界座標）
   elf.vy += GRAVITY;
-  elf.x += elf.vx;
+  elf.worldX += elf.vx;
   elf.y += elf.vy;
   if (elf.y >= GROUND_Y) { elf.y = GROUND_Y; elf.vy = 0; elf.onGround = true; }
-  elf.x = clamp(elf.x, ELF_SIZE / 2, W - ELF_SIZE / 2);
+
+  // 黏滯移動方向：只在真的有位移時更新，靜止時凍結上一刻的值（避免零向量 undefined）
+  if (Math.abs(elf.vx) > 0.01 || Math.abs(elf.vy) > 0.01) {
+    moveDir.x = elf.vx; moveDir.y = elf.vy;
+  }
 
   // 揮劍動畫計時
   if (elf.attack && performance.now() - elf.attack.start >= ATTACK_DURATION) elf.attack = null;
 
-  // 箭矢
+  // 箭矢（世界座標位移）
   arrows.forEach(a => {
     const step = Math.hypot(a.vx, a.vy);
-    a.x += a.vx; a.y += a.vy; a.traveled += step;
+    a.worldX += a.vx; a.y += a.vy; a.traveled += step;
   });
-  arrows = arrows.filter(a => a.traveled < a.maxRange && a.x > -20 && a.x < W + 20 && a.y > -20 && a.y < H + 20);
+  arrows = arrows.filter(a => {
+    const sx = worldToScreenX(a.worldX);
+    return a.traveled < a.maxRange && sx > -20 && sx < W + 20 && a.y > -20 && a.y < H + 20;
+  });
 
   for (const k in justDown) delete justDown[k];
+
+  hud.textContent = `速度倍率 ${speedMult.toFixed(2)}　｜　最近攻擊傷害倍率 ${lastDamageMult.toFixed(2)}`;
 }
 
 // ════════════════════════════════
@@ -177,43 +234,51 @@ function drawScene() {
   ctx.fillStyle = gGrad; ctx.fillRect(0, GROUND_Y, W, H - GROUND_Y);
   ctx.strokeStyle = '#6a4a2a'; ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(0, GROUND_Y); ctx.lineTo(W, GROUND_Y); ctx.stroke();
-}
 
-// 揮劍弧形角度（局部座標，面朝右時的角度；面朝左時鏡射）
-function attackArc(type, t) {
-  if (type === 'side') return lerp(-0.9, 0.9, t);
-  if (type === 'up')   return lerp(-2.6, -0.5, t);
-  return lerp(0.5, 2.6, t); // down
+  // 地面刻度：世界座標捲動視覺化，證明鏡頭真的鎖在角色身上、是世界在動
+  ctx.strokeStyle = '#8a6a3a55'; ctx.lineWidth = 2;
+  const startTick = Math.floor((elf.worldX - W / 2) / TICK_SPACING) * TICK_SPACING;
+  for (let wx = startTick; wx < elf.worldX + W / 2 + TICK_SPACING; wx += TICK_SPACING) {
+    const sx = worldToScreenX(wx);
+    ctx.beginPath(); ctx.moveTo(sx, GROUND_Y); ctx.lineTo(sx, GROUND_Y + 14); ctx.stroke();
+  }
 }
 
 function drawElf() {
-  drawEmoji(ctx, '🧝', elf.x, elf.y - ELF_SIZE / 2, ELF_SIZE, { flip: elf.facing < 0 });
+  const angle = aimAngle();
+  const facingLeft = Math.cos(angle) < 0;
+  drawEmoji(ctx, '🧝', elfScreenX(), elf.y - ELF_SIZE / 2, ELF_SIZE, { flip: facingLeft });
 
   if (elf.attack) {
     const t = clamp((performance.now() - elf.attack.start) / ATTACK_DURATION, 0, 1);
-    let angle = attackArc(elf.attack.type, t);
-    if (elf.facing < 0) angle = Math.PI - angle; // 鏡射到左側
-    const pivotX = elf.x + elf.facing * 14, pivotY = elf.y - 34;
-    // dy 把圖案的握把端往軸心對齊（佔位值，之後照實際渲染微調）
-    drawEmoji(ctx, '🗡️', pivotX, pivotY, 40, { rotate: angle, dy: 12 });
+    const swordAngle = lerp(elf.attack.center - SWORD_ARC_HALF, elf.attack.center + SWORD_ARC_HALF, t);
+    const pivotX = elfScreenX() + Math.cos(elf.attack.center) * 14;
+    const pivotY = elf.y - 34 + Math.sin(elf.attack.center) * 14;
+    drawEmoji(ctx, '🗡️', pivotX, pivotY, 40, { rotate: swordAngle, dy: 12 });
   }
 
   if (bow.isDrawing) {
-    const angle = bowAimAngle();
-    drawEmoji(ctx, '🏹', elf.x + elf.facing * 10, elf.y - 32, 34, { rotate: angle, flip: elf.facing < 0 });
+    drawEmoji(ctx, '🏹', elfScreenX() + Math.cos(angle) * 10, elf.y - 32 + Math.sin(angle) * 10, 34, { rotate: angle, flip: facingLeft });
     // 蓄力條
     const heldMs = clamp(performance.now() - bow.drawStart, 0, BOW_MAX_CHARGE_MS);
     const t = heldMs / BOW_MAX_CHARGE_MS;
-    ctx.fillStyle = '#000a'; ctx.fillRect(elf.x - 24, elf.y - 62, 48, 6);
-    ctx.fillStyle = '#ffd24a'; ctx.fillRect(elf.x - 24, elf.y - 62, 48 * t, 6);
+    ctx.fillStyle = '#000a'; ctx.fillRect(elfScreenX() - 24, elf.y - 62, 48, 6);
+    ctx.fillStyle = '#ffd24a'; ctx.fillRect(elfScreenX() - 24, elf.y - 62, 48 * t, 6);
   }
+
+  // 瞄準線（細，輔助測試用）
+  ctx.strokeStyle = '#ffffff33'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(elfScreenX(), elfScreenY());
+  ctx.lineTo(elfScreenX() + Math.cos(angle) * 40, elfScreenY() + Math.sin(angle) * 40);
+  ctx.stroke();
 }
 
 function drawArrows() {
   arrows.forEach(a => {
+    const sx = worldToScreenX(a.worldX);
     const angle = Math.atan2(a.vy, a.vx);
     ctx.save();
-    ctx.translate(a.x, a.y); ctx.rotate(angle);
+    ctx.translate(sx, a.y); ctx.rotate(angle);
     ctx.strokeStyle = '#e8d9a0'; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(-10, 0); ctx.lineTo(10, 0); ctx.stroke();
     ctx.fillStyle = '#e8d9a0';
