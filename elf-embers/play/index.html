@@ -50,7 +50,7 @@ const JUMP_FORCE    = -13;
 const MOVE_SPEED    = 4.5;
 const ELF_SIZE      = 64;
 
-const ATTACK_DURATION = 180; // ms，短劍刺出收回一次的動畫時長
+const ATTACK_DURATION = 130; // ms，短劍刺出收回一次的動畫時長（加快）
 const THRUST_OUT_FRAC = 0.35; // 動畫前 35% 時間快速刺出、剩下 65% 收回
 
 // OpenMoji 原始素材畫面本身不是朝右擺（0度基準），套用旋轉前要先校正回「朝右」的基準角度
@@ -59,8 +59,8 @@ const THRUST_OUT_FRAC = 0.35; // 動畫前 35% 時間快速刺出、剩下 65% �
 const BOW_ROTATE_OFFSET   = Math.PI / 4;        // +45度（順時針）
 const SWORD_ROTATE_OFFSET = -Math.PI * 3 / 4;   // -135度（逆時針135度）
 
-const WEAPON_REACH_SWORD = 30; // 武器離身體中心的距離（原本14，拉遠一點）
-const WEAPON_REACH_BOW   = 24; // 原本10
+const WEAPON_REACH_SWORD = 44; // 短劍刺出最遠距離
+const WEAPON_REACH_BOW   = 24;
 
 const BOW_MIN_CHARGE_MS = 120;  // 低於此視為未真正蓄力（放開直接算最低威力）
 const BOW_MAX_CHARGE_MS = 900;  // 蓄力封頂
@@ -270,11 +270,13 @@ function drawElf() {
     const reach = lerp(14, WEAPON_REACH_SWORD, reachT);
     const pivotX = elfScreenX() + Math.cos(elf.attack.center) * reach;
     const pivotY = elf.y - 34 + Math.sin(elf.attack.center) * reach;
-    drawEmoji(ctx, '🗡️', pivotX, pivotY, 40, { rotate: elf.attack.center + SWORD_ROTATE_OFFSET, dy: 12 });
+    drawEmoji(ctx, '🗡️', pivotX, pivotY, 50, { rotate: elf.attack.center + SWORD_ROTATE_OFFSET, dy: 12 });
   }
 
   if (bow.isDrawing) {
-    drawEmoji(ctx, '🏹', elfScreenX() + Math.cos(angle) * WEAPON_REACH_BOW, elf.y - 32 + Math.sin(angle) * WEAPON_REACH_BOW, 34, { rotate: angle + BOW_ROTATE_OFFSET, flip: facingLeft });
+    // 弓箭已有完整360度連續旋轉、本身就能指向任何方向，不能再加 flip——
+    // flip(scale(-1,1)) 是在旋轉後的座標系裡鏡射，跟 rotate 疊加會算出錯的角度
+    drawEmoji(ctx, '🏹', elfScreenX() + Math.cos(angle) * WEAPON_REACH_BOW, elf.y - 32 + Math.sin(angle) * WEAPON_REACH_BOW, 44, { rotate: angle + BOW_ROTATE_OFFSET });
     // 蓄力條
     const heldMs = clamp(performance.now() - bow.drawStart, 0, BOW_MAX_CHARGE_MS);
     const t = heldMs / BOW_MAX_CHARGE_MS;
