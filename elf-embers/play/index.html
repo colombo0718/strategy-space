@@ -53,6 +53,15 @@ const ELF_SIZE      = 64;
 const ATTACK_DURATION = 180; // ms，揮劍一次的動畫時長
 const SWORD_ARC_HALF  = 1.0; // 弧度，揮劍扇形半寬（約115度全寬）
 
+// OpenMoji 原始素材畫面本身不是朝右擺（0度基準），套用旋轉前要先校正回「朝右」的基準角度
+// 校正值來自實際比對素材圖：弓箭圖案原始朝向約左上45度（順時針轉45度校正回朝右）
+//                          短劍圖案原始朝向約左上135度（逆時針轉135度／即-135度校正回朝右）
+const BOW_ROTATE_OFFSET   = Math.PI / 4;        // +45度（順時針）
+const SWORD_ROTATE_OFFSET = -Math.PI * 3 / 4;   // -135度（逆時針135度）
+
+const WEAPON_REACH_SWORD = 30; // 武器離身體中心的距離（原本14，拉遠一點）
+const WEAPON_REACH_BOW   = 24; // 原本10
+
 const BOW_MIN_CHARGE_MS = 120;  // 低於此視為未真正蓄力（放開直接算最低威力）
 const BOW_MAX_CHARGE_MS = 900;  // 蓄力封頂
 const QUICK_SHOT_SPEED  = 9,   QUICK_SHOT_RANGE  = 260; // 移動中點放：弱、短
@@ -74,6 +83,7 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const elf = {
   worldX: 0, y: GROUND_Y, vx: 0, vy: 0,
   onGround: true,
+  facing: 1,   // 人物圖案左右面向，由左右按鍵決定（不是瞄準方向），靜止時沿用上次的值
   attack: null,   // { center: 弧度, start: performance.now() }
 };
 
@@ -179,6 +189,7 @@ function update() {
     let inputX = 0;
     if (keys['a'] || keys['A']) inputX = -1;
     else if (keys['d'] || keys['D']) inputX = 1;
+    if (inputX !== 0) elf.facing = inputX; // 人物左右面向：只由按鍵決定，靜止時沿用上次
 
     if (inputX !== 0) {
       speedMult = alignMultiplier(angle, inputX, 0, K_SPEED);
@@ -246,19 +257,19 @@ function drawScene() {
 
 function drawElf() {
   const angle = aimAngle();
-  const facingLeft = Math.cos(angle) < 0;
+  const facingLeft = elf.facing < 0;
   drawEmoji(ctx, '🧝', elfScreenX(), elf.y - ELF_SIZE / 2, ELF_SIZE, { flip: facingLeft });
 
   if (elf.attack) {
     const t = clamp((performance.now() - elf.attack.start) / ATTACK_DURATION, 0, 1);
     const swordAngle = lerp(elf.attack.center - SWORD_ARC_HALF, elf.attack.center + SWORD_ARC_HALF, t);
-    const pivotX = elfScreenX() + Math.cos(elf.attack.center) * 14;
-    const pivotY = elf.y - 34 + Math.sin(elf.attack.center) * 14;
-    drawEmoji(ctx, '🗡️', pivotX, pivotY, 40, { rotate: swordAngle, dy: 12 });
+    const pivotX = elfScreenX() + Math.cos(elf.attack.center) * WEAPON_REACH_SWORD;
+    const pivotY = elf.y - 34 + Math.sin(elf.attack.center) * WEAPON_REACH_SWORD;
+    drawEmoji(ctx, '🗡️', pivotX, pivotY, 40, { rotate: swordAngle + SWORD_ROTATE_OFFSET, dy: 12 });
   }
 
   if (bow.isDrawing) {
-    drawEmoji(ctx, '🏹', elfScreenX() + Math.cos(angle) * 10, elf.y - 32 + Math.sin(angle) * 10, 34, { rotate: angle, flip: facingLeft });
+    drawEmoji(ctx, '🏹', elfScreenX() + Math.cos(angle) * WEAPON_REACH_BOW, elf.y - 32 + Math.sin(angle) * WEAPON_REACH_BOW, 34, { rotate: angle + BOW_ROTATE_OFFSET, flip: facingLeft });
     // 蓄力條
     const heldMs = clamp(performance.now() - bow.drawStart, 0, BOW_MAX_CHARGE_MS);
     const t = heldMs / BOW_MAX_CHARGE_MS;
