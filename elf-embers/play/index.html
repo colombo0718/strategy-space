@@ -263,8 +263,10 @@ function drawElf() {
   if (elf.attack) {
     const t = clamp((performance.now() - elf.attack.start) / ATTACK_DURATION, 0, 1);
     const swordAngle = lerp(elf.attack.center - SWORD_ARC_HALF, elf.attack.center + SWORD_ARC_HALF, t);
-    const pivotX = elfScreenX() + Math.cos(elf.attack.center) * WEAPON_REACH_SWORD;
-    const pivotY = elf.y - 34 + Math.sin(elf.attack.center) * WEAPON_REACH_SWORD;
+    // 握劍點要跟著 swordAngle（動畫中的角度）掃、不能用 elf.attack.center（固定值）算，
+    // 不然畫的位置整段動畫都釘在同一點，變成圖片原地自轉而不是繞人物揮出扇形
+    const pivotX = elfScreenX() + Math.cos(swordAngle) * WEAPON_REACH_SWORD;
+    const pivotY = elf.y - 34 + Math.sin(swordAngle) * WEAPON_REACH_SWORD;
     drawEmoji(ctx, '🗡️', pivotX, pivotY, 40, { rotate: swordAngle + SWORD_ROTATE_OFFSET, dy: 12 });
   }
 
