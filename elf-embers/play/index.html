@@ -29,7 +29,8 @@
 <div id="hud">速度倍率 —　｜　最近攻擊傷害倍率 —</div>
 <div id="hint">
   A / D 移動　W 跳躍　　滑鼠移動＝瞄準方向（弓劍共用）<br>
-  1 短劍刺出收回（方向鎖在按下瞬間的瞄準方向）　　2 弓箭——移動中點按＝快速點放；站定按住＝拉弓蓄力（此時鎖移動，瞄準仍跟滑鼠）<br>
+  1 或滑鼠左鍵：短劍刺出收回（方向鎖在按下瞬間的瞄準方向）<br>
+  2 或滑鼠右鍵：弓箭——移動中點按＝快速點放；站定按住＝拉弓蓄力（此時鎖移動，瞄準仍跟滑鼠）<br>
   <span style="opacity:.7">面向與移動方向對齊＝速度/傷害加成；背向＝減益（永遠有基礎值，不會歸零或負值）</span><br>
   <span style="opacity:.7">目前僅控制系統原型，尚無 boss／血量／勝負——<a href="../" style="color:#cbb8d8">◂ 關於本作</a>　<a href="../../" style="color:#cbb8d8">◂ 回玄機萬境大廳</a></span>
 </div>
@@ -150,18 +151,31 @@ window.addEventListener('keydown', e => {
 window.addEventListener('keyup', e => { keys[e.key] = false; });
 window.addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
 
+// 滑鼠左右鍵：左鍵進戰(同 1 鍵)、右鍵遠程(同 2 鍵)，跟鍵盤共用同一套 keys/justDown
+canvas.addEventListener('mousedown', e => {
+  const k = e.button === 0 ? 'Mouse0' : e.button === 2 ? 'Mouse2' : null;
+  if (!k) return;
+  if (!keys[k]) justDown[k] = true;
+  keys[k] = true;
+});
+canvas.addEventListener('mouseup', e => {
+  const k = e.button === 0 ? 'Mouse0' : e.button === 2 ? 'Mouse2' : null;
+  if (k) keys[k] = false;
+});
+canvas.addEventListener('contextmenu', e => e.preventDefault()); // 擋掉右鍵瀏覽器選單，右鍵才能拿來玩
+
 // ════════════════════════════════
 //  更新
 // ════════════════════════════════
 function handleAttackInput() {
   const angle = aimAngle();
 
-  if (justDown['1'] && !elf.attack && !bow.isDrawing) {
+  if ((justDown['1'] || justDown['Mouse0']) && !elf.attack && !bow.isDrawing) {
     lastDamageMult = alignMultiplier(angle, moveDir.x, moveDir.y, K_DAMAGE);
     elf.attack = { center: angle, start: performance.now() };
   }
 
-  if (justDown['2'] && !bow.isDrawing) {
+  if ((justDown['2'] || justDown['Mouse2']) && !bow.isDrawing) {
     const movingDir = (keys['a'] || keys['A']) ? -1 : (keys['d'] || keys['D']) ? 1 : 0;
     if (movingDir !== 0) {
       // 移動中點按 → 立刻沿瞄準方向水平點放，不蓄力、不鎖移動
@@ -172,7 +186,7 @@ function handleAttackInput() {
       bow.drawStart = performance.now();
     }
   }
-  if (!keys['2'] && bow.isDrawing) {
+  if (!keys['2'] && !keys['Mouse2'] && bow.isDrawing) {
     const heldMs = performance.now() - bow.drawStart;
     const t = clamp((heldMs - BOW_MIN_CHARGE_MS) / (BOW_MAX_CHARGE_MS - BOW_MIN_CHARGE_MS), 0, 1);
     lastDamageMult = alignMultiplier(angle, moveDir.x, moveDir.y, K_DAMAGE);
