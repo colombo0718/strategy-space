@@ -65,10 +65,10 @@ const WEAPON_REACH_SWORD = 44; // 短劍刺出最遠距離
 const WEAPON_REACH_BOW   = 24;
 
 const BOW_MIN_CHARGE_MS = 120;  // 低於此視為未真正蓄力（放開直接算最低威力）
-const BOW_MAX_CHARGE_MS = 900;  // 蓄力封頂
-const QUICK_SHOT_SPEED  = 9,   QUICK_SHOT_RANGE  = 260; // 移動中點放：弱、短
-const CHARGED_MIN_SPEED = 10,  CHARGED_MAX_SPEED = 16;  // 站定蓄力：依蓄力量在區間內插值
-const CHARGED_MIN_RANGE = 320, CHARGED_MAX_RANGE = 720;
+const BOW_MAX_CHARGE_MS = 1000; // 蓄力封頂：1秒
+const CHARGED_MIN_SPEED = 15, CHARGED_MAX_SPEED = 30; // 站定蓄力：依蓄力量在區間內插值
+// 移動中點放＝站定蓄力的最低值，不再另開一組獨立數值；有拋物線落地自然限制飛行距離，
+// 不用再額外設一個射程參數（原本 QUICK_SHOT_RANGE / CHARGED_MIN_RANGE / CHARGED_MAX_RANGE 已移除）
 
 // 面向/移動對齊 → 速度、傷害的加減波動振幅（1±k，永遠正值、永遠有基礎在）
 const K_SPEED = 0.3;
@@ -118,14 +118,13 @@ function aimAngle() {
   return Math.atan2(mouse.y - elfScreenY(), mouse.x - elfScreenX());
 }
 
-function fireArrow(angle, speed, range) {
+function fireArrow(angle, speed) {
   const originWorldX = elf.worldX + Math.cos(angle) * 18;
   const originWorldY = elf.worldY - 30 + Math.sin(angle) * 18;
   arrows.push({
     worldX: originWorldX, worldY: originWorldY,
     // 出手瞬間疊加人物本身的速度向量（速度合成）——邊跑邊射會比站定射更快更遠，符合物理
     vx: Math.cos(angle) * speed + elf.vx, vy: Math.sin(angle) * speed + elf.vy,
-    traveled: 0, maxRange: range,
   });
 }
 
@@ -179,9 +178,9 @@ function handleAttackInput() {
   if ((justDown['2'] || justDown['Mouse2']) && !bow.isDrawing) {
     const movingDir = (keys['a'] || keys['A']) ? -1 : (keys['d'] || keys['D']) ? 1 : 0;
     if (movingDir !== 0) {
-      // 移動中點按 → 立刻沿瞄準方向水平點放，不蓄力、不鎖移動
+      // 移動中點按 → 立刻沿瞄準方向點放，不蓄力、不鎖移動；速度＝站定蓄力的最低值
       lastDamageMult = alignMultiplier(angle, moveDir.x, moveDir.y, K_DAMAGE);
-      fireArrow(angle, QUICK_SHOT_SPEED, QUICK_SHOT_RANGE);
+      fireArrow(angle, CHARGED_MIN_SPEED);
     } else {
       bow.isDrawing = true;
       bow.drawStart = performance.now();
@@ -191,7 +190,7 @@ function handleAttackInput() {
     const heldMs = performance.now() - bow.drawStart;
     const t = clamp((heldMs - BOW_MIN_CHARGE_MS) / (BOW_MAX_CHARGE_MS - BOW_MIN_CHARGE_MS), 0, 1);
     lastDamageMult = alignMultiplier(angle, moveDir.x, moveDir.y, K_DAMAGE);
-    fireArrow(angle, lerp(CHARGED_MIN_SPEED, CHARGED_MAX_SPEED, t), lerp(CHARGED_MIN_RANGE, CHARGED_MAX_RANGE, t));
+    fireArrow(angle, lerp(CHARGED_MIN_SPEED, CHARGED_MAX_SPEED, t));
     bow.isDrawing = false;
   }
 }
@@ -235,16 +234,15 @@ function update() {
   // 揮劍動畫計時
   if (elf.attack && performance.now() - elf.attack.start >= ATTACK_DURATION) elf.attack = null;
 
-  // 箭矢（世界座標位移，重力跟人物共用同一顆常數，形成拋物線）
+  // 箭矢（世界座標位移，重力跟人物共用同一顆常數，形成拋物線——落地自然限制飛行距離，
+  // 不用再另外追蹤 traveled/maxRange 這種人工射程參數）
   arrows.forEach(a => {
     a.vy += GRAVITY;
-    const step = Math.hypot(a.vx, a.vy);
-    a.worldX += a.vx; a.worldY += a.vy; a.traveled += step;
+    a.worldX += a.vx; a.worldY += a.vy;
   });
   arrows = arrows.filter(a => {
     const sx = worldToScreenX(a.worldX), sy = worldToScreenY(a.worldY);
-    return a.traveled < a.maxRange && a.worldY < GROUND_WORLD_Y
-      && sx > -20 && sx < W + 20 && sy > -20 && sy < H + 20;
+    return a.worldY < GROUND_WORLD_Y && sx > -20 && sx < W + 20 && sy > -20 && sy < H + 20;
   });
 
   for (const k in justDown) delete justDown[k];
