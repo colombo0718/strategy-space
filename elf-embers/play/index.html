@@ -294,7 +294,9 @@ function drawElf() {
     const reach = lerp(14, WEAPON_REACH_SWORD, reachT);
     const pivotX = elfScreenX() + Math.cos(elf.attack.center) * reach;
     const pivotY = (ELF_SCREEN_Y - 34) + Math.sin(elf.attack.center) * reach;
-    drawEmoji(ctx, '🗡️', pivotX, pivotY, 50, { rotate: elf.attack.center + SWORD_ROTATE_OFFSET, dy: 12 });
+    // dx/dy：把旋轉軸心從SVG畫布幾何中心(36,36)校正到握柄實際位置(約52,18)，
+    // 換算現在畫的50px尺寸 ≈ (+11,-12.5)px（原本只補了dy、沒補dx，才會刀身整個往右偏移脫節）
+    drawEmoji(ctx, '🗡️', pivotX, pivotY, 50, { rotate: elf.attack.center + SWORD_ROTATE_OFFSET, dx: -11, dy: 12 });
   }
 
   if (bow.isDrawing) {
