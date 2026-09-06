@@ -123,7 +123,8 @@ function fireArrow(angle, speed, range) {
   const originWorldY = elf.worldY - 30 + Math.sin(angle) * 18;
   arrows.push({
     worldX: originWorldX, worldY: originWorldY,
-    vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+    // 出手瞬間疊加人物本身的速度向量（速度合成）——邊跑邊射會比站定射更快更遠，符合物理
+    vx: Math.cos(angle) * speed + elf.vx, vy: Math.sin(angle) * speed + elf.vy,
     traveled: 0, maxRange: range,
   });
 }
@@ -234,14 +235,16 @@ function update() {
   // 揮劍動畫計時
   if (elf.attack && performance.now() - elf.attack.start >= ATTACK_DURATION) elf.attack = null;
 
-  // 箭矢（世界座標位移）
+  // 箭矢（世界座標位移，重力跟人物共用同一顆常數，形成拋物線）
   arrows.forEach(a => {
+    a.vy += GRAVITY;
     const step = Math.hypot(a.vx, a.vy);
     a.worldX += a.vx; a.worldY += a.vy; a.traveled += step;
   });
   arrows = arrows.filter(a => {
     const sx = worldToScreenX(a.worldX), sy = worldToScreenY(a.worldY);
-    return a.traveled < a.maxRange && sx > -20 && sx < W + 20 && sy > -20 && sy < H + 20;
+    return a.traveled < a.maxRange && a.worldY < GROUND_WORLD_Y
+      && sx > -20 && sx < W + 20 && sy > -20 && sy < H + 20;
   });
 
   for (const k in justDown) delete justDown[k];
