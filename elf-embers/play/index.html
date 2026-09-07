@@ -32,7 +32,7 @@
   A / D 移動　W 或空白鍵跳躍（騰空後不能變向、維持拋物線）　　滑鼠移動＝瞄準方向（弓劍共用）<br>
   1 或滑鼠左鍵：短劍刺出收回（方向鎖在按下瞬間的瞄準方向）<br>
   2 或滑鼠右鍵：弓箭——移動中點按＝快速點放；站定按住＝拉弓蓄力（此時鎖移動，瞄準仍跟滑鼠）<br>
-  <span style="opacity:.7">手把(相容 Xbox 360)：左搖桿移動、A 跳躍、右搖桿瞄準、X 短劍、RT 弓箭——按一下手把任意鍵才會被瀏覽器偵測到</span><br>
+  <span style="opacity:.7">手把(相容 Xbox 360)：十字鍵左右移動、十字鍵上跳躍、右搖桿瞄準、LT 短劍、RT 弓箭——按一下手把任意鍵才會被瀏覽器偵測到</span><br>
   <span style="opacity:.7">面向與移動方向對齊＝速度/傷害加成；背向＝減益（永遠有基礎值，不會歸零或負值）</span><br>
   <span style="opacity:.7">目前僅控制系統原型，尚無 boss／血量／勝負——<a href="../" style="color:#cbb8d8">◂ 關於本作</a>　<a href="../../" style="color:#cbb8d8">◂ 回玄機萬境大廳</a></span>
 </div>
@@ -249,11 +249,12 @@ function pollGamepad() {
   const gp = navigator.getGamepads()[gamepadIndex];
   if (!gp) return;
 
-  // 左搖桿水平：跟 A/D 一樣只判斷方向、維持離散——移動的動作空間本來就設計成離散，
-  // 只有瞄準角度是連續(見 PROJECT.md「RL 友善設計原則」)，搖桿類比值不拿來做類比移動速度
-  const lx = gp.axes[0];
-  keys['GamepadLeft']  = lx < -GAMEPAD_DEADZONE;
-  keys['GamepadRight'] = lx > GAMEPAD_DEADZONE;
+  // 左/右/跳 改用十字鍵(D-pad)，不用左搖桿——跟 GG(GameGeek)既有協定「上鍵當跳鍵」的
+  // 離散 btnID 慣例對齊(見 PROJECT.md「GG控制協定現況」)，standard mapping 下 D-pad 是
+  // buttons[12..15](上/下/左/右)，不是 axes
+  setGamepadKey('GamepadLeft',  gp.buttons[14] && gp.buttons[14].pressed);
+  setGamepadKey('GamepadRight', gp.buttons[15] && gp.buttons[15].pressed);
+  setGamepadKey('GamepadUp',    gp.buttons[12] && gp.buttons[12].pressed);
 
   // 右搖桿：離開死區才接管瞄準角度、同時把 aimSource 搶過來；回中立時兩者都不動，
   // 沿用各自最後的值(跟滑鼠不動時沿用上次滑鼠位置是同一種處理方式)
@@ -263,10 +264,9 @@ function pollGamepad() {
     aimSource = 'gamepad';
   }
 
-  // 按鍵：A=跳躍(同 W/空白鍵)、X=短劍(同 1/滑鼠左鍵)、RT=弓箭(同 2/滑鼠右鍵，扳機當數位鍵用、
-  // 不取類比值——蓄力的類比感已經由「按住多久」這個既有機制處理，不需要扳機再疊一層類比)
-  setGamepadKey('GamepadA',  gp.buttons[0] && gp.buttons[0].pressed);
-  setGamepadKey('GamepadX',  gp.buttons[2] && gp.buttons[2].pressed);
+  // 按鍵：十字鍵上=跳躍、LT=短劍(近戰)、RT=弓箭(遠程，同 2/滑鼠右鍵)——兩個扳機都當數位鍵用、
+  // 不取類比值，蓄力的類比感已經由「按住多久」這個既有機制處理，不需要扳機再疊一層類比
+  setGamepadKey('GamepadLT', gp.buttons[6] && gp.buttons[6].pressed);
   setGamepadKey('GamepadRT', gp.buttons[7] && gp.buttons[7].pressed);
 }
 
@@ -276,7 +276,7 @@ function pollGamepad() {
 function handleAttackInput() {
   const angle = aimAngle();
 
-  if ((justDown['1'] || justDown['Mouse0'] || justDown['GamepadX']) && !bow.isDrawing
+  if ((justDown['1'] || justDown['Mouse0'] || justDown['GamepadLT']) && !bow.isDrawing
       && performance.now() - lastAttackTime >= ATTACK_COOLDOWN_MS) {
     lastDamageMult = alignMultiplier(angle, moveDir.x, moveDir.y, K_DAMAGE);
     elf.attack = { center: angle, start: performance.now(), hitSet: new Set() };
@@ -329,7 +329,7 @@ function update() {
       }
     }
 
-    if ((justDown['w'] || justDown['W'] || justDown[' '] || justDown['GamepadA']) && elf.onGround) {
+    if ((justDown['w'] || justDown['W'] || justDown[' '] || justDown['GamepadUp']) && elf.onGround) {
       elf.vy = JUMP_FORCE; elf.onGround = false;
     }
   }
