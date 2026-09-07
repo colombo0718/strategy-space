@@ -65,6 +65,14 @@ const SWORD_ROTATE_OFFSET = -Math.PI * 3 / 4;   // -135度（逆時針135度）
 const WEAPON_REACH_SWORD = 44; // 短劍刺出最遠距離
 const WEAPON_REACH_BOW   = 24;
 
+// 場景測試物件：🎯靶(遠程)、🗿假人(近戰)——兩者都有感測圓，判定用圓心距離(先不做方向性分區，
+// 靜態物件無「正面」概念，之後真的做 boss 才需要角度分區/閃避，見設計討論)
+// 🪵木樁——純場景平台，可站上去墊高，不參與攻擊判定
+const TARGET_RADIUS = 22;
+const DUMMY_RADIUS  = 27;
+const LOG_HALF_WIDTH = 26;
+const LOG_TOP_OFFSET = 30; // 木樁頂部比地面高多少（世界座標，數字越大墊越高）
+
 const BOW_MIN_CHARGE_MS = 120;  // 低於此視為未真正蓄力（放開直接算最低威力）
 const BOW_MAX_CHARGE_MS = 1000; // 蓄力封頂：1秒
 const CHARGED_MIN_SPEED = 15, CHARGED_MAX_SPEED = 30; // 站定蓄力：依蓄力量在區間內插值
@@ -98,6 +106,12 @@ const bow = { isDrawing: false, drawStart: 0 };
 
 let arrows = []; // 箭矢座標一律存世界座標，畫的時候才轉螢幕座標
 
+// 場景測試物件實體（世界座標）
+const dummy  = { worldX: 130, worldY: GROUND_WORLD_Y, radius: DUMMY_RADIUS, hitCount: 0, hitFlashAt: -Infinity };
+const target = { worldX: 340, worldY: GROUND_WORLD_Y, radius: TARGET_RADIUS, hitCount: 0, hitFlashAt: -Infinity };
+const log    = { worldX: -170, topY: GROUND_WORLD_Y - LOG_TOP_OFFSET, halfWidth: LOG_HALF_WIDTH };
+const hittableObjects = [dummy, target]; // 🪵不在此列——場景平台、不可攻擊
+
 let speedMult = 1, lastDamageMult = 1;
 let lastAttackTime = -Infinity; // 上次揮劍觸發的時間戳，配合 ATTACK_COOLDOWN_MS 用
 
@@ -120,6 +134,22 @@ function aimAngle() {
   return Math.atan2(mouse.y - elfScreenY(), mouse.x - elfScreenX());
 }
 
+// 短劍刺出距離隨動畫時間變化：前 35% 快速刺出到最遠、剩下 65% 收回(供命中判定跟繪製共用)
+function swordReachAt(t) {
+  const reachT = t < THRUST_OUT_FRAC
+    ? t / THRUST_OUT_FRAC
+    : 1 - (t - THRUST_OUT_FRAC) / (1 - THRUST_OUT_FRAC);
+  return lerp(14, WEAPON_REACH_SWORD, reachT);
+}
+function swordTipWorld() {
+  const t = clamp((performance.now() - elf.attack.start) / ATTACK_DURATION, 0, 1);
+  const reach = swordReachAt(t);
+  return {
+    x: elf.worldX + Math.cos(elf.attack.center) * reach,
+    y: (elf.worldY - 30) + Math.sin(elf.attack.center) * reach,
+  };
+}
+
 function fireArrow(angle, speed) {
   const originWorldX = elf.worldX + Math.cos(angle) * 18;
   const originWorldY = elf.worldY - 30 + Math.sin(angle) * 18;
@@ -128,6 +158,18 @@ function fireArrow(angle, speed) {
     // 出手瞬間疊加人物本身的速度向量（速度合成）——邊跑邊射會比站定射更快更遠，符合物理
     vx: Math.cos(angle) * speed + elf.vx, vy: Math.sin(angle) * speed + elf.vy,
   });
+}
+
+// ════════════════════════════════
+//  命中判定：圓心距離 ≤ 感測圓半徑即算命中(先不分方向區，靜態測試物件用)
+// ════════════════════════════════
+function withinRadius(obj, wx, wy) {
+  // obj.worldY 是腳底(貼地)世界座標，感測圓中心比照畫圖時的視覺中心，往上抬一個半徑
+  return Math.hypot(wx - obj.worldX, wy - (obj.worldY - obj.radius)) <= obj.radius;
+}
+function registerHit(obj) {
+  obj.hitCount++;
+  obj.hitFlashAt = performance.now();
 }
 
 // ════════════════════════════════
@@ -175,7 +217,7 @@ function handleAttackInput() {
   if ((justDown['1'] || justDown['Mouse0']) && !bow.isDrawing
       && performance.now() - lastAttackTime >= ATTACK_COOLDOWN_MS) {
     lastDamageMult = alignMultiplier(angle, moveDir.x, moveDir.y, K_DAMAGE);
-    elf.attack = { center: angle, start: performance.now() };
+    elf.attack = { center: angle, start: performance.now(), hitSet: new Set() };
     lastAttackTime = performance.now();
   }
 
@@ -225,16 +267,38 @@ function update() {
   }
 
   // 重力＋位移（世界座標，水平垂直都是——鏡頭鎖角色，世界跟著相對捲動）
+  const prevWorldY = elf.worldY; // 供下方單向平台判定用：這一幀位移前腳底在哪
   elf.vy += GRAVITY;
   elf.worldX += elf.vx;
   elf.worldY += elf.vy;
-  if (elf.worldY >= GROUND_WORLD_Y) { elf.worldY = GROUND_WORLD_Y; elf.vy = 0; elf.onGround = true; }
+
+  // 🪵單向平台：腳底原本在平台頂部之上、這一幀又是下落中，才會被墊住——
+  // 側面走進去、或從平台下方往上跳，都不會被擋(每幀重算，站在上面時也會被持續墊住)
+  const onLogRange = elf.worldX > log.worldX - log.halfWidth && elf.worldX < log.worldX + log.halfWidth;
+  if (onLogRange && elf.vy >= 0 && prevWorldY <= log.topY + 0.01 && elf.worldY >= log.topY) {
+    elf.worldY = log.topY; elf.vy = 0; elf.onGround = true;
+  } else if (elf.worldY >= GROUND_WORLD_Y) {
+    elf.worldY = GROUND_WORLD_Y; elf.vy = 0; elf.onGround = true;
+  } else {
+    elf.onGround = false;
+  }
 
   // 黏滯移動方向：只在真的有位移時更新，靜止時凍結上一刻的值（避免零向量 undefined）
   if (Math.abs(elf.vx) > 0.01 || Math.abs(elf.vy) > 0.01) {
     moveDir.x = elf.vx; moveDir.y = elf.vy;
   }
 
+  // 揮劍命中判定：動畫播放期間每幀重算劍尖世界座標，同一揮擊每個物件只算命中一次
+  // (hitSet 記錄這一劍已經打過誰，避免刺出/收回來回都各判一次)
+  if (elf.attack) {
+    const tip = swordTipWorld();
+    for (const obj of hittableObjects) {
+      if (!elf.attack.hitSet.has(obj) && withinRadius(obj, tip.x, tip.y)) {
+        registerHit(obj);
+        elf.attack.hitSet.add(obj);
+      }
+    }
+  }
   // 揮劍動畫計時
   if (elf.attack && performance.now() - elf.attack.start >= ATTACK_DURATION) elf.attack = null;
 
@@ -245,6 +309,9 @@ function update() {
     a.worldX += a.vx; a.worldY += a.vy;
   });
   arrows = arrows.filter(a => {
+    for (const obj of hittableObjects) {
+      if (withinRadius(obj, a.worldX, a.worldY)) { registerHit(obj); return false; }
+    }
     const sx = worldToScreenX(a.worldX), sy = worldToScreenY(a.worldY);
     return a.worldY < GROUND_WORLD_Y && sx > -20 && sx < W + 20 && sy > -20 && sy < H + 20;
   });
@@ -290,10 +357,7 @@ function drawElf() {
     const t = clamp((performance.now() - elf.attack.start) / ATTACK_DURATION, 0, 1);
     // 方向鎖死在按下攻擊瞬間的專注方向（elf.attack.center），動畫中不再轉動；
     // 動的是「離身體多遠」——前 35% 快速刺出到最遠、剩下 65% 收回，直線刺出收回、不掃扇形
-    const reachT = t < THRUST_OUT_FRAC
-      ? t / THRUST_OUT_FRAC
-      : 1 - (t - THRUST_OUT_FRAC) / (1 - THRUST_OUT_FRAC);
-    const reach = lerp(14, WEAPON_REACH_SWORD, reachT);
+    const reach = swordReachAt(t);
     const pivotX = elfScreenX() + Math.cos(elf.attack.center) * reach;
     const pivotY = (ELF_SCREEN_Y - 34) + Math.sin(elf.attack.center) * reach;
     // dx/dy：把旋轉軸心從SVG畫布幾何中心(36,36)校正到握柄實際位置(約52,18)，
@@ -325,6 +389,35 @@ function drawChargeBar() {
   ctx.fillStyle = '#ffd24a'; ctx.fillRect(16, 32, 100 * t, 10);
 }
 
+// 🎯靶／🗿假人：被打中後 150ms 內閃白，並累計顯示命中次數(先只求「打得到」的回饋，
+// 還沒有血量/擊殺邏輯——那塊等真的做傷害系統時再接)
+function drawHittable(obj, ch) {
+  const size = obj.radius * 2;
+  const sx = worldToScreenX(obj.worldX);
+  const sy = worldToScreenY(obj.worldY) - obj.radius;
+  drawEmoji(ctx, ch, sx, sy, size);
+  const flashT = clamp(1 - (performance.now() - obj.hitFlashAt) / 150, 0, 1);
+  if (flashT > 0) {
+    ctx.save();
+    ctx.globalAlpha = flashT * 0.6;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(sx, sy, obj.radius, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+  if (obj.hitCount > 0) {
+    ctx.fillStyle = '#ffd24a'; ctx.font = '12px Consolas, monospace'; ctx.textAlign = 'center';
+    ctx.fillText(`命中 ${obj.hitCount}`, sx, sy + obj.radius + 14);
+    ctx.textAlign = 'left';
+  }
+}
+
+// 🪵木樁：純場景平台，畫在自己的世界位置、頂部對齊 log.topY，不參與命中判定
+function drawLog() {
+  const sx = worldToScreenX(log.worldX);
+  const sy = worldToScreenY((log.topY + GROUND_WORLD_Y) / 2); // 木樁視覺中心：頂部跟地面中間
+  drawEmoji(ctx, '🪵', sx, sy, LOG_HALF_WIDTH * 2, { rotate: Math.PI / 2 });
+}
+
 function drawArrows() {
   arrows.forEach(a => {
     const sx = worldToScreenX(a.worldX), sy = worldToScreenY(a.worldY);
@@ -343,6 +436,9 @@ function gameLoop() {
   update();
   ctx.clearRect(0, 0, W, H);
   drawScene();
+  drawLog();
+  drawHittable(dummy, '🗿');
+  drawHittable(target, '🎯');
   drawArrows();
   drawElf();
   drawChargeBar();
