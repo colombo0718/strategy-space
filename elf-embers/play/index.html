@@ -32,6 +32,7 @@
   A / D 移動　W 或空白鍵跳躍（騰空後不能變向、維持拋物線）　　滑鼠移動＝瞄準方向（弓劍共用）<br>
   1 或滑鼠左鍵：短劍刺出收回（方向鎖在按下瞬間的瞄準方向）<br>
   2 或滑鼠右鍵：弓箭——移動中點按＝快速點放；站定按住＝拉弓蓄力（此時鎖移動，瞄準仍跟滑鼠）<br>
+  <span style="opacity:.7">手把(相容 Xbox 360)：左搖桿移動、A 跳躍、右搖桿瞄準、X 短劍、RT 弓箭——按一下手把任意鍵才會被瀏覽器偵測到</span><br>
   <span style="opacity:.7">面向與移動方向對齊＝速度/傷害加成；背向＝減益（永遠有基礎值，不會歸零或負值）</span><br>
   <span style="opacity:.7">目前僅控制系統原型，尚無 boss／血量／勝負——<a href="../" style="color:#cbb8d8">◂ 關於本作</a>　<a href="../../" style="color:#cbb8d8">◂ 回玄機萬境大廳</a></span>
 </div>
@@ -138,13 +139,16 @@ function elfScreenY() { return ELF_SCREEN_Y - 30; } // 瞄準基準點，約胸�
 //  滑鼠瞄準
 // ════════════════════════════════
 const mouse = { x: W / 2, y: H / 2 };
+let aimSource = 'mouse'; // 'mouse' | 'gamepad'——瞄準角度由哪個裝置決定，看哪個裝置最後一次真的有動作
 canvas.addEventListener('mousemove', e => {
   const rect = canvas.getBoundingClientRect();
   mouse.x = e.clientX - rect.left - canvas.clientLeft;
   mouse.y = e.clientY - rect.top - canvas.clientTop;
+  aimSource = 'mouse';
 });
 
 function aimAngle() {
+  if (aimSource === 'gamepad' && gpAimAngle !== null) return gpAimAngle;
   return Math.atan2(mouse.y - elfScreenY(), mouse.x - elfScreenX());
 }
 
@@ -225,20 +229,63 @@ canvas.addEventListener('mouseup', e => {
 canvas.addEventListener('contextmenu', e => e.preventDefault()); // 擋掉右鍵瀏覽器選單，右鍵才能拿來玩
 
 // ════════════════════════════════
+//  手把（相容 Xbox 360 / 標準 Gamepad API mapping）——搖桿是輪詢制，沒有原生「按下瞬間」事件，
+//  每幀在 pollGamepad() 裡讀一次目前狀態，自己比對前一幀合成 justDown，跟鍵盤共用同一套 keys/justDown，
+//  下面 handleAttackInput() / update() 完全不用另外分支判斷是鍵盤還是手把
+// ════════════════════════════════
+const GAMEPAD_DEADZONE = 0.25;
+let gamepadIndex = null;
+let gpAimAngle = null; // 右搖桿最後一次離開死區時的角度；回中立時沿用這個值，不會跳回(0,0)方向
+window.addEventListener('gamepadconnected', e => { gamepadIndex = e.gamepad.index; });
+window.addEventListener('gamepaddisconnected', e => { if (gamepadIndex === e.gamepad.index) gamepadIndex = null; });
+
+function setGamepadKey(name, pressed) {
+  if (pressed && !keys[name]) justDown[name] = true;
+  keys[name] = !!pressed;
+}
+
+function pollGamepad() {
+  if (gamepadIndex === null) return;
+  const gp = navigator.getGamepads()[gamepadIndex];
+  if (!gp) return;
+
+  // 左搖桿水平：跟 A/D 一樣只判斷方向、維持離散——移動的動作空間本來就設計成離散，
+  // 只有瞄準角度是連續(見 PROJECT.md「RL 友善設計原則」)，搖桿類比值不拿來做類比移動速度
+  const lx = gp.axes[0];
+  keys['GamepadLeft']  = lx < -GAMEPAD_DEADZONE;
+  keys['GamepadRight'] = lx > GAMEPAD_DEADZONE;
+
+  // 右搖桿：離開死區才接管瞄準角度、同時把 aimSource 搶過來；回中立時兩者都不動，
+  // 沿用各自最後的值(跟滑鼠不動時沿用上次滑鼠位置是同一種處理方式)
+  const rx = gp.axes[2], ry = gp.axes[3];
+  if (Math.hypot(rx, ry) > GAMEPAD_DEADZONE) {
+    gpAimAngle = Math.atan2(ry, rx);
+    aimSource = 'gamepad';
+  }
+
+  // 按鍵：A=跳躍(同 W/空白鍵)、X=短劍(同 1/滑鼠左鍵)、RT=弓箭(同 2/滑鼠右鍵，扳機當數位鍵用、
+  // 不取類比值——蓄力的類比感已經由「按住多久」這個既有機制處理，不需要扳機再疊一層類比)
+  setGamepadKey('GamepadA',  gp.buttons[0] && gp.buttons[0].pressed);
+  setGamepadKey('GamepadX',  gp.buttons[2] && gp.buttons[2].pressed);
+  setGamepadKey('GamepadRT', gp.buttons[7] && gp.buttons[7].pressed);
+}
+
+// ════════════════════════════════
 //  更新
 // ════════════════════════════════
 function handleAttackInput() {
   const angle = aimAngle();
 
-  if ((justDown['1'] || justDown['Mouse0']) && !bow.isDrawing
+  if ((justDown['1'] || justDown['Mouse0'] || justDown['GamepadX']) && !bow.isDrawing
       && performance.now() - lastAttackTime >= ATTACK_COOLDOWN_MS) {
     lastDamageMult = alignMultiplier(angle, moveDir.x, moveDir.y, K_DAMAGE);
     elf.attack = { center: angle, start: performance.now(), hitSet: new Set() };
     lastAttackTime = performance.now();
   }
 
-  if ((justDown['2'] || justDown['Mouse2']) && !bow.isDrawing) {
-    const movingDir = (keys['a'] || keys['A']) ? -1 : (keys['d'] || keys['D']) ? 1 : 0;
+  if ((justDown['2'] || justDown['Mouse2'] || justDown['GamepadRT']) && !bow.isDrawing) {
+    const movingDir = (keys['a'] || keys['A'] || keys['GamepadLeft']) ? -1
+      : (keys['d'] || keys['D'] || keys['GamepadRight']) ? 1 : 0;
     if (movingDir !== 0) {
       // 移動中點按 → 立刻沿瞄準方向點放，不蓄力、不鎖移動；速度＝站定蓄力的最低值
       lastDamageMult = alignMultiplier(angle, moveDir.x, moveDir.y, K_DAMAGE);
@@ -248,7 +295,7 @@ function handleAttackInput() {
       bow.drawStart = performance.now();
     }
   }
-  if (!keys['2'] && !keys['Mouse2'] && bow.isDrawing) {
+  if (!keys['2'] && !keys['Mouse2'] && !keys['GamepadRT'] && bow.isDrawing) {
     const heldMs = performance.now() - bow.drawStart;
     const t = clamp((heldMs - BOW_MIN_CHARGE_MS) / (BOW_MAX_CHARGE_MS - BOW_MIN_CHARGE_MS), 0, 1);
     lastDamageMult = alignMultiplier(angle, moveDir.x, moveDir.y, K_DAMAGE);
@@ -258,6 +305,7 @@ function handleAttackInput() {
 }
 
 function update() {
+  pollGamepad(); // 要放最前面——下面 handleAttackInput() 跟移動判斷都要吃這幀合成好的 keys/justDown
   handleAttackInput();
   const angle = aimAngle();
 
@@ -266,8 +314,8 @@ function update() {
     elf.vx = 0;
   } else {
     let inputX = 0;
-    if (keys['a'] || keys['A']) inputX = -1;
-    else if (keys['d'] || keys['D']) inputX = 1;
+    if (keys['a'] || keys['A'] || keys['GamepadLeft']) inputX = -1;
+    else if (keys['d'] || keys['D'] || keys['GamepadRight']) inputX = 1;
     if (inputX !== 0) elf.facing = inputX; // 人物左右面向：只由按鍵決定，靜止時沿用上次
 
     // 水平速度只在貼地時才吃輸入——騰空後 vx 維持起跳當下的值不再變，保持原本的拋物線飛行
@@ -281,7 +329,7 @@ function update() {
       }
     }
 
-    if ((justDown['w'] || justDown['W'] || justDown[' ']) && elf.onGround) {
+    if ((justDown['w'] || justDown['W'] || justDown[' '] || justDown['GamepadA']) && elf.onGround) {
       elf.vy = JUMP_FORCE; elf.onGround = false;
     }
   }
