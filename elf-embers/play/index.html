@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <title>精靈餘燼 elf-embers（控制系統 MVP v2）</title>
-<link rel="icon" href="assets/openmoji/1F9DD.svg">
+<!-- favicon 用系統原生 emoji 字型畫（文字 emoji，不是 OpenMoji 素材）——遊戲內素材才統一走 OpenMoji，避免版權疑慮 -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧝</text></svg>">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -412,10 +413,12 @@ function drawHittable(obj, ch) {
 }
 
 // 🪵木樁：純場景平台，畫在自己的世界位置、頂部對齊 log.topY，不參與命中判定
+// 素材原始角度(0度)本身就是切斷面朝上的直立樣子(用 headless chrome 實際渲染8個角度比對確認過)，
+// 不用另外旋轉——直立疊放的視覺語意，之後要做「疊高木樁」也是同一顆素材往上疊就好
 function drawLog() {
   const sx = worldToScreenX(log.worldX);
   const sy = worldToScreenY((log.topY + GROUND_WORLD_Y) / 2); // 木樁視覺中心：頂部跟地面中間
-  drawEmoji(ctx, '🪵', sx, sy, LOG_HALF_WIDTH * 2, { rotate: Math.PI / 2 });
+  drawEmoji(ctx, '🪵', sx, sy, LOG_HALF_WIDTH * 2);
 }
 
 function drawArrows() {
