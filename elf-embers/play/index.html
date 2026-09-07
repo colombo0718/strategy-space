@@ -33,6 +33,7 @@
   1 或滑鼠左鍵：短劍刺出收回（方向鎖在按下瞬間的瞄準方向）<br>
   2 或滑鼠右鍵：弓箭——移動中點按＝快速點放；站定按住＝拉弓蓄力（此時鎖移動，瞄準仍跟滑鼠）<br>
   <span style="opacity:.7">手把(相容 Xbox 360)：十字鍵左右移動、十字鍵上跳躍、右搖桿瞄準、LT 短劍、RT 弓箭——按一下手把任意鍵才會被瀏覽器偵測到</span><br>
+  <span style="opacity:.7">F3：切換開發輔助線（感測圓／劍尖箭矢判定點／木樁平台邊界）</span><br>
   <span style="opacity:.7">面向與移動方向對齊＝速度/傷害加成；背向＝減益（永遠有基礎值，不會歸零或負值）</span><br>
   <span style="opacity:.7">目前僅控制系統原型，尚無 boss／血量／勝負——<a href="../" style="color:#cbb8d8">◂ 關於本作</a>　<a href="../../" style="color:#cbb8d8">◂ 回玄機萬境大廳</a></span>
 </div>
@@ -207,8 +208,10 @@ function alignMultiplier(angleA, dirBx, dirBy, k) {
 // ════════════════════════════════
 const keys = {};
 const justDown = {};
+let debugColliders = true; // 開發輔助線開關(感測圓/判定點/平台邊界)，F3 切換，正式上線前記得考慮預設關掉
 window.addEventListener('keydown', e => {
   if (e.key === ' ') e.preventDefault(); // 空白鍵預設會捲頁，遊戲裡拿來跳躍要擋掉
+  if (e.key === 'F3') { e.preventDefault(); debugColliders = !debugColliders; }
   if (!keys[e.key]) justDown[e.key] = true;
   keys[e.key] = true;
 });
@@ -504,6 +507,52 @@ function drawArrows() {
   });
 }
 
+// 開發輔助線(F3 切換)：圓心/半徑/判定點都直接拿判定邏輯實際用的同一份座標算，
+// 不是另外目測畫的，保證看到的範圍就是真正生效的範圍
+function drawDebugColliders() {
+  if (!debugColliders) return;
+  ctx.save();
+  ctx.lineWidth = 1.5;
+
+  // 🗿🎯 感測圓：圓心算法跟 withinRadius() 完全同一份
+  ctx.strokeStyle = '#00ffe1';
+  ctx.fillStyle = '#00ffe1';
+  for (const obj of hittableObjects) {
+    const sx = worldToScreenX(obj.worldX);
+    const sy = worldToScreenY(obj.worldY - obj.radius + obj.groundGapPx);
+    ctx.beginPath(); ctx.arc(sx, sy, obj.radius, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(sx, sy, 2, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // 短劍劍尖判定點：跟 update() 裡拿去判定的 swordTipWorld() 是同一個函式
+  if (elf.attack) {
+    const tip = swordTipWorld();
+    const sx = worldToScreenX(tip.x), sy = worldToScreenY(tip.y);
+    ctx.fillStyle = '#ff3b3b';
+    ctx.beginPath(); ctx.arc(sx, sy, 3, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // 箭矢判定點：飛行中每一支箭矢本身的座標(a.worldX/worldY)就是判定用的點
+  ctx.fillStyle = '#ffe14a';
+  arrows.forEach(a => {
+    const sx = worldToScreenX(a.worldX), sy = worldToScreenY(a.worldY);
+    ctx.beginPath(); ctx.arc(sx, sy, 3, 0, Math.PI * 2); ctx.fill();
+  });
+
+  // 🪵木樁單向平台碰撞範圍：水平 halfWidth 兩端 + 頂部 topY(跟 update() 的 onLogRange 判定同一份)
+  const logL = worldToScreenX(log.worldX - log.halfWidth);
+  const logR = worldToScreenX(log.worldX + log.halfWidth);
+  const logTopSY = worldToScreenY(log.topY);
+  ctx.strokeStyle = '#a0ff4a';
+  ctx.beginPath(); ctx.moveTo(logL, logTopSY); ctx.lineTo(logR, logTopSY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(logL, logTopSY - 6); ctx.lineTo(logL, logTopSY + 6); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(logR, logTopSY - 6); ctx.lineTo(logR, logTopSY + 6); ctx.stroke();
+
+  ctx.fillStyle = '#00ffe1cc'; ctx.font = '11px Consolas, monospace';
+  ctx.fillText('F3 除錯輔助線：開（🧝主角目前還沒有感測圓，尚無 boss 可測）', 10, H - 10);
+  ctx.restore();
+}
+
 function gameLoop() {
   update();
   ctx.clearRect(0, 0, W, H);
@@ -514,6 +563,7 @@ function gameLoop() {
   drawArrows();
   drawElf();
   drawChargeBar();
+  drawDebugColliders();
   requestAnimationFrame(gameLoop);
 }
 
