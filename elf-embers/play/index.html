@@ -52,9 +52,9 @@ const GRAVITY      = 0.7;
 const JUMP_FORCE    = -13;
 const MOVE_SPEED    = 4.5;
 
-// 🧝🗿🎯🪵ㄧ律用這個畫框大小(72x72等比縮放貼到這個正方形)，先求畫框一致——
-// 內容佔比不同、實際視覺大小還是會有落差(見下面留白量測)，那塊之後再校正
-const UNIT_DRAW_SIZE = 64;
+// 🧝🗿🎯🪵ㄧ律用這個畫框大小(72x72等比縮放貼到這個正方形)——放大到跟素材原始 viewBox
+// 一樣的 72，方便之後觀察各單位感測圓在不同角度下的效果(2026-09-07 從 64 調大)
+const UNIT_DRAW_SIZE = 72;
 
 const ATTACK_DURATION = 130; // ms，短劍刺出收回一次的動畫時長（加快）
 const THRUST_OUT_FRAC = 0.35; // 動畫前 35% 時間快速刺出、剩下 65% 收回
