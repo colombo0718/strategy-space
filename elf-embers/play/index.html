@@ -54,6 +54,7 @@ const ELF_SIZE      = 64;
 
 const ATTACK_DURATION = 130; // ms，短劍刺出收回一次的動畫時長（加快）
 const THRUST_OUT_FRAC = 0.35; // 動畫前 35% 時間快速刺出、剩下 65% 收回
+const ATTACK_COOLDOWN_MS = 500; // 從按下攻擊鍵那一刻起算，要等這麼久才能再揮下一劍（獨立於動畫時長）
 
 // OpenMoji 原始素材畫面本身不是朝右擺（0度基準），套用旋轉前要先校正回「朝右」的基準角度
 // 校正值來自實際比對素材圖：弓箭圖案原始朝向約左上45度（順時針轉45度校正回朝右）
@@ -98,6 +99,7 @@ const bow = { isDrawing: false, drawStart: 0 };
 let arrows = []; // 箭矢座標一律存世界座標，畫的時候才轉螢幕座標
 
 let speedMult = 1, lastDamageMult = 1;
+let lastAttackTime = -Infinity; // 上次揮劍觸發的時間戳，配合 ATTACK_COOLDOWN_MS 用
 
 function worldToScreenX(wx) { return wx - elf.worldX + W / 2; }
 function worldToScreenY(wy) { return wy - elf.worldY + ELF_SCREEN_Y; }
@@ -170,9 +172,11 @@ canvas.addEventListener('contextmenu', e => e.preventDefault()); // 擋掉右鍵
 function handleAttackInput() {
   const angle = aimAngle();
 
-  if ((justDown['1'] || justDown['Mouse0']) && !elf.attack && !bow.isDrawing) {
+  if ((justDown['1'] || justDown['Mouse0']) && !bow.isDrawing
+      && performance.now() - lastAttackTime >= ATTACK_COOLDOWN_MS) {
     lastDamageMult = alignMultiplier(angle, moveDir.x, moveDir.y, K_DAMAGE);
     elf.attack = { center: angle, start: performance.now() };
+    lastAttackTime = performance.now();
   }
 
   if ((justDown['2'] || justDown['Mouse2']) && !bow.isDrawing) {
