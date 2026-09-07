@@ -29,7 +29,7 @@
 <canvas id="gameCanvas" width="800" height="450"></canvas>
 <div id="hud">速度倍率 —　｜　最近攻擊傷害倍率 —</div>
 <div id="hint">
-  A / D 移動　W 跳躍　　滑鼠移動＝瞄準方向（弓劍共用）<br>
+  A / D 移動　W 或空白鍵跳躍（騰空後不能變向、維持拋物線）　　滑鼠移動＝瞄準方向（弓劍共用）<br>
   1 或滑鼠左鍵：短劍刺出收回（方向鎖在按下瞬間的瞄準方向）<br>
   2 或滑鼠右鍵：弓箭——移動中點按＝快速點放；站定按住＝拉弓蓄力（此時鎖移動，瞄準仍跟滑鼠）<br>
   <span style="opacity:.7">面向與移動方向對齊＝速度/傷害加成；背向＝減益（永遠有基礎值，不會歸零或負值）</span><br>
@@ -199,6 +199,7 @@ function alignMultiplier(angleA, dirBx, dirBy, k) {
 const keys = {};
 const justDown = {};
 window.addEventListener('keydown', e => {
+  if (e.key === ' ') e.preventDefault(); // 空白鍵預設會捲頁，遊戲裡拿來跳躍要擋掉
   if (!keys[e.key]) justDown[e.key] = true;
   keys[e.key] = true;
 });
@@ -264,15 +265,19 @@ function update() {
     else if (keys['d'] || keys['D']) inputX = 1;
     if (inputX !== 0) elf.facing = inputX; // 人物左右面向：只由按鍵決定，靜止時沿用上次
 
-    if (inputX !== 0) {
-      speedMult = alignMultiplier(angle, inputX, 0, K_SPEED);
-      elf.vx = MOVE_SPEED * speedMult * inputX;
-    } else {
-      elf.vx = 0;
+    // 水平速度只在貼地時才吃輸入——騰空後 vx 維持起跳當下的值不再變，保持原本的拋物線飛行
+    // 軌跡，沒有空中變向這種事(沒有空中控制)
+    if (elf.onGround) {
+      if (inputX !== 0) {
+        speedMult = alignMultiplier(angle, inputX, 0, K_SPEED);
+        elf.vx = MOVE_SPEED * speedMult * inputX;
+      } else {
+        elf.vx = 0;
+      }
     }
 
-    if (justDown['w'] || justDown['W']) {
-      if (elf.onGround) { elf.vy = JUMP_FORCE; elf.onGround = false; }
+    if ((justDown['w'] || justDown['W'] || justDown[' ']) && elf.onGround) {
+      elf.vy = JUMP_FORCE; elf.onGround = false;
     }
   }
 
