@@ -86,6 +86,8 @@ const TARGET_GROUND_GAP = 2 / 72;
 // 改畫框不會動到判定範圍，反之亦然
 const TARGET_RADIUS = 22;
 const DUMMY_RADIUS  = 27;
+const ELF_RADIUS    = 27; // 主角自己的感測圓半徑——先訂跟假人同量級的佔位值，尚無 boss 會真的用到這個判定，
+                           // 現在只是先把圓畫出來，之後 boss 出招要判定「有沒有打中主角」時直接接這個
 const LOG_HALF_WIDTH = 26;
 const LOG_TOP_OFFSET = 30; // 木樁頂部比地面高多少（世界座標，數字越大墊越高）
 
@@ -99,7 +101,7 @@ const CHARGED_MIN_SPEED = 15, CHARGED_MAX_SPEED = 30; // 站定蓄力：依蓄�
 const K_SPEED = 0.3;
 const K_DAMAGE = 0.3;
 
-const TICK_SPACING = 60; // 地面刻度間距（世界座標），純視覺、讓鏡頭鎖定看得出世界在捲動
+const TICK_SPACING = 100; // 地面刻度間距（世界座標），純視覺、讓鏡頭鎖定看得出世界在捲動
 
 const lerp  = (a, b, t) => a + (b - a) * t;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -514,6 +516,15 @@ function drawDebugColliders() {
   ctx.save();
   ctx.lineWidth = 1.5;
 
+  // 🧝 主角自己的感測圓——佔位用，還沒有 boss 會真的拿它來判定，先畫出來供之後接
+  {
+    const sx = elfScreenX();
+    const sy = ELF_SCREEN_Y - ELF_RADIUS + UNIT_DRAW_SIZE * ELF_GROUND_GAP;
+    ctx.strokeStyle = '#ff9ee1'; ctx.fillStyle = '#ff9ee1';
+    ctx.beginPath(); ctx.arc(sx, sy, ELF_RADIUS, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(sx, sy, 2, 0, Math.PI * 2); ctx.fill();
+  }
+
   // 🗿🎯 感測圓：圓心算法跟 withinRadius() 完全同一份
   ctx.strokeStyle = '#00ffe1';
   ctx.fillStyle = '#00ffe1';
@@ -549,7 +560,7 @@ function drawDebugColliders() {
   ctx.beginPath(); ctx.moveTo(logR, logTopSY - 6); ctx.lineTo(logR, logTopSY + 6); ctx.stroke();
 
   ctx.fillStyle = '#00ffe1cc'; ctx.font = '11px Consolas, monospace';
-  ctx.fillText('F3 除錯輔助線：開（🧝主角目前還沒有感測圓，尚無 boss 可測）', 10, H - 10);
+  ctx.fillText('F3 除錯輔助線：開（🧝主角感測圓是佔位值，尚無 boss 會真的拿它判定）', 10, H - 10);
   ctx.restore();
 }
 
