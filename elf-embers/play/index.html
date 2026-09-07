@@ -51,7 +51,10 @@ const ELF_SCREEN_Y   = 300; // 人物永遠釘死的螢幕Y座標（鏡頭水平
 const GRAVITY      = 0.7;
 const JUMP_FORCE    = -13;
 const MOVE_SPEED    = 4.5;
-const ELF_SIZE      = 64;
+
+// 🧝🗿🎯🪵ㄧ律用這個畫框大小(72x72等比縮放貼到這個正方形)，先求畫框一致——
+// 內容佔比不同、實際視覺大小還是會有落差(見下面留白量測)，那塊之後再校正
+const UNIT_DRAW_SIZE = 64;
 
 const ATTACK_DURATION = 130; // ms，短劍刺出收回一次的動畫時長（加快）
 const THRUST_OUT_FRAC = 0.35; // 動畫前 35% 時間快速刺出、剩下 65% 收回
@@ -77,6 +80,8 @@ const TARGET_GROUND_GAP = 2 / 72;
 // 場景測試物件：🎯靶(遠程)、🗿假人(近戰)——兩者都有感測圓，判定用圓心距離(先不做方向性分區，
 // 靜態物件無「正面」概念，之後真的做 boss 才需要角度分區/閃避，見設計討論)
 // 🪵木樁——純場景平台，可站上去墊高，不參與攻擊判定
+// 這幾個半徑純粹是「命中判定」用的碰撞範圍，跟畫框大小(UNIT_DRAW_SIZE)已經拆開——
+// 改畫框不會動到判定範圍，反之亦然
 const TARGET_RADIUS = 22;
 const DUMMY_RADIUS  = 27;
 const LOG_HALF_WIDTH = 26;
@@ -116,8 +121,8 @@ const bow = { isDrawing: false, drawStart: 0 };
 let arrows = []; // 箭矢座標一律存世界座標，畫的時候才轉螢幕座標
 
 // 場景測試物件實體（世界座標）
-const dummy  = { worldX: 130, worldY: GROUND_WORLD_Y, radius: DUMMY_RADIUS, groundGapPx: DUMMY_RADIUS * 2 * DUMMY_GROUND_GAP, hitCount: 0, hitFlashAt: -Infinity };
-const target = { worldX: 340, worldY: GROUND_WORLD_Y, radius: TARGET_RADIUS, groundGapPx: TARGET_RADIUS * 2 * TARGET_GROUND_GAP, hitCount: 0, hitFlashAt: -Infinity };
+const dummy  = { worldX: 130, worldY: GROUND_WORLD_Y, radius: DUMMY_RADIUS, groundGapPx: UNIT_DRAW_SIZE * DUMMY_GROUND_GAP, hitCount: 0, hitFlashAt: -Infinity };
+const target = { worldX: 340, worldY: GROUND_WORLD_Y, radius: TARGET_RADIUS, groundGapPx: UNIT_DRAW_SIZE * TARGET_GROUND_GAP, hitCount: 0, hitFlashAt: -Infinity };
 const log    = { worldX: -170, topY: GROUND_WORLD_Y - LOG_TOP_OFFSET, halfWidth: LOG_HALF_WIDTH };
 const hittableObjects = [dummy, target]; // 🪵不在此列——場景平台、不可攻擊
 
@@ -366,7 +371,7 @@ function drawElf() {
   const facingLeft = elf.facing < 0;
   // 人物永遠畫在螢幕固定點（水平垂直都鎖），不會因為跳躍而在畫面裡上下移動——
   // 是地面／世界相對它移動，鏡頭「永遠對準他」
-  drawEmoji(ctx, '🧝', elfScreenX(), ELF_SCREEN_Y - ELF_SIZE / 2, ELF_SIZE, { flip: facingLeft, dy: ELF_SIZE * ELF_GROUND_GAP });
+  drawEmoji(ctx, '🧝', elfScreenX(), ELF_SCREEN_Y - UNIT_DRAW_SIZE / 2, UNIT_DRAW_SIZE, { flip: facingLeft, dy: UNIT_DRAW_SIZE * ELF_GROUND_GAP });
 
   if (elf.attack) {
     const t = clamp((performance.now() - elf.attack.start) / ATTACK_DURATION, 0, 1);
@@ -407,22 +412,23 @@ function drawChargeBar() {
 // 🎯靶／🗿假人：被打中後 150ms 內閃白，並累計顯示命中次數(先只求「打得到」的回饋，
 // 還沒有血量/擊殺邏輯——那塊等真的做傷害系統時再接)
 function drawHittable(obj, ch) {
-  const size = obj.radius * 2;
+  // 畫框一律用 UNIT_DRAW_SIZE(跟主角/木樁同一個)，obj.radius 只留給命中判定用，兩者已經拆開
   const sx = worldToScreenX(obj.worldX);
-  const boxCenterY = worldToScreenY(obj.worldY) - obj.radius;
-  drawEmoji(ctx, ch, sx, boxCenterY, size, { dy: obj.groundGapPx });
+  const boxCenterY = worldToScreenY(obj.worldY) - UNIT_DRAW_SIZE / 2;
+  drawEmoji(ctx, ch, sx, boxCenterY, UNIT_DRAW_SIZE, { dy: obj.groundGapPx });
   const visY = boxCenterY + obj.groundGapPx; // 補完留白後、素材實際視覺中心，閃白/文字都要跟著這個對齊
+  const visRadius = UNIT_DRAW_SIZE / 2;
   const flashT = clamp(1 - (performance.now() - obj.hitFlashAt) / 150, 0, 1);
   if (flashT > 0) {
     ctx.save();
     ctx.globalAlpha = flashT * 0.6;
     ctx.fillStyle = '#ffffff';
-    ctx.beginPath(); ctx.arc(sx, visY, obj.radius, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(sx, visY, visRadius, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   }
   if (obj.hitCount > 0) {
     ctx.fillStyle = '#ffd24a'; ctx.font = '12px Consolas, monospace'; ctx.textAlign = 'center';
-    ctx.fillText(`命中 ${obj.hitCount}`, sx, visY + obj.radius + 14);
+    ctx.fillText(`命中 ${obj.hitCount}`, sx, visY + visRadius + 14);
     ctx.textAlign = 'left';
   }
 }
@@ -433,7 +439,7 @@ function drawHittable(obj, ch) {
 function drawLog() {
   const sx = worldToScreenX(log.worldX);
   const sy = worldToScreenY((log.topY + GROUND_WORLD_Y) / 2); // 木樁視覺中心：頂部跟地面中間
-  drawEmoji(ctx, '🪵', sx, sy, LOG_HALF_WIDTH * 2);
+  drawEmoji(ctx, '🪵', sx, sy, UNIT_DRAW_SIZE); // 畫框跟其他三個統一
 }
 
 function drawArrows() {
