@@ -94,6 +94,12 @@ const TARGET_RADIUS = 22;
 const DUMMY_RADIUS  = 27;
 const ELF_RADIUS    = 27; // 主角自己的感測圓半徑——先訂跟假人同量級的佔位值，尚無 boss 會真的用到這個判定，
                            // 現在只是先把圓畫出來，之後 boss 出招要判定「有沒有打中主角」時直接接這個
+
+// 瞄準基準點(=感測圓圓心=揮劍/拉弓/箭矢出手錨點，全部共用同一個數字，之前分散寫 -34/-32/-30
+// 三個數字才會對不齊，見上次修的 bug)：往下调整成「圓環頂部切齊頭頂」——頭頂螢幕Y實測是
+// ELF_SCREEN_Y-51(素材內容上緣留白10px、UNIT_DRAW_SIZE=72是1:1不縮放，239+10=249=300-51)，
+// 圓環頂部=圓心-半徑，所以圓心=頭頂+半徑=(300-51)+27=276=ELF_SCREEN_Y-24
+const AIM_ANCHOR_OFFSET = -24;
 const LOG_HALF_WIDTH = 26;
 const LOG_TOP_OFFSET = 30; // 木樁頂部比地面高多少（世界座標，數字越大墊越高）
 
@@ -142,7 +148,7 @@ let lastAttackTime = -Infinity; // 上次揮劍觸發的時間戳，配合 ATTAC
 function worldToScreenX(wx) { return wx - elf.worldX + W / 2; }
 function worldToScreenY(wy) { return wy - elf.worldY + ELF_SCREEN_Y; }
 function elfScreenX() { return W / 2; }
-function elfScreenY() { return ELF_SCREEN_Y - 30; } // 瞄準基準點，約胸口高度，永遠固定（人物釘死在螢幕上）
+function elfScreenY() { return ELF_SCREEN_Y + AIM_ANCHOR_OFFSET; } // 瞄準基準點，永遠固定（人物釘死在螢幕上）
 
 // ════════════════════════════════
 //  滑鼠瞄準
@@ -175,13 +181,13 @@ function swordTipWorld() {
   const tipReach = swordReachAt(t) + SWORD_TIP_LOCAL_OFFSET;
   return {
     x: elf.worldX + Math.cos(elf.attack.center) * tipReach,
-    y: (elf.worldY - 30) + Math.sin(elf.attack.center) * tipReach,
+    y: (elf.worldY + AIM_ANCHOR_OFFSET) + Math.sin(elf.attack.center) * tipReach,
   };
 }
 
 function fireArrow(angle, speed) {
   const originWorldX = elf.worldX + Math.cos(angle) * 18;
-  const originWorldY = elf.worldY - 30 + Math.sin(angle) * 18;
+  const originWorldY = elf.worldY + AIM_ANCHOR_OFFSET + Math.sin(angle) * 18;
   arrows.push({
     worldX: originWorldX, worldY: originWorldY,
     // 出手瞬間疊加人物本身的速度向量（速度合成）——邊跑邊射會比站定射更快更遠，符合物理
