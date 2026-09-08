@@ -90,7 +90,11 @@ const TARGET_GROUND_GAP = 2 / 72;
 // 🪵木樁——純場景平台，可站上去墊高，不參與攻擊判定
 // 這幾個半徑純粹是「命中判定」用的碰撞範圍，跟畫框大小(UNIT_DRAW_SIZE)已經拆開——
 // 改畫框不會動到判定範圍，反之亦然
-const TARGET_RADIUS = 22;
+// 🎯 靶紙本身就是同心圓圖案，感測圓要跟它自己畫的最外圈重合——沿素材正中央的水平/垂直中線
+// 掃描最外緣像素實測出來的：外圈邊界 x=[9..69] y=[9..69]，圓心(39,39)、半徑30
+// (裝飾用的箭矢圖案是斜的、不會被正中央橫線/直線掃到，量出來的是乾淨的靶紙圓形邊界)
+const TARGET_RADIUS = 30;
+const TARGET_SENSOR_OFFSET = { x: 3, y: 3 }; // 圓心(39,39)相對畫框幾何中心(36,36)的偏移
 const DUMMY_RADIUS  = 27;
 const ELF_RADIUS    = 27; // 主角自己的感測圓半徑——先訂跟假人同量級的佔位值，尚無 boss 會真的用到這個判定，
                            // 現在只是先把圓畫出來，之後 boss 出招要判定「有沒有打中主角」時直接接這個
@@ -138,7 +142,7 @@ let arrows = []; // 箭矢座標一律存世界座標，畫的時候才轉螢幕
 
 // 場景測試物件實體（世界座標）
 const dummy  = { worldX: 130, worldY: GROUND_WORLD_Y, radius: DUMMY_RADIUS, groundGapPx: UNIT_DRAW_SIZE * DUMMY_GROUND_GAP, hitCount: 0, hitFlashAt: -Infinity };
-const target = { worldX: 340, worldY: GROUND_WORLD_Y, radius: TARGET_RADIUS, groundGapPx: UNIT_DRAW_SIZE * TARGET_GROUND_GAP, hitCount: 0, hitFlashAt: -Infinity };
+const target = { worldX: 340, worldY: GROUND_WORLD_Y, radius: TARGET_RADIUS, groundGapPx: UNIT_DRAW_SIZE * TARGET_GROUND_GAP, sensorOffsetX: TARGET_SENSOR_OFFSET.x, sensorOffsetY: TARGET_SENSOR_OFFSET.y, hitCount: 0, hitFlashAt: -Infinity };
 const log    = { worldX: -170, topY: GROUND_WORLD_Y - LOG_TOP_OFFSET, halfWidth: LOG_HALF_WIDTH };
 const hittableObjects = [dummy, target]; // 🪵不在此列——場景平台、不可攻擊
 
@@ -202,11 +206,17 @@ function fireArrow(angle, speed) {
 // (UNIT_DRAW_SIZE/2，不是 obj.radius——這兩個現在是分開的兩件事，見 UNIT_DRAW_SIZE 那段註解)，
 // 再補回 groundGapPx 讓感測圓跟畫面上真正看到的圖案對齊。之前這裡誤用 obj.radius 取代
 // UNIT_DRAW_SIZE/2，圓心因此跟著半徑大小跑掉，感測圓才會看起來跟圖案對不上
+// sensorOffsetX/Y(預設0)：感測圓真正的圓心跟畫框幾何中心的差，只有 🎯 這種本身就是同心圓
+// 圖案、需要跟素材自己的圓外圍精準重合的物件才會用到，跟 groundGapPx(貼地用的視覺修正)
+// 是不同用途、不要混用
+function sensorCenterWorldX(obj) {
+  return obj.worldX + (obj.sensorOffsetX || 0);
+}
 function sensorCenterWorldY(obj) {
-  return obj.worldY - UNIT_DRAW_SIZE / 2 + obj.groundGapPx;
+  return obj.worldY - UNIT_DRAW_SIZE / 2 + obj.groundGapPx + (obj.sensorOffsetY || 0);
 }
 function withinRadius(obj, wx, wy) {
-  return Math.hypot(wx - obj.worldX, wy - sensorCenterWorldY(obj)) <= obj.radius;
+  return Math.hypot(wx - sensorCenterWorldX(obj), wy - sensorCenterWorldY(obj)) <= obj.radius;
 }
 function registerHit(obj) {
   obj.hitCount++;
@@ -490,19 +500,22 @@ function drawHittable(obj, ch) {
   const sx = worldToScreenX(obj.worldX);
   const boxCenterY = worldToScreenY(obj.worldY) - UNIT_DRAW_SIZE / 2;
   drawEmoji(ctx, ch, sx, boxCenterY, UNIT_DRAW_SIZE, { dy: obj.groundGapPx });
-  const visY = worldToScreenY(sensorCenterWorldY(obj)); // 跟 withinRadius() 共用同一份圓心算法
-  const visRadius = UNIT_DRAW_SIZE / 2;
+  // 閃白/命中數字錨在真正的感測圓上(跟 withinRadius() 共用同一份圓心/半徑)，不是畫框中心，
+  // 這樣視覺回饋才會跟實際判到的地方一致
+  const visX = worldToScreenX(sensorCenterWorldX(obj));
+  const visY = worldToScreenY(sensorCenterWorldY(obj));
+  const visRadius = obj.radius;
   const flashT = clamp(1 - (performance.now() - obj.hitFlashAt) / 150, 0, 1);
   if (flashT > 0) {
     ctx.save();
     ctx.globalAlpha = flashT * 0.6;
     ctx.fillStyle = '#ffffff';
-    ctx.beginPath(); ctx.arc(sx, visY, visRadius, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(visX, visY, visRadius, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   }
   if (obj.hitCount > 0) {
     ctx.fillStyle = '#ffd24a'; ctx.font = '12px Consolas, monospace'; ctx.textAlign = 'center';
-    ctx.fillText(`命中 ${obj.hitCount}`, sx, visY + visRadius + 14);
+    ctx.fillText(`命中 ${obj.hitCount}`, visX, visY + visRadius + 14);
     ctx.textAlign = 'left';
   }
 }
@@ -547,11 +560,11 @@ function drawDebugColliders() {
     ctx.beginPath(); ctx.arc(sx, sy, 2, 0, Math.PI * 2); ctx.fill();
   }
 
-  // 🗿🎯 感測圓：圓心算法跟 withinRadius() 共用同一個 sensorCenterWorldY()
+  // 🗿🎯 感測圓：圓心算法跟 withinRadius() 共用同一個 sensorCenterWorldX/Y()
   ctx.strokeStyle = '#00ffe1';
   ctx.fillStyle = '#00ffe1';
   for (const obj of hittableObjects) {
-    const sx = worldToScreenX(obj.worldX);
+    const sx = worldToScreenX(sensorCenterWorldX(obj));
     const sy = worldToScreenY(sensorCenterWorldY(obj));
     ctx.beginPath(); ctx.arc(sx, sy, obj.radius, 0, Math.PI * 2); ctx.stroke();
     ctx.beginPath(); ctx.arc(sx, sy, 2, 0, Math.PI * 2); ctx.fill();
