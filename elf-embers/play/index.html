@@ -140,8 +140,18 @@ const bow = { isDrawing: false, drawStart: 0 };
 
 let arrows = []; // 箭矢座標一律存世界座標，畫的時候才轉螢幕座標
 
+// 弱點區域(純視覺化資料，先不接判定邏輯——之後做傷害系統/boss AI 時，要不要吃弱點加成會讀
+// 同一份 zones)。角度用 ctx.arc 慣例(0=正右方、順時針增加，跟 atan2(dy,dx) 同一套)。
+// 這些假人固定站原地不會轉向，「正面」訂為朝左(180°)——因為精靈預設從 worldX 較小處接近。
+// 低階石像：整個背面(右半圓 -90°~90°)都是弱點，大範圍好找
+// 高階石像：只有頭頂一個小夾角(-90°附近，朝上)是弱點，小範圍難找——要示範時把下面
+// dummy.zones 換成 DUMMY_ZONES_HIGH_TIER 即可，同一套框架換資料就好
+const DEG = Math.PI / 180;
+const DUMMY_ZONES_LOW_TIER  = [{ from: -90 * DEG, to: 90 * DEG, color: '#ff3b3b', label: '弱點(背後)' }];
+const DUMMY_ZONES_HIGH_TIER = [{ from: -105 * DEG, to: -75 * DEG, color: '#ff3b3b', label: '弱點(頭頂)' }];
+
 // 場景測試物件實體（世界座標）
-const dummy  = { worldX: 130, worldY: GROUND_WORLD_Y, radius: DUMMY_RADIUS, groundGapPx: UNIT_DRAW_SIZE * DUMMY_GROUND_GAP, hitCount: 0, hitFlashAt: -Infinity };
+const dummy  = { worldX: 130, worldY: GROUND_WORLD_Y, radius: DUMMY_RADIUS, groundGapPx: UNIT_DRAW_SIZE * DUMMY_GROUND_GAP, zones: DUMMY_ZONES_LOW_TIER, hitCount: 0, hitFlashAt: -Infinity };
 const target = { worldX: 340, worldY: GROUND_WORLD_Y, radius: TARGET_RADIUS, groundGapPx: UNIT_DRAW_SIZE * TARGET_GROUND_GAP, sensorOffsetX: TARGET_SENSOR_OFFSET.x, sensorOffsetY: TARGET_SENSOR_OFFSET.y, hitCount: 0, hitFlashAt: -Infinity };
 const log    = { worldX: -170, topY: GROUND_WORLD_Y - LOG_TOP_OFFSET, halfWidth: LOG_HALF_WIDTH };
 const hittableObjects = [dummy, target]; // 🪵不在此列——場景平台、不可攻擊
@@ -550,24 +560,28 @@ function drawDebugColliders() {
   ctx.save();
   ctx.lineWidth = 1.5;
 
-  // 🧝 主角自己的感測圓——圓心直接用 elfScreenY()，保證跟瞄準線/揮劍/拉弓錨點是同一個點
-  // (之前用素材視覺中心另外反推出一個座標，跟 elfScreenY() 對不上，才會看起來圓心跟瞄準線兜不起來)
-  {
-    const sx = elfScreenX();
-    const sy = elfScreenY();
-    ctx.strokeStyle = '#ff9ee1'; ctx.fillStyle = '#ff9ee1';
-    ctx.beginPath(); ctx.arc(sx, sy, ELF_RADIUS, 0, Math.PI * 2); ctx.stroke();
+  // 感測圓底色統一白色——顏色這個視覺資源留給角度區域的效果分區用(弱點/一般區分色)，
+  // 不再拿顏色單純區分「這是哪個物件的圓」。zones(選填)是 [{from,to,color}] 角度區塊陣列，
+  // 畫在白色圓圈上面蓋出彩色弧段；正式遊戲不會畫這個環，這純粹是開發階段找弱點角度用的輔助線
+  function drawSensorRing(sx, sy, radius, zones) {
+    ctx.strokeStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(sx, sy, radius, 0, Math.PI * 2); ctx.stroke();
+    (zones || []).forEach(z => {
+      ctx.strokeStyle = z.color;
+      ctx.beginPath(); ctx.arc(sx, sy, radius, z.from, z.to); ctx.stroke();
+    });
+    ctx.fillStyle = '#ffffff';
     ctx.beginPath(); ctx.arc(sx, sy, 2, 0, Math.PI * 2); ctx.fill();
   }
 
+  // 🧝 主角自己的感測圓——圓心直接用 elfScreenY()，保證跟瞄準線/揮劍/拉弓錨點是同一個點
+  drawSensorRing(elfScreenX(), elfScreenY(), ELF_RADIUS);
+
   // 🗿🎯 感測圓：圓心算法跟 withinRadius() 共用同一個 sensorCenterWorldX/Y()
-  ctx.strokeStyle = '#00ffe1';
-  ctx.fillStyle = '#00ffe1';
   for (const obj of hittableObjects) {
     const sx = worldToScreenX(sensorCenterWorldX(obj));
     const sy = worldToScreenY(sensorCenterWorldY(obj));
-    ctx.beginPath(); ctx.arc(sx, sy, obj.radius, 0, Math.PI * 2); ctx.stroke();
-    ctx.beginPath(); ctx.arc(sx, sy, 2, 0, Math.PI * 2); ctx.fill();
+    drawSensorRing(sx, sy, obj.radius, obj.zones);
   }
 
   // 短劍劍尖判定點：跟 update() 裡拿去判定的 swordTipWorld() 是同一個函式
